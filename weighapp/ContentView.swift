@@ -3,12 +3,37 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \UserProfile.createdAt) private var profiles: [UserProfile]
     @Query(sort: \DailyCheckIn.date) private var checkIns: [DailyCheckIn]
     @Query(sort: \WeightEntry.date) private var weightEntries: [WeightEntry]
     @Query(sort: \Goal.createdAt) private var goals: [Goal]
 
+    @State private var isShowingLaunchSplash = true
+    @State private var launchSplashOpacity = 1.0
+    @State private var didStartLaunchSplashDismissal = false
+
     var body: some View {
+        appContent
+            .tint(AppTheme.primary)
+            .preferredColorScheme(.light)
+            .overlay {
+                if isShowingLaunchSplash {
+                    SplashScreenView()
+                        .opacity(launchSplashOpacity)
+                        .transition(.opacity)
+                        .zIndex(1)
+                        .accessibilityHidden(true)
+                }
+            }
+            .onChange(of: scenePhase, initial: true) { _, newPhase in
+                guard newPhase == .active else { return }
+                startLaunchSplashDismissal()
+            }
+    }
+
+    private var appContent: some View {
         Group {
             if let profile = profiles.first {
                 MainAppShell(profile: profile, checkIns: checkIns, weightEntries: weightEntries, goals: goals)
@@ -18,8 +43,35 @@ struct ContentView: View {
                 }
             }
         }
-        .tint(AppTheme.primary)
-        .preferredColorScheme(.light)
+    }
+
+    private func startLaunchSplashDismissal() {
+        guard !didStartLaunchSplashDismissal else { return }
+        didStartLaunchSplashDismissal = true
+
+        Task { @MainActor in
+            await dismissLaunchSplash()
+        }
+    }
+
+    @MainActor
+    private func dismissLaunchSplash() async {
+        guard isShowingLaunchSplash else { return }
+
+        let displayDuration: UInt64 = reduceMotion ? 500_000_000 : 1_600_000_000
+        try? await Task.sleep(nanoseconds: displayDuration)
+
+        if reduceMotion {
+            isShowingLaunchSplash = false
+            return
+        }
+
+        withAnimation(.easeOut(duration: 0.35)) {
+            launchSplashOpacity = 0
+        }
+
+        try? await Task.sleep(nanoseconds: 350_000_000)
+        isShowingLaunchSplash = false
     }
 
     private func createProfile(_ setup: SetupValues) {
@@ -31,12 +83,79 @@ struct ContentView: View {
             weeklyDietTarget: setup.weeklyDietTarget,
             weeklyMovementTarget: setup.weeklyMovementTarget,
             weeklyWeighInTarget: setup.weeklyWeighInTarget,
-            displayName: setup.displayName
+            displayName: setup.displayName,
+            checkInReminderEnabled: setup.checkInReminderEnabled,
+            checkInReminderHour: setup.checkInReminderHour,
+            checkInReminderMinute: setup.checkInReminderMinute,
+            flexDaysEnabled: setup.flexDaysEnabled,
+            flexWeekdayMask: setup.flexWeekdayMask
         )
         modelContext.insert(profile)
         modelContext.insert(WeightEntry(date: Date(), weight: setup.currentWeight))
         Goal.defaults(for: profile).forEach(modelContext.insert)
         try? modelContext.save()
+        Task { @MainActor in
+            await CheckInReminderScheduler.refresh(profile: profile, checkIns: [])
+        }
+    }
+}
+
+private struct SplashScreenView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var rotation = 0.0
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                Color(red: 0.941, green: 0.988, blue: 0.946)
+                    .ignoresSafeArea()
+
+                Image("LeafstepSplash")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .clipped()
+                    .ignoresSafeArea()
+
+                SplashLoadingRing(reduceMotion: reduceMotion, rotation: rotation)
+                    .frame(width: 70, height: 70)
+                    .position(x: proxy.size.width / 2, y: proxy.size.height * 0.844)
+            }
+        }
+        .ignoresSafeArea()
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.linear(duration: 1.05).repeatForever(autoreverses: false)) {
+                rotation = 360
+            }
+        }
+    }
+}
+
+private struct SplashLoadingRing: View {
+    let reduceMotion: Bool
+    let rotation: Double
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(AppTheme.primary.opacity(0.14), lineWidth: 6)
+
+            Circle()
+                .trim(from: 0, to: 0.82)
+                .stroke(
+                    AppTheme.primary,
+                    style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                )
+                .rotationEffect(.degrees(reduceMotion ? -90 : rotation - 90))
+
+            Circle()
+                .fill(Color.white)
+                .frame(width: 8, height: 8)
+                .offset(y: -35)
+                .rotationEffect(.degrees(reduceMotion ? 0 : rotation))
+        }
+        .shadow(color: AppTheme.primary.opacity(0.16), radius: 8, y: 3)
     }
 }
 
@@ -59,6 +178,8 @@ private enum GoalSheetDestination: Identifiable {
 
 struct MainAppShell: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var notificationRouter: CheckInNotificationRouter
     let profile: UserProfile
     let checkIns: [DailyCheckIn]
     let weightEntries: [WeightEntry]
@@ -162,6 +283,8 @@ struct MainAppShell: View {
                 onSaveBaseline: saveBaseline,
                 onSaveTargets: saveTargets,
                 onSaveUnit: saveUnit,
+                onSaveReminder: saveReminder,
+                onSaveFlexDays: saveFlexDays,
                 onResetData: resetLocalData
             )
         }
@@ -220,27 +343,43 @@ struct MainAppShell: View {
             backfillWeightEntries()
             ensureCoreGoals()
             refreshGoals()
+            await CheckInReminderScheduler.refresh(profile: profile, checkIns: checkIns)
+            if notificationRouter.pendingCheckInReminderRouteID != nil {
+                routeToCheckInReminder()
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task { @MainActor in
+                await CheckInReminderScheduler.refresh(profile: profile, checkIns: checkIns)
+            }
+        }
+        .onChange(of: notificationRouter.pendingCheckInReminderRouteID) { _, routeID in
+            guard routeID != nil else { return }
+            routeToCheckInReminder()
         }
     }
 
     private func saveCheckIn(dietStatus: DietStatus, moved: Bool, weight: Double?) {
         let today = Calendar.current.startOfDay(for: Date())
         let hadWeight = metrics.todayCheckIn?.weight != nil
+        let savedCheckIn: DailyCheckIn
 
         if let existing = metrics.todayCheckIn {
             existing.dietStatus = dietStatus
             existing.moved = moved
             existing.weight = weight
             existing.updatedAt = Date()
+            savedCheckIn = existing
         } else {
-            modelContext.insert(
-                DailyCheckIn(
-                    date: today,
-                    dietStatus: dietStatus,
-                    moved: moved,
-                    weight: weight
-                )
+            let newCheckIn = DailyCheckIn(
+                date: today,
+                dietStatus: dietStatus,
+                moved: moved,
+                weight: weight
             )
+            modelContext.insert(newCheckIn)
+            savedCheckIn = newCheckIn
         }
 
         if let weight {
@@ -254,6 +393,11 @@ struct MainAppShell: View {
         ensureCoreGoals()
         refreshGoals()
         try? modelContext.save()
+        let alreadyInQuery = checkIns.contains { Calendar.current.isDate($0.date, inSameDayAs: savedCheckIn.date) }
+        let schedulerCheckIns = alreadyInQuery ? checkIns : checkIns + [savedCheckIn]
+        Task { @MainActor in
+            await CheckInReminderScheduler.refresh(profile: profile, checkIns: schedulerCheckIns)
+        }
         isCheckingIn = false
     }
 
@@ -383,13 +527,45 @@ struct MainAppShell: View {
         try? modelContext.save()
     }
 
+    private func saveReminder(_ values: CheckInReminderValues) {
+        profile.checkInReminderEnabled = values.enabled
+        profile.checkInReminderHour = values.hour
+        profile.checkInReminderMinute = values.minute
+        profile.updatedAt = Date()
+        try? modelContext.save()
+
+        Task { @MainActor in
+            await CheckInReminderScheduler.refresh(profile: profile, checkIns: checkIns)
+        }
+    }
+
+    private func saveFlexDays(_ values: FlexDaysPreferenceValues) {
+        profile.flexDaysEnabled = values.enabled
+        profile.flexWeekdayMask = values.enabled ? values.weekdayMask : 0
+        profile.updatedAt = Date()
+        refreshGoals()
+        try? modelContext.save()
+    }
+
     private func resetLocalData() {
         isShowingProfile = false
+        Task { @MainActor in
+            await CheckInReminderScheduler.cancelAll()
+        }
         checkIns.forEach(modelContext.delete)
         weightEntries.forEach(modelContext.delete)
         goals.forEach(modelContext.delete)
         modelContext.delete(profile)
         try? modelContext.save()
+    }
+
+    private func routeToCheckInReminder() {
+        goalSheet = nil
+        isAddingPastWeight = false
+        isShowingProfile = false
+        selectedTab = .today
+        isCheckingIn = metrics.todayCheckIn == nil
+        notificationRouter.consumeCheckInReminderRoute()
     }
 
     private func deleteExtraGoal(_ goal: Goal) {

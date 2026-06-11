@@ -5,6 +5,7 @@ enum DietStatus: String, CaseIterable, Identifiable, Codable {
     case yes
     case mostly
     case no
+    case flex
 
     var id: String { rawValue }
 
@@ -13,7 +14,52 @@ enum DietStatus: String, CaseIterable, Identifiable, Codable {
         case .yes: "Yes"
         case .mostly: "Mostly"
         case .no: "No"
+        case .flex: "Flex"
         }
+    }
+
+    static let standardOptions: [DietStatus] = [.yes, .mostly, .no]
+}
+
+enum FlexWeekday: Int, CaseIterable, Identifiable {
+    case sunday = 1
+    case monday
+    case tuesday
+    case wednesday
+    case thursday
+    case friday
+    case saturday
+
+    var id: Int { rawValue }
+
+    var bit: Int {
+        1 << (rawValue - 1)
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .sunday: "Sun"
+        case .monday: "Mon"
+        case .tuesday: "Tue"
+        case .wednesday: "Wed"
+        case .thursday: "Thu"
+        case .friday: "Fri"
+        case .saturday: "Sat"
+        }
+    }
+
+    static func mask(for weekdays: [FlexWeekday]) -> Int {
+        weekdays.reduce(0) { $0 | $1.bit }
+    }
+
+    static func selected(in mask: Int) -> [FlexWeekday] {
+        allCases.filter { mask & $0.bit != 0 }
+    }
+
+    static func summary(for mask: Int, enabled: Bool) -> String {
+        guard enabled else { return "Off" }
+        let labels = selected(in: mask).map(\.shortLabel)
+        return labels.isEmpty ? "No days selected" : labels.joined(separator: ", ")
     }
 }
 
@@ -68,6 +114,11 @@ final class UserProfile {
     var weeklyWeighInTarget: Int
     var displayName: String?
     @Attribute(.externalStorage) var profileImageData: Data?
+    var checkInReminderEnabledValue: Bool?
+    var checkInReminderHourValue: Int?
+    var checkInReminderMinuteValue: Int?
+    var flexDaysEnabledValue: Bool?
+    var flexWeekdayMaskValue: Int?
     var createdAt: Date
     var updatedAt: Date
 
@@ -82,6 +133,11 @@ final class UserProfile {
         weeklyWeighInTarget: Int = 3,
         displayName: String? = nil,
         profileImageData: Data? = nil,
+        checkInReminderEnabled: Bool = false,
+        checkInReminderHour: Int = CheckInReminderDefaults.hour,
+        checkInReminderMinute: Int = CheckInReminderDefaults.minute,
+        flexDaysEnabled: Bool = false,
+        flexWeekdayMask: Int = 0,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -95,8 +151,79 @@ final class UserProfile {
         self.weeklyWeighInTarget = weeklyWeighInTarget
         self.displayName = displayName
         self.profileImageData = profileImageData
+        self.checkInReminderEnabledValue = checkInReminderEnabled
+        self.checkInReminderHourValue = checkInReminderHour
+        self.checkInReminderMinuteValue = checkInReminderMinute
+        self.flexDaysEnabledValue = flexDaysEnabled
+        self.flexWeekdayMaskValue = flexWeekdayMask
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+    }
+
+    var checkInReminderEnabled: Bool {
+        get { checkInReminderEnabledValue ?? false }
+        set { checkInReminderEnabledValue = newValue }
+    }
+
+    var checkInReminderHour: Int {
+        get { checkInReminderHourValue ?? CheckInReminderDefaults.hour }
+        set { checkInReminderHourValue = min(max(newValue, 0), 23) }
+    }
+
+    var checkInReminderMinute: Int {
+        get { checkInReminderMinuteValue ?? CheckInReminderDefaults.minute }
+        set { checkInReminderMinuteValue = min(max(newValue, 0), 59) }
+    }
+
+    var flexDaysEnabled: Bool {
+        get { flexDaysEnabledValue ?? false }
+        set { flexDaysEnabledValue = newValue }
+    }
+
+    var flexWeekdayMask: Int {
+        get { flexWeekdayMaskValue ?? 0 }
+        set { flexWeekdayMaskValue = min(max(newValue, 0), 127) }
+    }
+
+    var flexWeekdayCount: Int {
+        FlexWeekday.selected(in: flexWeekdayMask).count
+    }
+
+    var flexDaysSummary: String {
+        FlexWeekday.summary(for: flexWeekdayMask, enabled: flexDaysEnabled)
+    }
+
+    func isPlannedFlexDay(_ date: Date, calendar: Calendar = .current) -> Bool {
+        guard flexDaysEnabled, flexWeekdayMask != 0 else { return false }
+        guard let weekday = FlexWeekday(rawValue: calendar.component(.weekday, from: date)) else { return false }
+        return flexWeekdayMask & weekday.bit != 0
+    }
+}
+
+enum CheckInReminderDefaults {
+    static let hour = 20
+    static let minute = 0
+
+    static func date(
+        hour: Int = CheckInReminderDefaults.hour,
+        minute: Int = CheckInReminderDefaults.minute
+    ) -> Date {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = hour
+        components.minute = minute
+        return Calendar.current.date(from: components) ?? Date()
+    }
+
+    static func components(from date: Date) -> (hour: Int, minute: Int) {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return (components.hour ?? hour, components.minute ?? minute)
+    }
+
+    static func timeText(hour: Int, minute: Int) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter.string(from: date(hour: hour, minute: minute))
     }
 }
 
@@ -242,6 +369,7 @@ enum CalendarDayStatus {
     case onPlan
     case mostly
     case missed
+    case flex
 }
 
 struct CalendarDay: Identifiable {
@@ -249,6 +377,7 @@ struct CalendarDay: Identifiable {
     let day: Int
     let isCurrentMonth: Bool
     let status: CalendarDayStatus?
+    let isPlannedFlexDay: Bool
     let hasWeighIn: Bool
 }
 
@@ -303,8 +432,24 @@ struct TrackerMetrics {
     }
 
     var monthlyConsistency: Int {
-        let elapsedDays = max(calendar.component(.day, from: Date()), 1)
-        return min(Int((Double(monthlyOnPlanCount) / Double(elapsedDays) * 100).rounded()), 100)
+        guard monthlyEligibleCheckInCount > 0 else { return 0 }
+        return min(Int((Double(monthlyOnPlanCount) / Double(monthlyEligibleCheckInCount) * 100).rounded()), 100)
+    }
+
+    var monthlyEligibleCheckInCount: Int {
+        checkInsThisMonth.filter { $0.dietStatus != .flex }.count
+    }
+
+    var hasFlexCheckInsThisMonth: Bool {
+        checkInsThisMonth.contains { $0.dietStatus == .flex }
+    }
+
+    var plannedFlexDaysThisWeek: Int {
+        profile.flexDaysEnabled ? profile.flexWeekdayCount : 0
+    }
+
+    var isTodayPlannedFlexDay: Bool {
+        profile.isPlannedFlexDay(Date(), calendar: calendar)
     }
 
     var trendPoints: [TrendPoint] {
@@ -343,18 +488,21 @@ struct TrackerMetrics {
         let previousDays = Array(previousRange).suffix(prefixCount)
 
         var days = previousDays.map {
-            CalendarDay(day: $0, isCurrentMonth: false, status: nil, hasWeighIn: false)
+            CalendarDay(day: $0, isCurrentMonth: false, status: nil, isPlannedFlexDay: false, hasWeighIn: false)
         }
 
         for day in dayRange {
             guard let date = calendar.date(byAdding: .day, value: day - 1, to: monthInterval.start) else { continue }
             let checkIn = checkIn(on: date)
             let weightEntry = weightEntry(on: date)
+            let isPlannedFlexDay = profile.isPlannedFlexDay(date, calendar: calendar)
+            let status = checkIn.map(calendarStatus)
             days.append(
                 CalendarDay(
                     day: day,
                     isCurrentMonth: true,
-                    status: checkIn.map(calendarStatus),
+                    status: status,
+                    isPlannedFlexDay: isPlannedFlexDay,
                     hasWeighIn: weightEntry != nil
                 )
             )
@@ -363,7 +511,7 @@ struct TrackerMetrics {
         let nextDayCount = (7 - (days.count % 7)) % 7
         if nextDayCount > 0 {
             days += (1...nextDayCount).map {
-                CalendarDay(day: $0, isCurrentMonth: false, status: nil, hasWeighIn: false)
+                CalendarDay(day: $0, isCurrentMonth: false, status: nil, isPlannedFlexDay: false, hasWeighIn: false)
             }
         }
 
@@ -490,42 +638,101 @@ struct TrackerMetrics {
     }
 
     private var currentStreak: Int {
-        streak(endingAt: Date())
+        streak(endingAt: currentStreakEndDate)
     }
 
     private var bestStreak: Int {
-        let onPlanDays = Set(checkIns.filter { $0.dietStatus == .yes }.map { calendar.startOfDay(for: $0.date) })
-        guard !onPlanDays.isEmpty else { return 0 }
+        let checkInsByDay = checkInsByStartDay
+        guard
+            let firstCheckInDay = checkInsByDay.keys.min(),
+            let endDay = currentStreakEndDate
+        else { return 0 }
 
         var best = 0
         var current = 0
-        var previous: Date?
+        var cursor = firstCheckInDay
 
-        for day in onPlanDays.sorted() {
-            if let previous, calendar.dateComponents([.day], from: previous, to: day).day == 1 {
+        while cursor <= endDay {
+            switch streakEffect(on: cursor, checkInsByDay: checkInsByDay) {
+            case .increment:
                 current += 1
-            } else {
-                current = 1
+                best = max(best, current)
+            case .pause:
+                break
+            case .breakStreak:
+                current = 0
             }
-            best = max(best, current)
-            previous = day
+
+            guard let nextDay = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
+            cursor = nextDay
         }
 
         return best
     }
 
-    private func streak(endingAt date: Date) -> Int {
-        let onPlanDays = Set(checkIns.filter { $0.dietStatus == .yes }.map { calendar.startOfDay(for: $0.date) })
+    private func streak(endingAt date: Date?) -> Int {
+        guard let date else { return 0 }
+        let checkInsByDay = checkInsByStartDay
         var cursor = calendar.startOfDay(for: date)
         var count = 0
 
-        while onPlanDays.contains(cursor) {
-            count += 1
-            guard let previous = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
+        while true {
+            switch streakEffect(on: cursor, checkInsByDay: checkInsByDay) {
+            case .increment:
+                count += 1
+            case .pause:
+                break
+            case .breakStreak:
+                return count
+            }
+
+            guard let previous = calendar.date(byAdding: .day, value: -1, to: cursor) else { return count }
             cursor = previous
         }
+    }
 
-        return count
+    private var currentStreakEndDate: Date? {
+        let today = calendar.startOfDay(for: Date())
+        let checkInsByDay = checkInsByStartDay
+
+        if checkInsByDay[today] != nil || profile.isPlannedFlexDay(today, calendar: calendar) {
+            return today
+        }
+
+        return calendar.date(byAdding: .day, value: -1, to: today)
+    }
+
+    private enum StreakDayEffect {
+        case increment
+        case pause
+        case breakStreak
+    }
+
+    private func streakEffect(on day: Date, checkInsByDay: [Date: DietStatus]) -> StreakDayEffect {
+        if let status = checkInsByDay[calendar.startOfDay(for: day)] {
+            switch status {
+            case .yes:
+                return .increment
+            case .flex:
+                return .pause
+            case .mostly, .no:
+                return .breakStreak
+            }
+        }
+
+        return profile.isPlannedFlexDay(day, calendar: calendar) ? .pause : .breakStreak
+    }
+
+    private var checkInsByStartDay: [Date: DietStatus] {
+        var result: [Date: DailyCheckIn] = [:]
+        for checkIn in checkIns {
+            let day = calendar.startOfDay(for: checkIn.date)
+            if let existing = result[day], existing.updatedAt > checkIn.updatedAt {
+                continue
+            }
+            result[day] = checkIn
+        }
+        return result.mapValues(\.dietStatus)
     }
 
     private func calendarStatus(for checkIn: DailyCheckIn) -> CalendarDayStatus {
@@ -533,6 +740,7 @@ struct TrackerMetrics {
         case .yes: .onPlan
         case .mostly: .mostly
         case .no: .missed
+        case .flex: .flex
         }
     }
 
@@ -540,7 +748,8 @@ struct TrackerMetrics {
         let current = currentValue(for: goal)
         switch goal.type {
         case .dietDays, .movementDays, .weighIns:
-            return .count(current: Int(current), target: Int(goal.targetValue), label: nil)
+            let label = goal.type == .dietDays && plannedFlexDaysThisWeek > 0 ? "\(plannedFlexDaysThisWeek) Flex Days planned this week" : nil
+            return .count(current: Int(current), target: Int(goal.targetValue), label: label)
         case .weightTarget:
             return .weight(
                 current: latestWeight,

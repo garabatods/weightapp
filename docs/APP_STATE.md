@@ -1,6 +1,6 @@
 # WeighApp Current State
 
-Last updated: 2026-06-10
+Last updated: 2026-06-11
 
 ## Product Summary
 
@@ -15,26 +15,35 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 ## What The App Can Do
 
 - First-run onboarding:
-  - 3-step onboarding for optional name, weight unit, baseline weights, and weekly targets.
+  - 4-step onboarding for optional name, weight unit, baseline weights, weekly targets, optional check-in reminder setup, and optional Flex Days setup.
   - Supports `kg` and `lb`.
   - Unit changes in onboarding convert starting/current/goal weight fields immediately.
+  - Reminder setup defaults off and only requests notification permission if enabled when onboarding completes.
+  - Flex Days default off and let the user select fixed planned weekdays without auto-selecting days.
 
 - Main app shell:
+  - Cold launch shows a Leafstep-branded splash screen, then fades into onboarding or the main app.
+  - The Leafstep name is currently splash-only; the app display name remains Weigh.
   - 4 main tabs using native iOS `TabView`: Today, Progress, Goals, History.
   - Main tab headers include a top-right profile/avatar button.
   - Profile opens as a full-screen flow, not a fifth tab.
 
 - Today:
   - Shows a compact daily check-in card.
-  - If no check-in exists today, the card shows `Ready when you are` and `Start check-in`.
+  - If no check-in exists today, the card is time-aware around the selected reminder time:
+    - Before reminder time: `Come back when your day winds down.`
+    - At/after reminder time: `Ready to wrap up today.`
+  - If today is a planned Flex Day, the card uses Flex Day copy and a `Quick check-in` action.
   - If today is already saved, the card stays visible as a full-width completed card with `Saved for today` and a small `Edit` action.
+  - If today is saved as a Flex Day, the card says the streak is paused, not broken.
   - Shows weekly diet goal progress, current progress, streaks, and a supportive message.
   - Does not show the weight graph.
 
 - Check-in:
   - Opens only from Today.
   - Saves or updates one check-in for today.
-  - Captures diet status: `Yes`, `Mostly`, or `No`.
+  - Captures diet status: `Yes`, `Mostly`, or `No` on normal days.
+  - On planned Flex Days, captures `Used Flex Day` (`flex`) or `Stayed on plan` (`yes`).
   - Captures movement: `Yes` or `No`.
   - Supports optional weight entry.
   - If a weight is saved, it creates or updates today’s `WeightEntry`.
@@ -58,20 +67,29 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 
 - History:
   - Shows a monthly calendar.
-  - Green days are on-plan, yellow days are mostly, gray days are missed.
+  - Green days are on-plan, yellow days are mostly, gray days are missed, lavender days are saved Flex Days or planned Flex weekdays.
   - Blue dots indicate weigh-ins from `WeightEntry`, including standalone past weigh-ins.
   - Shows monthly summary stats.
 
 - Profile & settings:
   - Opened from the top-right avatar/leaf in the main tab headers.
   - Shows profile identity, optional profile photo, baseline weights, targets, preferences, and data/privacy.
-  - Allows editing name, photo, starting/current/goal weight, weekly targets, and unit.
+  - Allows editing name, photo, starting/current/goal weight, weekly targets, unit, check-in reminder, and Flex Days.
   - Unit changes convert saved profile weights, daily check-in weights, weight entries, and weight goals.
+  - Check-in reminder shows `Off` or the selected time in Preferences.
+  - Flex Days show `Off`, selected weekday abbreviations, or `No days selected` in Preferences.
   - Includes reset local data with confirmation.
+
+- Local notifications:
+  - Optional daily check-in reminder uses local iOS notifications only.
+  - Notifications use the gentle copy `Ready to wrap up today?` and `Take a quick moment for your check-in.`
+  - The app schedules one-shot reminders for the next 30 days and skips days that already have a daily check-in when refreshed.
+  - Tapping a check-in reminder dismisses transient app UI, selects Today, and opens Check-in only if today is not already saved.
 
 ## Current Design Direction
 
 - Native SwiftUI, mobile-first, iOS-only.
+- Cold-launch splash uses the approved Leafstep artwork with a calm mint background and subtle loading ring.
 - Light warm background with neutral white cards.
 - Green is now reserved mostly for primary actions, selected states, positive progress, and success moments.
 - Most icons and section surfaces use neutral/slate tones to avoid the app feeling entirely green.
@@ -91,14 +109,17 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
   - `Theme.swift` contains app colors, typography, tab metadata, and icon tone roles.
   - `Components.swift` contains shared UI pieces such as headers, cards, icon bubbles, stat cards, goal cards, progress bars, and calendar.
   - `Screens.swift` contains onboarding, main screens, profile, sheets, forms, chart, and supporting view structs.
+  - `CheckInReminderScheduler.swift` owns local notification authorization, cancellation, and 30-day scheduling.
+  - `CheckInNotificationRouter.swift` owns notification tap detection and publishes reminder route requests to SwiftUI.
 
 ## SwiftData Models
 
 - `UserProfile`
-  - Stores starting/current/goal weight, unit, weekly targets, optional display name, optional profile image data, and timestamps.
+  - Stores starting/current/goal weight, unit, weekly targets, optional display name, optional profile image data, optional check-in reminder settings, optional Flex Day settings, and timestamps.
 
 - `DailyCheckIn`
   - Stores one daily habit check-in: date, diet status, moved boolean, optional weight, and timestamps.
+  - Diet status supports `yes`, `mostly`, `no`, and `flex`.
   - Weight remains for compatibility, but `WeightEntry` is the source of truth for trend and weigh-in metrics.
 
 - `WeightEntry`
@@ -122,9 +143,17 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 - Saving a check-in weight upserts today’s `WeightEntry`.
 - Adding a past weight upserts a `WeightEntry` for that date only.
 - Habit streaks and consistency are based on real `DailyCheckIn` records, not standalone weight entries.
+- Flex Days pause streaks and do not increment or break them.
+- Planned Flex weekdays pause streaks even if no check-in is saved for that Flex Day.
+- Today without a check-in does not reset the current streak; missing non-flex days break the streak only after the day has passed.
+- Diet goal progress counts only `yes`; saved Flex Days are not counted as completed or missed diet days.
+- Monthly consistency is `yes / checked-in non-flex days`; saved Flex Days are excluded from the denominator.
 - Weight trend and weigh-in counts are based on `WeightEntry`.
 - Core goals are recreated/normalized on app launch if missing or duplicated.
 - Runtime backfill creates `WeightEntry` records from older `DailyCheckIn.weight` values when needed.
+- Reminder scheduling refreshes on app launch, foreground activation, reminder settings changes, and daily check-in saves.
+- Disabling reminders or resetting local data cancels pending check-in reminder notifications.
+- Reminder taps override the previous screen because they represent explicit intent to complete the daily check-in.
 
 ## Build And Install Notes
 

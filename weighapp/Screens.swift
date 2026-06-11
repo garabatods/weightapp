@@ -11,6 +11,11 @@ struct ProfileSetupValues {
     let weeklyDietTarget: Int
     let weeklyMovementTarget: Int
     let weeklyWeighInTarget: Int
+    let checkInReminderEnabled: Bool
+    let checkInReminderHour: Int
+    let checkInReminderMinute: Int
+    let flexDaysEnabled: Bool
+    let flexWeekdayMask: Int
 }
 
 typealias SetupValues = ProfileSetupValues
@@ -24,7 +29,12 @@ enum ProfileSetupValidation {
         goalWeight: String,
         weeklyDietTarget: Int,
         weeklyMovementTarget: Int,
-        weeklyWeighInTarget: Int
+        weeklyWeighInTarget: Int,
+        checkInReminderEnabled: Bool = false,
+        checkInReminderHour: Int = CheckInReminderDefaults.hour,
+        checkInReminderMinute: Int = CheckInReminderDefaults.minute,
+        flexDaysEnabled: Bool = false,
+        flexWeekdayMask: Int = 0
     ) -> (values: ProfileSetupValues?, message: String?) {
         let trimmedUnit = unit == "lb" ? "lb" : "kg"
         guard
@@ -45,6 +55,12 @@ enum ProfileSetupValidation {
             return (nil, "Weekly targets should be between 1 and 7.")
         }
 
+        guard (0...23).contains(checkInReminderHour),
+              (0...59).contains(checkInReminderMinute)
+        else {
+            return (nil, "Choose a valid reminder time.")
+        }
+
         return (
             ProfileSetupValues(
                 displayName: displayName?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty,
@@ -54,7 +70,12 @@ enum ProfileSetupValidation {
                 goalWeight: goal,
                 weeklyDietTarget: weeklyDietTarget,
                 weeklyMovementTarget: weeklyMovementTarget,
-                weeklyWeighInTarget: weeklyWeighInTarget
+                weeklyWeighInTarget: weeklyWeighInTarget,
+                checkInReminderEnabled: checkInReminderEnabled,
+                checkInReminderHour: checkInReminderHour,
+                checkInReminderMinute: checkInReminderMinute,
+                flexDaysEnabled: flexDaysEnabled,
+                flexWeekdayMask: flexDaysEnabled ? flexWeekdayMask : 0
             ),
             nil
         )
@@ -82,6 +103,17 @@ struct ProfileBaselineValues {
 
 struct ProfileIdentityValues {
     let displayName: String?
+}
+
+struct CheckInReminderValues {
+    let enabled: Bool
+    let hour: Int
+    let minute: Int
+}
+
+struct FlexDaysPreferenceValues {
+    let enabled: Bool
+    let weekdayMask: Int
 }
 
 enum WeightUnitConverter {
@@ -121,12 +153,14 @@ private enum OnboardingStep: Int, CaseIterable {
     case welcome
     case baseline
     case targets
+    case flexDays
 
     var title: String {
         switch self {
         case .welcome: "Welcome"
         case .baseline: "Your starting point"
         case .targets: "Weekly targets"
+        case .flexDays: "Flex Days"
         }
     }
 
@@ -135,6 +169,7 @@ private enum OnboardingStep: Int, CaseIterable {
         case .welcome: "Small steps count."
         case .baseline: "Set your baseline."
         case .targets: "Choose a steady rhythm."
+        case .flexDays: "Plan room for real life."
         }
     }
 }
@@ -151,6 +186,10 @@ struct OnboardingScreen: View {
     @State private var weeklyDietTarget = 5
     @State private var weeklyMovementTarget = 3
     @State private var weeklyWeighInTarget = 3
+    @State private var checkInReminderEnabled = false
+    @State private var checkInReminderTime = CheckInReminderDefaults.date()
+    @State private var flexDaysEnabled = false
+    @State private var flexWeekdayMask = 0
     @State private var validationMessage = ""
 
     var body: some View {
@@ -171,7 +210,7 @@ struct OnboardingScreen: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                PrimaryButton(title: step == .targets ? "Start tracking" : "Continue") {
+                PrimaryButton(title: step == .flexDays ? "Start tracking" : "Continue") {
                     advance()
                 }
             }
@@ -187,6 +226,8 @@ struct OnboardingScreen: View {
             baselineStep
         case .targets:
             targetsStep
+        case .flexDays:
+            flexDaysStep
         }
     }
 
@@ -295,6 +336,40 @@ struct OnboardingScreen: View {
                 }
             }
 
+            AppCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    Toggle(isOn: $checkInReminderEnabled) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Check-in reminder")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.text)
+                            Text("A gentle reminder to wrap up your day.")
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppTheme.secondaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .tint(AppTheme.primary)
+
+                    if checkInReminderEnabled {
+                        Divider()
+                        HStack {
+                            Text("Reminder time")
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                .foregroundStyle(AppTheme.text)
+                            Spacer()
+                            DatePicker(
+                                "Reminder time",
+                                selection: $checkInReminderTime,
+                                displayedComponents: .hourAndMinute
+                            )
+                            .labelsHidden()
+                            .datePickerStyle(.compact)
+                        }
+                    }
+                }
+            }
+
             AppCard(tint: true) {
                 HStack(spacing: 14) {
                     IconBubble(symbol: "calendar.badge.checkmark", tone: .success)
@@ -303,6 +378,46 @@ struct OnboardingScreen: View {
                             .font(.system(size: 17, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.text)
                         Text("Keep showing up for you.")
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                }
+            }
+        }
+    }
+
+    private var flexDaysStep: some View {
+        VStack(spacing: 14) {
+            AppCard {
+                VStack(alignment: .leading, spacing: 16) {
+                    Toggle(isOn: $flexDaysEnabled) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Enable Flex Days")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.text)
+                            Text("Plan off-days ahead of time. Flex Days do not count as missed days.")
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppTheme.secondaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .tint(AppTheme.primary)
+
+                    if flexDaysEnabled {
+                        Divider()
+                        WeekdayPicker(mask: $flexWeekdayMask)
+                    }
+                }
+            }
+
+            AppCard(tint: true) {
+                HStack(spacing: 14) {
+                    IconBubble(symbol: "sparkles", tone: .flex)
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Planned flexibility keeps the week supportive.")
+                            .font(.system(size: 17, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.text)
+                        Text("You can update Flex Days later in Profile.")
                             .font(AppTypography.body)
                             .foregroundStyle(AppTheme.secondaryText)
                     }
@@ -325,6 +440,8 @@ struct OnboardingScreen: View {
         case .baseline:
             step = .targets
         case .targets:
+            step = .flexDays
+        case .flexDays:
             submit()
         }
     }
@@ -337,6 +454,7 @@ struct OnboardingScreen: View {
 
     private func submit() {
         let trimmedName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let reminderTime = CheckInReminderDefaults.components(from: checkInReminderTime)
         let result = ProfileSetupValidation.values(
             displayName: trimmedName,
             unit: unit,
@@ -345,7 +463,12 @@ struct OnboardingScreen: View {
             goalWeight: goalWeight,
             weeklyDietTarget: weeklyDietTarget,
             weeklyMovementTarget: weeklyMovementTarget,
-            weeklyWeighInTarget: weeklyWeighInTarget
+            weeklyWeighInTarget: weeklyWeighInTarget,
+            checkInReminderEnabled: checkInReminderEnabled,
+            checkInReminderHour: reminderTime.hour,
+            checkInReminderMinute: reminderTime.minute,
+            flexDaysEnabled: flexDaysEnabled,
+            flexWeekdayMask: flexWeekdayMask
         )
 
         if let values = result.values {
@@ -400,10 +523,52 @@ struct TodayScreen: View {
         metrics.progress
     }
 
+    private var checkInStatusText: String {
+        guard metrics.todayCheckIn == nil else { return "Saved for today" }
+        if metrics.isTodayPlannedFlexDay {
+            return "Planned break. No pressure - keep it intentional."
+        }
+        let reminderTime = CheckInReminderDefaults.date(
+            hour: metrics.profile.checkInReminderHour,
+            minute: metrics.profile.checkInReminderMinute
+        )
+        return Date() >= reminderTime ? "Ready to wrap up today." : "Come back when your day winds down."
+    }
+
+    private var checkInCardTitle: String {
+        if metrics.todayCheckIn?.dietStatus == .flex {
+            return "Flex Day saved"
+        }
+        if metrics.todayCheckIn == nil && metrics.isTodayPlannedFlexDay {
+            return "Today is a Flex Day"
+        }
+        return "Today’s check-in"
+    }
+
+    private var checkInCardStatus: String {
+        if metrics.todayCheckIn?.dietStatus == .flex {
+            return "Your streak is paused, not broken."
+        }
+        return checkInStatusText
+    }
+
+    private var checkInActionTitle: String {
+        metrics.todayCheckIn == nil && metrics.isTodayPlannedFlexDay ? "Quick check-in" : "Start check-in"
+    }
+
     var body: some View {
         AppScroll {
             AppHeader(title: "Today", subtitle: "Small steps count.", profileImageData: metrics.profile.profileImageData, onProfileTap: onProfileTap)
-            CheckInCard(hasCheckIn: metrics.todayCheckIn != nil, onStart: onStartCheckIn)
+            CheckInCard(
+                hasCheckIn: metrics.todayCheckIn != nil,
+                title: checkInCardTitle,
+                statusText: checkInCardStatus,
+                helperText: metrics.todayCheckIn == nil && metrics.isTodayPlannedFlexDay ? "Flex Days do not count as missed days." : nil,
+                actionTitle: checkInActionTitle,
+                iconSymbol: metrics.isTodayPlannedFlexDay || metrics.todayCheckIn?.dietStatus == .flex ? "sparkles" : "target",
+                iconTone: metrics.isTodayPlannedFlexDay || metrics.todayCheckIn?.dietStatus == .flex ? .flex : .primary,
+                onStart: onStartCheckIn
+            )
 
             AppCard {
                 HStack(alignment: .top, spacing: 14) {
@@ -423,6 +588,11 @@ struct TodayScreen: View {
                         Text("diet days completed")
                             .font(.system(size: 16, weight: .medium, design: .rounded))
                             .foregroundStyle(AppTheme.secondaryText)
+                        if metrics.plannedFlexDaysThisWeek > 0 {
+                            Text("\(metrics.plannedFlexDaysThisWeek) Flex Days planned this week")
+                                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                .foregroundStyle(AppTheme.lavender)
+                        }
                         ProgressBar(
                             value: Double(metrics.weeklyDietCount),
                             total: Double(metrics.profile.weeklyDietTarget),
@@ -500,6 +670,7 @@ struct CheckInScreen: View {
     @State private var weightText = ""
     @State private var validationMessage = ""
     @FocusState private var isWeightFocused: Bool
+    private let usesFlexCheckInMode: Bool
 
     init(
         profile: UserProfile,
@@ -511,7 +682,9 @@ struct CheckInScreen: View {
         self.existingCheckIn = existingCheckIn
         self.onCancel = onCancel
         self.onSave = onSave
-        _dietStatus = State(initialValue: existingCheckIn?.dietStatus ?? .yes)
+        let flexMode = existingCheckIn?.dietStatus == .flex || (existingCheckIn == nil && profile.isPlannedFlexDay(Date()))
+        self.usesFlexCheckInMode = flexMode
+        _dietStatus = State(initialValue: existingCheckIn?.dietStatus ?? (flexMode ? .flex : .yes))
         _moved = State(initialValue: existingCheckIn?.moved ?? true)
         _weightText = State(initialValue: existingCheckIn?.weight.map { String(format: "%.1f", $0) } ?? "")
     }
@@ -524,7 +697,7 @@ struct CheckInScreen: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack(spacing: 12) {
                         CompactIconBubble(symbol: "target")
-                        Text("Did you follow your diet today?")
+                        Text(usesFlexCheckInMode ? "How did today go?" : "Did you follow your diet today?")
                             .font(AppTypography.cardTitle)
                             .foregroundStyle(AppTheme.text)
                             .lineLimit(1)
@@ -533,8 +706,9 @@ struct CheckInScreen: View {
                     }
 
                     VStack(spacing: 10) {
-                        ForEach(DietStatus.allCases) { status in
-                            SelectablePill(title: status.label, selected: dietStatus == status) {
+                        ForEach(dietOptions, id: \.status) { option in
+                            SelectablePill(title: option.title, selected: dietStatus == option.status) {
+                                let status = option.status
                                 dietStatus = status
                             }
                         }
@@ -619,6 +793,13 @@ struct CheckInScreen: View {
     private func cancelCheckIn() {
         isWeightFocused = false
         onCancel()
+    }
+
+    private var dietOptions: [(status: DietStatus, title: String)] {
+        if usesFlexCheckInMode {
+            return [(.flex, "Used Flex Day"), (.yes, "Stayed on plan")]
+        }
+        return DietStatus.standardOptions.map { ($0, $0.label) }
     }
 
     private var movePrompt: some View {
@@ -776,7 +957,7 @@ struct ProgressScreen: View {
                                     .font(.system(size: 30, weight: .bold, design: .rounded))
                                     .foregroundStyle(AppTheme.primary)
                             }
-                            Text("on-plan this month")
+                            Text(metrics.hasFlexCheckInsThisMonth ? "on-plan across non-flex days" : "on-plan this month")
                                 .font(.system(size: 17, weight: .medium, design: .rounded))
                                 .foregroundStyle(AppTheme.secondaryText)
                         }
@@ -788,7 +969,7 @@ struct ProgressScreen: View {
                     HStack(spacing: 14) {
                         IconBubble(symbol: "leaf.fill", tone: .success)
                             .frame(width: 48, height: 48)
-                        Text("Your weekly average is moving\nin the right direction.")
+                        Text(metrics.monthlyEligibleCheckInCount == 0 ? "Complete a check-in when you’re ready." : "Your weekly average matters more than one weigh-in.")
                             .font(.system(size: 18, weight: .medium, design: .rounded))
                             .foregroundStyle(AppTheme.secondaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -910,10 +1091,18 @@ struct HistoryScreen: View {
             )
 
             AppCard {
-                HStack(spacing: 10) {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), alignment: .leading),
+                        GridItem(.flexible(), alignment: .leading)
+                    ],
+                    alignment: .leading,
+                    spacing: 12
+                ) {
                     LegendItem(color: AppTheme.successSoft, title: "On-plan")
                     LegendItem(color: AppTheme.yellow, title: "Mostly")
                     LegendItem(color: AppTheme.grayDay, title: "Missed")
+                    LegendItem(color: AppTheme.lavenderSoft, title: "Flex Day")
                     LegendItem(color: AppTheme.blue, title: "Weigh-in logged")
                 }
             }
@@ -936,6 +1125,8 @@ private enum ProfileEditDestination: String, Identifiable {
     case baseline
     case targets
     case units
+    case reminder
+    case flexDays
 
     var id: String { rawValue }
 }
@@ -949,11 +1140,17 @@ struct ProfileSettingsScreen: View {
     let onSaveBaseline: (ProfileBaselineValues) -> Void
     let onSaveTargets: (GoalTargetValues) -> Void
     let onSaveUnit: (String) -> Void
+    let onSaveReminder: (CheckInReminderValues) -> Void
+    let onSaveFlexDays: (FlexDaysPreferenceValues) -> Void
     let onResetData: () -> Void
 
     @State private var editDestination: ProfileEditDestination?
     @State private var isConfirmingReset = false
     @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var isShowingPhotoOptions = false
+    @State private var isShowingPhotoLibrary = false
+    @State private var isShowingCamera = false
+    @State private var isShowingCameraUnavailable = false
 
     private var progress: UserProgress {
         metrics.progress
@@ -973,40 +1170,16 @@ struct ProfileSettingsScreen: View {
                 SecondaryHeader(title: "Profile", subtitle: "Your plan, your pace.", onBack: onClose)
 
                 AppCard(tint: true) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        ViewThatFits(in: .horizontal) {
-                            HStack(alignment: .center, spacing: 16) {
-                                profilePhoto
-                                identityText
-                                Spacer(minLength: 8)
-                                profileActionButton(title: "Edit", destination: .identity)
-                            }
+                    HStack(alignment: .center, spacing: 12) {
+                        profilePhoto
 
-                            VStack(alignment: .leading, spacing: 14) {
-                                HStack(spacing: 14) {
-                                    profilePhoto
-                                    identityText
-                                }
-                                profileActionButton(title: "Edit", destination: .identity)
-                            }
-                        }
+                        identityText
+                        .layoutPriority(1)
 
-                        ViewThatFits(in: .horizontal) {
-                            HStack(spacing: 10) {
-                                photoPickerButton
-                                if metrics.profile.profileImageData != nil {
-                                    removePhotoButton
-                                }
-                            }
-
-                            VStack(alignment: .leading, spacing: 10) {
-                                photoPickerButton
-                                if metrics.profile.profileImageData != nil {
-                                    removePhotoButton
-                                }
-                            }
-                        }
+                        Spacer(minLength: 8)
+                        identityEditButton
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 AppCard {
@@ -1035,8 +1208,16 @@ struct ProfileSettingsScreen: View {
 
                 AppCard {
                     VStack(alignment: .leading, spacing: 16) {
-                        sectionHeader(title: "Preferences", destination: .units)
-                        ProfileSummaryRow(symbol: "textformat.size", title: "Weight units", value: progress.unit)
+                        ProfileSectionHeader(title: "Preferences")
+                        ProfileActionRow(symbol: "textformat.size", title: "Weight units", value: progress.unit) {
+                            editDestination = .units
+                        }
+                        ProfileActionRow(symbol: "bell.fill", title: "Check-in reminder", value: reminderSummary) {
+                            editDestination = .reminder
+                        }
+                        ProfileActionRow(symbol: "sparkles", title: "Flex Days", value: metrics.profile.flexDaysSummary) {
+                            editDestination = .flexDays
+                        }
                         Text("Units are used across cards, charts, and check-ins. Changing units converts saved weights.")
                             .font(AppTypography.body)
                             .foregroundStyle(AppTheme.secondaryText)
@@ -1074,8 +1255,8 @@ struct ProfileSettingsScreen: View {
         .sheet(item: $editDestination) { destination in
             switch destination {
             case .identity:
-                ProfileIdentitySheet(profile: metrics.profile, onSave: onSaveIdentity)
-                    .presentationDetents([.height(340)])
+                ProfileIdentitySheet(profile: metrics.profile, onSave: onSaveIdentity, onRemovePhoto: onRemoveProfileImage)
+                    .presentationDetents([.height(380)])
                     .presentationDragIndicator(.visible)
             case .baseline:
                 ProfileBaselineSheet(profile: metrics.profile, onSave: onSaveBaseline)
@@ -1089,10 +1270,50 @@ struct ProfileSettingsScreen: View {
                 UnitPreferenceSheet(profile: metrics.profile, onSave: onSaveUnit)
                     .presentationDetents([.height(290)])
                     .presentationDragIndicator(.visible)
+            case .reminder:
+                CheckInReminderSheet(profile: metrics.profile, onSave: onSaveReminder)
+                    .presentationDetents([.height(350)])
+                    .presentationDragIndicator(.visible)
+            case .flexDays:
+                FlexDaysPreferenceSheet(profile: metrics.profile, onSave: onSaveFlexDays)
+                    .presentationDetents([.height(430)])
+                    .presentationDragIndicator(.visible)
             }
         }
         .onChange(of: selectedPhotoItem) { _, newItem in
             saveSelectedPhoto(newItem)
+        }
+        .photosPicker(isPresented: $isShowingPhotoLibrary, selection: $selectedPhotoItem, matching: .images)
+        .sheet(isPresented: $isShowingCamera) {
+            CameraImagePicker { imageData in
+                onSaveProfileImage(imageData)
+            }
+            .ignoresSafeArea()
+        }
+        .sheet(isPresented: $isShowingPhotoOptions) {
+            ProfilePhotoOptionsSheet(
+                hasPhoto: metrics.profile.profileImageData != nil,
+                onTakePhoto: {
+                    openPhotoAction {
+                        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                            isShowingCamera = true
+                        } else {
+                            isShowingCameraUnavailable = true
+                        }
+                    }
+                },
+                onChoosePhoto: {
+                    openPhotoAction {
+                        isShowingPhotoLibrary = true
+                    }
+                },
+                onRemovePhoto: {
+                    onRemoveProfileImage()
+                    isShowingPhotoOptions = false
+                }
+            )
+            .presentationDetents([.height(metrics.profile.profileImageData == nil ? 250 : 310)])
+            .presentationDragIndicator(.visible)
         }
         .alert("Reset local data?", isPresented: $isConfirmingReset) {
             Button("Cancel", role: .cancel) {}
@@ -1102,69 +1323,64 @@ struct ProfileSettingsScreen: View {
         } message: {
             Text("This clears your profile, goals, and check-ins from this device.")
         }
+        .alert("Camera unavailable", isPresented: $isShowingCameraUnavailable) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("This device cannot take a photo right now.")
+        }
     }
 
     private var profilePhoto: some View {
-        ZStack(alignment: .bottomTrailing) {
-            ProfileAvatar(imageData: metrics.profile.profileImageData, size: 74)
-            Image(systemName: "camera.fill")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 24, height: 24)
-                .background(Circle().fill(AppTheme.primary))
-                .overlay(Circle().stroke(.white, lineWidth: 2))
-        }
-    }
+        let imageData = metrics.profile.profileImageData
+        let accessibilityTitle = imageData == nil ? "Add profile photo" : "Change profile photo"
 
-    private var identityText: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text(displayName)
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.text)
-                .lineLimit(1)
-                .minimumScaleFactor(0.78)
-            Text("Personal details stay on this device.")
-                .font(AppTypography.body)
-                .foregroundStyle(AppTheme.secondaryText)
-                .lineLimit(2)
-        }
-    }
-
-    private var photoPickerButton: some View {
-        let hasProfileImage = metrics.profile.profileImageData != nil
-        let buttonTitle = hasProfileImage ? "Change photo" : "Add photo"
-        let accessibilityTitle = hasProfileImage ? "Change profile photo" : "Add profile photo"
-
-        return PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
-            Text(buttonTitle)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(AppTheme.primary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .background(
-                    Capsule()
-                        .fill(.white)
-                        .overlay(Capsule().stroke(AppTheme.primary.opacity(0.28), lineWidth: 1))
-                )
+        return Button {
+            isShowingPhotoOptions = true
+        } label: {
+            ZStack(alignment: .bottomTrailing) {
+                ProfileAvatar(imageData: imageData, size: 58)
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 21, height: 21)
+                    .background(Circle().fill(AppTheme.primary))
+                    .overlay(Circle().stroke(.white, lineWidth: 2))
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityTitle)
     }
 
-    private var removePhotoButton: some View {
-        Button(action: onRemoveProfileImage) {
-            Text("Remove photo")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+    private var identityText: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(displayName)
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+            Text("Personal details stay on this device.")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.secondaryText)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
+                .lineLimit(2)
+        }
+    }
+
+    private var identityEditButton: some View {
+        Button {
+            editDestination = .identity
+        } label: {
+            Image(systemName: "pencil")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(AppTheme.primary)
+                .frame(width: 42, height: 42)
                 .background(
-                    Capsule()
+                    Circle()
                         .fill(.white)
-                        .overlay(Capsule().stroke(AppTheme.divider, lineWidth: 1))
+                        .overlay(Circle().stroke(AppTheme.primary.opacity(0.24), lineWidth: 1))
                 )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Edit profile name")
     }
 
     private var profileGridColumns: [GridItem] {
@@ -1176,6 +1392,14 @@ struct ProfileSettingsScreen: View {
 
     private func weightText(_ value: Double) -> String {
         "\(String(format: "%.1f", value)) \(progress.unit)"
+    }
+
+    private var reminderSummary: String {
+        guard metrics.profile.checkInReminderEnabled else { return "Off" }
+        return CheckInReminderDefaults.timeText(
+            hour: metrics.profile.checkInReminderHour,
+            minute: metrics.profile.checkInReminderMinute
+        )
     }
 
     private func sectionHeader(title: String, destination: ProfileEditDestination) -> some View {
@@ -1210,7 +1434,7 @@ struct ProfileSettingsScreen: View {
 
         Task {
             guard let data = try? await item.loadTransferable(type: Data.self),
-                  let imageData = Self.normalizedImageData(from: data)
+                  let imageData = ProfileImageProcessor.normalizedImageData(from: data)
             else { return }
 
             await MainActor.run {
@@ -1220,8 +1444,22 @@ struct ProfileSettingsScreen: View {
         }
     }
 
-    private static func normalizedImageData(from data: Data) -> Data? {
+    private func openPhotoAction(_ action: @escaping () -> Void) {
+        isShowingPhotoOptions = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+            action()
+        }
+    }
+
+}
+
+enum ProfileImageProcessor {
+    static func normalizedImageData(from data: Data) -> Data? {
         guard let source = UIImage(data: data) else { return nil }
+        return normalizedImageData(from: source)
+    }
+
+    static func normalizedImageData(from source: UIImage) -> Data? {
         let maxSide: CGFloat = 512
         let longestSide = max(source.size.width, source.size.height)
         let scale = min(maxSide / longestSide, 1)
@@ -1231,6 +1469,129 @@ struct ProfileSettingsScreen: View {
             source.draw(in: CGRect(origin: .zero, size: targetSize))
         }
         return rendered.jpegData(compressionQuality: 0.82)
+    }
+}
+
+struct CameraImagePicker: UIViewControllerRepresentable {
+    let onImageData: (Data) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.cameraCaptureMode = .photo
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraImagePicker
+
+        init(parent: CameraImagePicker) {
+            self.parent = parent
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            if let image = info[.originalImage] as? UIImage,
+               let imageData = ProfileImageProcessor.normalizedImageData(from: image) {
+                parent.onImageData(imageData)
+            }
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
+
+struct ProfilePhotoOptionsSheet: View {
+    let hasPhoto: Bool
+    let onTakePhoto: () -> Void
+    let onChoosePhoto: () -> Void
+    let onRemovePhoto: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                SheetHeader(title: "Profile photo", onClose: { dismiss() })
+                    .padding(.horizontal, 18)
+
+                AppCard {
+                    VStack(spacing: 2) {
+                        PhotoOptionRow(symbol: "camera.fill", title: "Take photo", action: onTakePhoto)
+                        Divider()
+                            .padding(.leading, 52)
+                        PhotoOptionRow(
+                            symbol: "photo.fill",
+                            title: hasPhoto ? "Choose another photo" : "Choose photo",
+                            action: onChoosePhoto
+                        )
+
+                        if hasPhoto {
+                            Divider()
+                                .padding(.leading, 52)
+                            PhotoOptionRow(
+                                symbol: "trash.fill",
+                                title: "Remove photo",
+                                role: .destructive,
+                                action: onRemovePhoto
+                            )
+                        }
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 12)
+
+                Spacer(minLength: 0)
+            }
+        }
+    }
+}
+
+struct PhotoOptionRow: View {
+    let symbol: String
+    let title: String
+    var role: ButtonRole?
+    let action: () -> Void
+
+    private var foreground: Color {
+        role == .destructive ? AppTheme.destructive : AppTheme.text
+    }
+
+    private var iconTone: IconTone {
+        role == .destructive ? .warning : .neutral
+    }
+
+    var body: some View {
+        Button(role: role, action: action) {
+            HStack(spacing: 12) {
+                CompactIconBubble(symbol: symbol, tone: iconTone)
+                Text(title)
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(foreground)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+                Spacer()
+            }
+            .contentShape(Rectangle())
+            .padding(.vertical, 8)
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -1323,18 +1684,65 @@ struct ProfileSummaryRow: View {
     }
 }
 
+struct ProfileActionRow: View {
+    let symbol: String
+    let title: String
+    let value: String
+    let action: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            CompactIconBubble(symbol: symbol)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.text)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+                Text(value)
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .lineLimit(1)
+            }
+            .layoutPriority(1)
+
+            Spacer(minLength: 8)
+
+            Button("Edit", action: action)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.primary)
+                .padding(.horizontal, 14)
+                .frame(height: 38)
+                .background(
+                    Capsule()
+                        .fill(.white)
+                        .overlay(Capsule().stroke(AppTheme.primary.opacity(0.28), lineWidth: 1))
+                )
+                .buttonStyle(.plain)
+        }
+    }
+}
+
 struct ProfileIdentitySheet: View {
     let profile: UserProfile
     let onSave: (ProfileIdentityValues) -> Void
+    let onRemovePhoto: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var displayName: String
     @State private var validationMessage = ""
+    @State private var hasProfilePhoto: Bool
 
-    init(profile: UserProfile, onSave: @escaping (ProfileIdentityValues) -> Void) {
+    init(
+        profile: UserProfile,
+        onSave: @escaping (ProfileIdentityValues) -> Void,
+        onRemovePhoto: @escaping () -> Void
+    ) {
         self.profile = profile
         self.onSave = onSave
+        self.onRemovePhoto = onRemovePhoto
         _displayName = State(initialValue: profile.displayName ?? "")
+        _hasProfilePhoto = State(initialValue: profile.profileImageData != nil)
     }
 
     var body: some View {
@@ -1349,6 +1757,24 @@ struct ProfileIdentitySheet: View {
                         Text("This is local personalization only.")
                             .font(AppTypography.body)
                             .foregroundStyle(AppTheme.secondaryText)
+
+                        if hasProfilePhoto {
+                            Button(role: .destructive) {
+                                onRemovePhoto()
+                                hasProfilePhoto = false
+                            } label: {
+                                Text("Remove photo")
+                                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppTheme.destructive)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 42)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .fill(AppTheme.destructiveSoft)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
 
@@ -1488,6 +1914,137 @@ struct UnitPreferenceSheet: View {
             } footer: {
                 PrimaryButton(title: "Save units") {
                     onSave(unit)
+                    dismiss()
+                }
+            }
+        }
+    }
+}
+
+struct CheckInReminderSheet: View {
+    let profile: UserProfile
+    let onSave: (CheckInReminderValues) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var isEnabled: Bool
+    @State private var reminderTime: Date
+
+    init(profile: UserProfile, onSave: @escaping (CheckInReminderValues) -> Void) {
+        self.profile = profile
+        self.onSave = onSave
+        _isEnabled = State(initialValue: profile.checkInReminderEnabled)
+        _reminderTime = State(
+            initialValue: CheckInReminderDefaults.date(
+                hour: profile.checkInReminderHour,
+                minute: profile.checkInReminderMinute
+            )
+        )
+    }
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            SheetScaffold(title: "Check-in reminder", onClose: { dismiss() }) {
+                AppCard {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Toggle(isOn: $isEnabled) {
+                            Text("Check-in reminder")
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.text)
+                        }
+                        .tint(AppTheme.primary)
+
+                        Text("A gentle reminder to wrap up your day.")
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        if isEnabled {
+                            Divider()
+                            HStack {
+                                Text("Reminder time")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(AppTheme.text)
+                                Spacer()
+                                DatePicker(
+                                    "Reminder time",
+                                    selection: $reminderTime,
+                                    displayedComponents: .hourAndMinute
+                                )
+                                .labelsHidden()
+                                .datePickerStyle(.compact)
+                            }
+                        }
+                    }
+                }
+            } footer: {
+                PrimaryButton(title: "Save reminder") {
+                    let components = CheckInReminderDefaults.components(from: reminderTime)
+                    onSave(
+                        CheckInReminderValues(
+                            enabled: isEnabled,
+                            hour: components.hour,
+                            minute: components.minute
+                        )
+                    )
+                    dismiss()
+                }
+            }
+        }
+    }
+}
+
+struct FlexDaysPreferenceSheet: View {
+    let profile: UserProfile
+    let onSave: (FlexDaysPreferenceValues) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var isEnabled: Bool
+    @State private var weekdayMask: Int
+
+    init(profile: UserProfile, onSave: @escaping (FlexDaysPreferenceValues) -> Void) {
+        self.profile = profile
+        self.onSave = onSave
+        _isEnabled = State(initialValue: profile.flexDaysEnabled)
+        _weekdayMask = State(initialValue: profile.flexWeekdayMask)
+    }
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            SheetScaffold(title: "Flex Days", onClose: { dismiss() }) {
+                AppCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Toggle(isOn: $isEnabled) {
+                            Text("Enable Flex Days")
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.text)
+                        }
+                        .tint(AppTheme.primary)
+
+                        Text("Plan off-days ahead of time. Flex Days do not count as missed days.")
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        if isEnabled {
+                            Divider()
+                            WeekdayPicker(mask: $weekdayMask)
+                        }
+                    }
+                }
+            } footer: {
+                PrimaryButton(title: "Save Flex Days") {
+                    onSave(
+                        FlexDaysPreferenceValues(
+                            enabled: isEnabled,
+                            weekdayMask: isEnabled ? weekdayMask : 0
+                        )
+                    )
                     dismiss()
                 }
             }
@@ -1816,6 +2373,58 @@ struct TargetStepper: View {
                     .font(.system(size: 22, weight: .heavy, design: .rounded))
                     .foregroundStyle(AppTheme.primary)
             }
+        }
+    }
+}
+
+struct WeekdayPicker: View {
+    @Binding var mask: Int
+
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Flex weekdays")
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.text)
+
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
+                ForEach(FlexWeekday.allCases) { weekday in
+                    Button {
+                        toggle(weekday)
+                    } label: {
+                        Text(weekday.shortLabel)
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(isSelected(weekday) ? .white : AppTheme.text)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.82)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 42)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(isSelected(weekday) ? AppTheme.lavender : .white)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                            .stroke(isSelected(weekday) ? AppTheme.lavender : AppTheme.divider, lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(weekday.shortLabel) Flex Day")
+                }
+            }
+        }
+    }
+
+    private func isSelected(_ weekday: FlexWeekday) -> Bool {
+        mask & weekday.bit != 0
+    }
+
+    private func toggle(_ weekday: FlexWeekday) {
+        if isSelected(weekday) {
+            mask &= ~weekday.bit
+        } else {
+            mask |= weekday.bit
         }
     }
 }
@@ -2381,7 +2990,7 @@ struct LegendItem: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

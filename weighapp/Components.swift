@@ -301,6 +301,12 @@ struct ProgressBar: View {
 
 struct CheckInCard: View {
     let hasCheckIn: Bool
+    var title = "Today’s check-in"
+    let statusText: String
+    var helperText: String?
+    var actionTitle = "Start check-in"
+    var iconSymbol = "target"
+    var iconTone: IconTone = .primary
     let onStart: () -> Void
 
     var body: some View {
@@ -314,30 +320,24 @@ struct CheckInCard: View {
     }
 
     private var pendingLayout: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 18) {
-                pendingIntro
-                Spacer(minLength: 10)
-                startButton
-                    .frame(minWidth: 156, maxWidth: 172)
-            }
-
-            VStack(alignment: .leading, spacing: 18) {
-                pendingIntro
-                startButton
-                    .frame(maxWidth: .infinity)
-            }
+        HStack(spacing: 12) {
+            pendingIcon
+            pendingText
+                .layoutPriority(1)
+            Spacer(minLength: 6)
+            startButton
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var completedLayout: some View {
         HStack(spacing: 18) {
             IconBubble(symbol: "checkmark.circle.fill", tone: .success)
             VStack(alignment: .leading, spacing: 6) {
-                Text("Today’s check-in")
+                Text(title)
                     .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.text)
-                Text("Saved for today")
+                Text(statusText)
                     .font(.system(size: 16, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.primary)
             }
@@ -349,16 +349,37 @@ struct CheckInCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var pendingIntro: some View {
-        HStack(spacing: 18) {
-            IconBubble(symbol: "target", tone: .primary)
-            VStack(alignment: .leading, spacing: 6) {
-                    Text("Today’s check-in")
-                        .font(.system(size: 19, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.text)
-                    Text("Ready when you are")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(AppTheme.secondaryText)
+    private var pendingIcon: some View {
+        ZStack {
+            Circle()
+                .fill(iconTone.background)
+            Image(systemName: iconSymbol)
+                .font(.system(size: 19, weight: .bold))
+                .foregroundStyle(iconTone.foreground)
+        }
+        .frame(width: 42, height: 42)
+    }
+
+    private var pendingText: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+
+            Text(statusText)
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.secondaryText)
+                .lineLimit(2)
+                .minimumScaleFactor(0.74)
+
+            if let helperText {
+                Text(helperText)
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.lavender)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.78)
             }
         }
     }
@@ -366,19 +387,18 @@ struct CheckInCard: View {
     private var startButton: some View {
         Button(action: onStart) {
             HStack(spacing: 8) {
-                Text("Start check-in")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                Text(actionTitle)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.75)
+                    .minimumScaleFactor(0.72)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 16, weight: .heavy))
+                    .font(.system(size: 13, weight: .heavy))
             }
             .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .frame(height: 52)
-            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 10)
+            .frame(width: 132, height: 42)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
                     .fill(AppTheme.primary)
             )
         }
@@ -634,7 +654,8 @@ struct CalendarMonth: View {
         case .onPlan: AppTheme.primary
         case .mostly: Color(red: 0.610, green: 0.430, blue: 0.000)
         case .missed: Color(red: 0.180, green: 0.230, blue: 0.280)
-        case .none: AppTheme.secondaryText
+        case .flex: AppTheme.lavender
+        case .none: day.isPlannedFlexDay ? AppTheme.lavender : AppTheme.secondaryText
         }
     }
 
@@ -647,7 +668,8 @@ struct CalendarMonth: View {
             case .onPlan: AppTheme.successSoft
             case .mostly: AppTheme.yellow.opacity(0.36)
             case .missed: AppTheme.grayDay
-            case .none: Color.clear
+            case .flex: AppTheme.lavenderSoft
+            case .none: day.isPlannedFlexDay ? AppTheme.lavenderSoft : Color.clear
             }
         }
     }

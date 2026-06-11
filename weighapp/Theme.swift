@@ -19,6 +19,8 @@ enum AppTheme {
     static let grayDay = Color(red: 0.885, green: 0.890, blue: 0.895)
     static let blue = Color(red: 0.190, green: 0.415, blue: 0.850)
     static let blueSoft = Color(red: 0.895, green: 0.930, blue: 1.000)
+    static let lavender = Color(red: 0.560, green: 0.390, blue: 0.850)
+    static let lavenderSoft = Color(red: 0.930, green: 0.900, blue: 1.000)
     static let orange = Color(red: 0.930, green: 0.365, blue: 0.105)
     static let orangeSoft = Color(red: 1.000, green: 0.925, blue: 0.760)
     static let destructive = Color(red: 0.760, green: 0.120, blue: 0.120)
@@ -31,6 +33,7 @@ enum IconTone {
     case success
     case warning
     case info
+    case flex
 
     var foreground: Color {
         switch self {
@@ -42,6 +45,8 @@ enum IconTone {
             AppTheme.orange
         case .info:
             AppTheme.blue
+        case .flex:
+            AppTheme.lavender
         }
     }
 
@@ -57,6 +62,8 @@ enum IconTone {
             AppTheme.orangeSoft
         case .info:
             AppTheme.blueSoft
+        case .flex:
+            AppTheme.lavenderSoft
         }
     }
 }

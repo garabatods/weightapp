@@ -3,9 +3,16 @@ import SwiftData
 
 @main
 struct WeighApp: App {
+    @StateObject private var notificationRouter = CheckInNotificationRouter.shared
+
+    init() {
+        CheckInNotificationRouter.shared.install()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(notificationRouter)
         }
         .modelContainer(for: [UserProfile.self, DailyCheckIn.self, WeightEntry.self, Goal.self])
     }
