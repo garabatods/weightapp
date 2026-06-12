@@ -214,6 +214,7 @@ struct MainAppShell: View {
     @State private var goalSheet: GoalSheetDestination?
     @State private var isShowingProfile = false
     @State private var isAddingPastWeight = false
+    @State private var isAddingMeasurements = false
 
     private var metrics: TrackerMetrics {
         TrackerMetrics(profile: profile, checkIns: checkIns, weightEntries: weightEntries, measurementEntries: measurementEntries, goals: goals, displayedMonth: displayedMonth)
@@ -253,7 +254,8 @@ struct MainAppShell: View {
                             ProgressScreen(
                                 metrics: metrics,
                                 onProfileTap: { isShowingProfile = true },
-                                onAddPastWeight: { isAddingPastWeight = true }
+                                onAddPastWeight: { isAddingPastWeight = true },
+                                onAddMeasurements: { isAddingMeasurements = true }
                             )
                         }
                         .tag(AppTab.progress)
@@ -362,6 +364,15 @@ struct MainAppShell: View {
             AddWeightEntrySheet(profile: profile, onSave: saveWeightEntry)
                 .presentationDetents([.height(360)])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isAddingMeasurements) {
+            AddBodyMeasurementsSheet(
+                profile: profile,
+                latestMeasurement: metrics.latestMeasurementSnapshot,
+                onSave: saveBodyMeasurementEntry
+            )
+            .presentationDetents([.height(460)])
+            .presentationDragIndicator(.visible)
         }
         .task {
             backfillWeightEntries()
@@ -592,6 +603,7 @@ struct MainAppShell: View {
     private func routeToCheckInReminder() {
         goalSheet = nil
         isAddingPastWeight = false
+        isAddingMeasurements = false
         isShowingProfile = false
         selectedTab = .today
         isCheckingIn = metrics.todayCheckIn == nil
@@ -612,6 +624,11 @@ struct MainAppShell: View {
         upsertWeightEntry(on: date, weight: weight)
         ensureCoreGoals()
         refreshGoals()
+        try? modelContext.save()
+    }
+
+    private func saveBodyMeasurementEntry(_ snapshot: BodyMeasurementSnapshot) {
+        upsertBodyMeasurementEntry(on: Date(), snapshot: snapshot)
         try? modelContext.save()
     }
 

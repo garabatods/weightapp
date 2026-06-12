@@ -1295,6 +1295,7 @@ struct ProgressScreen: View {
     let metrics: TrackerMetrics
     let onProfileTap: () -> Void
     let onAddPastWeight: () -> Void
+    let onAddMeasurements: () -> Void
     @State private var trendRange: TrendRange = .sixWeeks
     @State private var selectedMeasurementMetric: BodyMeasurementMetric = .waist
 
@@ -1338,7 +1339,8 @@ struct ProgressScreen: View {
             BodyMeasurementsProgressCard(
                 metrics: metrics,
                 selectedMetric: $selectedMeasurementMetric,
-                range: trendRange
+                range: trendRange,
+                onAddMeasurements: onAddMeasurements
             )
 
             AppCard {
@@ -1405,6 +1407,7 @@ struct BodyMeasurementsProgressCard: View {
     let metrics: TrackerMetrics
     @Binding var selectedMetric: BodyMeasurementMetric
     let range: TrendRange
+    let onAddMeasurements: () -> Void
 
     private var snapshot: BodyMeasurementSnapshot? {
         metrics.latestMeasurementSnapshot
@@ -1457,14 +1460,18 @@ struct BodyMeasurementsProgressCard: View {
     }
 
     private var measurementEmptyCopy: some View {
-        HStack(spacing: 14) {
-            CompactIconBubble(symbol: "ruler", tone: .measurement)
-            Text("Log measurements during check-in to see body changes beyond the scale.")
-                .font(.system(size: 17, weight: .medium, design: .rounded))
+        HStack(alignment: .center, spacing: 12) {
+            Text("Add chest, waist, and hips to track changes.")
+                .font(.system(size: 16, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.secondaryText)
+                .lineLimit(2)
+                .minimumScaleFactor(0.86)
                 .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            InlineActionButton(title: "Add", action: onAddMeasurements)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 2)
     }
 }
 
@@ -2716,6 +2723,166 @@ struct AddWeightEntrySheet: View {
 
         onSave(entryDate, weight)
         dismiss()
+    }
+}
+
+struct AddBodyMeasurementsSheet: View {
+    let profile: UserProfile
+    let latestMeasurement: BodyMeasurementSnapshot?
+    let onSave: (BodyMeasurementSnapshot) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var measurementUnit: String
+    @State private var chestText: String
+    @State private var waistText: String
+    @State private var hipsText: String
+    @State private var validationMessage = ""
+    @FocusState private var focusedInput: CheckInInputField?
+
+    init(
+        profile: UserProfile,
+        latestMeasurement: BodyMeasurementSnapshot?,
+        onSave: @escaping (BodyMeasurementSnapshot) -> Void
+    ) {
+        self.profile = profile
+        self.latestMeasurement = latestMeasurement
+        self.onSave = onSave
+        let measurement = latestMeasurement ?? BodyMeasurementSnapshot(
+            chest: profile.chestMeasurement,
+            waist: profile.waistMeasurement,
+            hips: profile.hipsMeasurement,
+            unit: profile.bodyMeasurementUnit
+        )
+        _measurementUnit = State(initialValue: measurement.unit)
+        _chestText = State(initialValue: Self.measurementText(measurement.chest))
+        _waistText = State(initialValue: Self.measurementText(measurement.waist))
+        _hipsText = State(initialValue: Self.measurementText(measurement.hips))
+    }
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            SheetScaffold(title: "Body measurements", onClose: { dismiss() }) {
+                AppCard(tint: true) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack(spacing: 12) {
+                            CompactIconBubble(symbol: "ruler", tone: .measurement)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Track your shape")
+                                    .font(AppTypography.cardTitle)
+                                    .foregroundStyle(AppTheme.text)
+                                Text("Chest, waist, and hips.")
+                                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.secondaryText)
+                            }
+                            Spacer()
+                        }
+
+                        Picker("Measurement units", selection: $measurementUnit) {
+                            ForEach(BodyMeasurementUnit.allCases) { unit in
+                                Text(unit.rawValue).tag(unit.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: measurementUnit) { oldUnit, newUnit in
+                            convertMeasurementFields(from: oldUnit, to: newUnit)
+                        }
+
+                        MeasurementFieldRow(title: "Chest", text: $chestText, unit: measurementUnit, field: .chest, focusedInput: $focusedInput)
+                        MeasurementFieldRow(title: "Waist", text: $waistText, unit: measurementUnit, field: .waist, focusedInput: $focusedInput)
+                        MeasurementFieldRow(title: "Hips", text: $hipsText, unit: measurementUnit, field: .hips, focusedInput: $focusedInput)
+                    }
+                }
+
+                if !validationMessage.isEmpty {
+                    Text(validationMessage)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } footer: {
+                PrimaryButton(title: "Save measurements", isEnabled: canSave) {
+                    submit()
+                }
+            }
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    focusedInput = nil
+                }
+            }
+        }
+    }
+
+    private var canSave: Bool {
+        hasAnyMeasurementText && parsedMeasurement != nil
+    }
+
+    private func submit() {
+        focusedInput = nil
+        validationMessage = ""
+
+        guard hasAnyMeasurementText else {
+            validationMessage = "Add at least one measurement to save."
+            return
+        }
+
+        guard let measurement = parsedMeasurement else {
+            validationMessage = measurementValidationMessage
+            return
+        }
+
+        onSave(measurement)
+        dismiss()
+    }
+
+    private var parsedMeasurement: BodyMeasurementSnapshot? {
+        let range = BodyMeasurementInputRules.realisticRange(for: measurementUnit)
+        guard let chest = optionalMeasurement(chestText, in: range),
+              let waist = optionalMeasurement(waistText, in: range),
+              let hips = optionalMeasurement(hipsText, in: range) else {
+            return nil
+        }
+        return BodyMeasurementSnapshot(chest: chest, waist: waist, hips: hips, unit: measurementUnit)
+    }
+
+    private var hasAnyMeasurementText: Bool {
+        !chestText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !waistText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !hipsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var measurementValidationMessage: String {
+        "Measurements should be between \(BodyMeasurementInputRules.rangeText(for: measurementUnit))."
+    }
+
+    private func optionalMeasurement(_ text: String, in range: ClosedRange<Double>) -> Double?? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return .some(nil) }
+        guard let value = Double(trimmed), range.contains(value) else { return nil }
+        return .some(value)
+    }
+
+    private func convertMeasurementFields(from oldUnit: String, to newUnit: String) {
+        chestText = convertedMeasurementText(chestText, from: oldUnit, to: newUnit)
+        waistText = convertedMeasurementText(waistText, from: oldUnit, to: newUnit)
+        hipsText = convertedMeasurementText(hipsText, from: oldUnit, to: newUnit)
+    }
+
+    private func convertedMeasurementText(_ text: String, from oldUnit: String, to newUnit: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let value = Double(trimmed) else { return text }
+        let converted = BodyMeasurementUnitConverter.converted(value, from: oldUnit, to: newUnit)
+        return Self.measurementText(converted)
+    }
+
+    private static func measurementText(_ value: Double?) -> String {
+        guard let value else { return "" }
+        return String(format: "%.1f", value)
     }
 }
 
