@@ -73,10 +73,10 @@ enum GoalType: String, CaseIterable, Identifiable, Codable {
 
     var label: String {
         switch self {
-        case .dietDays: "Follow diet"
+        case .dietDays: "On-plan days"
         case .weightTarget: "Reach target weight"
-        case .movementDays: "Move"
-        case .weighIns: "Log weight"
+        case .movementDays: "Movement days"
+        case .weighIns: "Weight logs"
         }
     }
 }
@@ -102,6 +102,73 @@ enum GoalStatus: String, Codable {
     case completed
 }
 
+enum BodyMeasurementUnit: String, CaseIterable, Identifiable, Codable {
+    case centimeters = "cm"
+    case inches = "in"
+
+    var id: String { rawValue }
+
+    static func defaultUnit(forWeightUnit weightUnit: String) -> BodyMeasurementUnit {
+        weightUnit == "lb" ? .inches : .centimeters
+    }
+}
+
+enum BodyMeasurementMetric: String, CaseIterable, Identifiable {
+    case chest
+    case waist
+    case hips
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .chest: "Chest"
+        case .waist: "Waist"
+        case .hips: "Hips"
+        }
+    }
+}
+
+enum TrendRange: String, CaseIterable, Identifiable {
+    case sixWeeks = "6W"
+    case threeMonths = "3M"
+    case all = "All"
+
+    var id: String { rawValue }
+}
+
+struct BodyMeasurementSnapshot {
+    var chest: Double?
+    var waist: Double?
+    var hips: Double?
+    var unit: String
+
+    var hasAnyValue: Bool {
+        chest != nil || waist != nil || hips != nil
+    }
+
+    func value(for metric: BodyMeasurementMetric) -> Double? {
+        switch metric {
+        case .chest: chest
+        case .waist: waist
+        case .hips: hips
+        }
+    }
+}
+
+enum BodyMeasurementUnitConverter {
+    static func converted(_ value: Double, from oldUnit: String, to newUnit: String) -> Double {
+        guard oldUnit != newUnit else { return value }
+        if oldUnit == BodyMeasurementUnit.centimeters.rawValue && newUnit == BodyMeasurementUnit.inches.rawValue {
+            return value / 2.54
+        }
+        if oldUnit == BodyMeasurementUnit.inches.rawValue && newUnit == BodyMeasurementUnit.centimeters.rawValue {
+            return value * 2.54
+        }
+        return value
+    }
+}
+
 @Model
 final class UserProfile {
     @Attribute(.unique) var id: UUID
@@ -119,6 +186,10 @@ final class UserProfile {
     var checkInReminderMinuteValue: Int?
     var flexDaysEnabledValue: Bool?
     var flexWeekdayMaskValue: Int?
+    var chestMeasurementValue: Double?
+    var waistMeasurementValue: Double?
+    var hipsMeasurementValue: Double?
+    var bodyMeasurementUnitValue: String?
     var createdAt: Date
     var updatedAt: Date
 
@@ -138,6 +209,10 @@ final class UserProfile {
         checkInReminderMinute: Int = CheckInReminderDefaults.minute,
         flexDaysEnabled: Bool = false,
         flexWeekdayMask: Int = 0,
+        chestMeasurement: Double? = nil,
+        waistMeasurement: Double? = nil,
+        hipsMeasurement: Double? = nil,
+        bodyMeasurementUnit: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -156,6 +231,10 @@ final class UserProfile {
         self.checkInReminderMinuteValue = checkInReminderMinute
         self.flexDaysEnabledValue = flexDaysEnabled
         self.flexWeekdayMaskValue = flexWeekdayMask
+        self.chestMeasurementValue = chestMeasurement
+        self.waistMeasurementValue = waistMeasurement
+        self.hipsMeasurementValue = hipsMeasurement
+        self.bodyMeasurementUnitValue = bodyMeasurementUnit
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -193,10 +272,79 @@ final class UserProfile {
         FlexWeekday.summary(for: flexWeekdayMask, enabled: flexDaysEnabled)
     }
 
+    var chestMeasurement: Double? {
+        get { chestMeasurementValue }
+        set { chestMeasurementValue = newValue }
+    }
+
+    var waistMeasurement: Double? {
+        get { waistMeasurementValue }
+        set { waistMeasurementValue = newValue }
+    }
+
+    var hipsMeasurement: Double? {
+        get { hipsMeasurementValue }
+        set { hipsMeasurementValue = newValue }
+    }
+
+    var bodyMeasurementUnit: String {
+        get {
+            let fallback = BodyMeasurementUnit.defaultUnit(forWeightUnit: unit).rawValue
+            guard let rawValue = bodyMeasurementUnitValue,
+                  BodyMeasurementUnit(rawValue: rawValue) != nil else {
+                return fallback
+            }
+            return rawValue
+        }
+        set {
+            bodyMeasurementUnitValue = BodyMeasurementUnit(rawValue: newValue)?.rawValue
+        }
+    }
+
     func isPlannedFlexDay(_ date: Date, calendar: Calendar = .current) -> Bool {
         guard flexDaysEnabled, flexWeekdayMask != 0 else { return false }
         guard let weekday = FlexWeekday(rawValue: calendar.component(.weekday, from: date)) else { return false }
         return flexWeekdayMask & weekday.bit != 0
+    }
+}
+
+@Model
+final class BodyMeasurementEntry {
+    @Attribute(.unique) var id: UUID
+    var date: Date
+    var chest: Double?
+    var waist: Double?
+    var hips: Double?
+    var unit: String
+    var createdAt: Date
+    var updatedAt: Date
+
+    init(
+        id: UUID = UUID(),
+        date: Date,
+        chest: Double? = nil,
+        waist: Double? = nil,
+        hips: Double? = nil,
+        unit: String,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date()
+    ) {
+        self.id = id
+        self.date = Calendar.current.startOfDay(for: date)
+        self.chest = chest
+        self.waist = waist
+        self.hips = hips
+        self.unit = BodyMeasurementUnit(rawValue: unit)?.rawValue ?? BodyMeasurementUnit.centimeters.rawValue
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    var snapshot: BodyMeasurementSnapshot {
+        BodyMeasurementSnapshot(chest: chest, waist: waist, hips: hips, unit: unit)
+    }
+
+    func value(for metric: BodyMeasurementMetric) -> Double? {
+        snapshot.value(for: metric)
     }
 }
 
@@ -385,6 +533,7 @@ struct TrackerMetrics {
     let profile: UserProfile
     let checkIns: [DailyCheckIn]
     let weightEntries: [WeightEntry]
+    let measurementEntries: [BodyMeasurementEntry]
     let goals: [Goal]
     var displayedMonth: Date = Date()
 
@@ -452,21 +601,65 @@ struct TrackerMetrics {
         profile.isPlannedFlexDay(Date(), calendar: calendar)
     }
 
-    var trendPoints: [TrendPoint] {
+    var latestMeasurementEntry: BodyMeasurementEntry? {
+        measurementEntries
+            .sorted {
+                if calendar.isDate($0.date, inSameDayAs: $1.date) {
+                    return $0.updatedAt < $1.updatedAt
+                }
+                return $0.date < $1.date
+            }
+            .last
+    }
+
+    var latestMeasurementSnapshot: BodyMeasurementSnapshot? {
+        if let latestMeasurementEntry {
+            return latestMeasurementEntry.snapshot
+        }
+
+        let snapshot = BodyMeasurementSnapshot(
+            chest: profile.chestMeasurement,
+            waist: profile.waistMeasurement,
+            hips: profile.hipsMeasurement,
+            unit: profile.bodyMeasurementUnit
+        )
+        return snapshot.hasAnyValue ? snapshot : nil
+    }
+
+    func trendPoints(for range: TrendRange) -> [TrendPoint] {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
 
-        let weighted = weightEntries
+        let weighted = filteredWeightEntries(for: range)
             .sorted { $0.date < $1.date }
 
-        let source = Array(weighted.suffix(6))
-        if source.isEmpty {
+        if weighted.isEmpty {
             return [TrendPoint(label: formatter.string(from: Date()), weight: latestWeight)]
         }
 
-        return source.map { entry in
+        return weighted.map { entry in
             TrendPoint(label: formatter.string(from: entry.date), weight: entry.weight)
         }
+    }
+
+    func measurementTrendPoints(for metric: BodyMeasurementMetric, range: TrendRange) -> [TrendPoint] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+
+        return filteredMeasurementEntries(for: range)
+            .sorted { $0.date < $1.date }
+            .compactMap { entry in
+                guard let value = entry.value(for: metric) else { return nil }
+                return TrendPoint(label: formatter.string(from: entry.date), weight: value)
+            }
+    }
+
+    func measurementChange(for metric: BodyMeasurementMetric) -> Double? {
+        let values = measurementEntries
+            .sorted { $0.date < $1.date }
+            .compactMap { $0.value(for: metric) }
+        guard let first = values.first, let last = values.last, values.count > 1 else { return nil }
+        return last - first
     }
 
     var calendarMonthTitle: String {
@@ -557,6 +750,11 @@ struct TrackerMetrics {
         return weightEntries.first { calendar.isDate($0.date, inSameDayAs: day) }
     }
 
+    func measurementEntry(on date: Date) -> BodyMeasurementEntry? {
+        let day = calendar.startOfDay(for: date)
+        return measurementEntries.first { calendar.isDate($0.date, inSameDayAs: day) }
+    }
+
     func currentValue(for goal: Goal) -> Double {
         let sourceCheckIns = checkIns(for: goal.period)
         return switch goal.type {
@@ -598,6 +796,28 @@ struct TrackerMetrics {
     private var weightEntriesThisMonth: [WeightEntry] {
         guard let month = calendar.dateInterval(of: .month, for: Date()) else { return [] }
         return weightEntries.filter { month.contains($0.date) }
+    }
+
+    private func filteredWeightEntries(for range: TrendRange) -> [WeightEntry] {
+        guard let startDate = startDate(for: range) else { return weightEntries }
+        return weightEntries.filter { $0.date >= startDate }
+    }
+
+    private func filteredMeasurementEntries(for range: TrendRange) -> [BodyMeasurementEntry] {
+        guard let startDate = startDate(for: range) else { return measurementEntries }
+        return measurementEntries.filter { $0.date >= startDate }
+    }
+
+    private func startDate(for range: TrendRange) -> Date? {
+        let today = calendar.startOfDay(for: Date())
+        switch range {
+        case .sixWeeks:
+            return calendar.date(byAdding: .day, value: -41, to: today)
+        case .threeMonths:
+            return calendar.date(byAdding: .month, value: -3, to: today)
+        case .all:
+            return nil
+        }
     }
 
     private func checkIns(for period: GoalPeriod) -> [DailyCheckIn] {
@@ -785,7 +1005,7 @@ extension Goal {
         case .weightTarget:
             "Reach \(String(format: "%.1f", profile.goalWeight)) \(profile.unit)"
         case .movementDays:
-            "Move \(profile.weeklyMovementTarget) days this week"
+            "Move your body \(profile.weeklyMovementTarget) days this week"
         case .weighIns:
             "Log weight \(profile.weeklyWeighInTarget) times this week"
         }

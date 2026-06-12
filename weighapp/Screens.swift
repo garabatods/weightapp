@@ -8,6 +8,10 @@ struct ProfileSetupValues {
     let startingWeight: Double
     let currentWeight: Double
     let goalWeight: Double
+    let chestMeasurement: Double?
+    let waistMeasurement: Double?
+    let hipsMeasurement: Double?
+    let bodyMeasurementUnit: String
     let weeklyDietTarget: Int
     let weeklyMovementTarget: Int
     let weeklyWeighInTarget: Int
@@ -27,6 +31,10 @@ enum ProfileSetupValidation {
         startingWeight: String,
         currentWeight: String,
         goalWeight: String,
+        chestMeasurement: String = "",
+        waistMeasurement: String = "",
+        hipsMeasurement: String = "",
+        bodyMeasurementUnit: String? = nil,
         weeklyDietTarget: Int,
         weeklyMovementTarget: Int,
         weeklyWeighInTarget: Int,
@@ -41,11 +49,22 @@ enum ProfileSetupValidation {
             let starting = Double(startingWeight),
             let current = Double(currentWeight),
             let goal = Double(goalWeight),
-            starting > 0,
-            current > 0,
-            goal > 0
+            WeightInputRules.realisticRange(for: trimmedUnit).contains(starting),
+            WeightInputRules.realisticRange(for: trimmedUnit).contains(current),
+            WeightInputRules.realisticRange(for: trimmedUnit).contains(goal)
         else {
-            return (nil, "Enter weights greater than zero.")
+            return (nil, "Enter weights between \(WeightInputRules.rangeText(for: trimmedUnit)).")
+        }
+
+        let measurementUnit = BodyMeasurementUnit(rawValue: bodyMeasurementUnit ?? "")
+            ?? BodyMeasurementUnit.defaultUnit(forWeightUnit: trimmedUnit)
+        let measurementRange = BodyMeasurementInputRules.realisticRange(for: measurementUnit.rawValue)
+        let measurementRangeText = BodyMeasurementInputRules.rangeText(for: measurementUnit.rawValue)
+
+        guard let chest = optionalMeasurement(chestMeasurement, in: measurementRange),
+              let waist = optionalMeasurement(waistMeasurement, in: measurementRange),
+              let hips = optionalMeasurement(hipsMeasurement, in: measurementRange) else {
+            return (nil, "Measurements should be between \(measurementRangeText), or left blank.")
         }
 
         guard (1...7).contains(weeklyDietTarget),
@@ -68,6 +87,10 @@ enum ProfileSetupValidation {
                 startingWeight: starting,
                 currentWeight: current,
                 goalWeight: goal,
+                chestMeasurement: chest,
+                waistMeasurement: waist,
+                hipsMeasurement: hips,
+                bodyMeasurementUnit: measurementUnit.rawValue,
                 weeklyDietTarget: weeklyDietTarget,
                 weeklyMovementTarget: weeklyMovementTarget,
                 weeklyWeighInTarget: weeklyWeighInTarget,
@@ -79,6 +102,13 @@ enum ProfileSetupValidation {
             ),
             nil
         )
+    }
+
+    private static func optionalMeasurement(_ text: String, in range: ClosedRange<Double>) -> Double?? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return .some(nil) }
+        guard let value = Double(trimmed), range.contains(value) else { return nil }
+        return .some(value)
     }
 }
 
@@ -142,6 +172,16 @@ enum WeightInputRules {
     }
 }
 
+enum BodyMeasurementInputRules {
+    static func realisticRange(for unit: String) -> ClosedRange<Double> {
+        unit == BodyMeasurementUnit.inches.rawValue ? 8...100 : 20...250
+    }
+
+    static func rangeText(for unit: String) -> String {
+        unit == BodyMeasurementUnit.inches.rawValue ? "8 and 100 in" : "20 and 250 cm"
+    }
+}
+
 struct GoalFormValues {
     let title: String
     let type: GoalType
@@ -152,6 +192,7 @@ struct GoalFormValues {
 private enum OnboardingStep: Int, CaseIterable {
     case welcome
     case baseline
+    case measurements
     case targets
     case flexDays
 
@@ -159,6 +200,7 @@ private enum OnboardingStep: Int, CaseIterable {
         switch self {
         case .welcome: "Welcome"
         case .baseline: "Your starting point"
+        case .measurements: "Body measurements"
         case .targets: "Weekly targets"
         case .flexDays: "Flex Days"
         }
@@ -168,7 +210,8 @@ private enum OnboardingStep: Int, CaseIterable {
         switch self {
         case .welcome: "Small steps count."
         case .baseline: "Set your baseline."
-        case .targets: "Choose a steady rhythm."
+        case .measurements: "Optional, but useful for progress."
+        case .targets: "Pick goals you can repeat."
         case .flexDays: "Plan room for real life."
         }
     }
@@ -180,9 +223,13 @@ struct OnboardingScreen: View {
     @State private var step: OnboardingStep = .welcome
     @State private var displayName = ""
     @State private var unit = "kg"
-    @State private var startingWeight = "108.0"
-    @State private var currentWeight = "106.8"
-    @State private var goalWeight = "95.0"
+    @State private var startingWeight = ""
+    @State private var currentWeight = ""
+    @State private var goalWeight = ""
+    @State private var chestMeasurement = ""
+    @State private var waistMeasurement = ""
+    @State private var hipsMeasurement = ""
+    @State private var bodyMeasurementUnit = BodyMeasurementUnit.centimeters.rawValue
     @State private var weeklyDietTarget = 5
     @State private var weeklyMovementTarget = 3
     @State private var weeklyWeighInTarget = 3
@@ -197,20 +244,20 @@ struct OnboardingScreen: View {
             AppTheme.background
                 .ignoresSafeArea()
 
-            AppScroll {
+            BottomActionScaffold {
                 onboardingHeader
                 OnboardingStepIndicator(currentStep: step.rawValue, totalSteps: OnboardingStep.allCases.count)
 
                 currentStepContent
 
-                if !validationMessage.isEmpty {
-                    Text(validationMessage)
+                if !activeValidationMessage.isEmpty {
+                    Text(activeValidationMessage)
                         .font(AppTypography.body)
                         .foregroundStyle(AppTheme.secondaryText)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-
-                PrimaryButton(title: step == .flexDays ? "Start tracking" : "Continue") {
+            } footer: {
+                PrimaryButton(title: onboardingCTATitle, isEnabled: isOnboardingCTAEnabled) {
                     advance()
                 }
             }
@@ -224,6 +271,8 @@ struct OnboardingScreen: View {
             welcomeStep
         case .baseline:
             baselineStep
+        case .measurements:
+            measurementsStep
         case .targets:
             targetsStep
         case .flexDays:
@@ -313,11 +362,50 @@ struct OnboardingScreen: View {
                 .pickerStyle(.segmented)
                 .onChange(of: unit) { oldValue, newValue in
                     convertWeightFields(from: oldValue, to: newValue)
+                    syncBodyMeasurementUnitIfEmpty(forWeightUnit: newValue)
                 }
 
-                SetupNumberField(title: "Starting weight", text: $startingWeight, unit: unit)
-                SetupNumberField(title: "Current weight", text: $currentWeight, unit: unit)
-                SetupNumberField(title: "Goal weight", text: $goalWeight, unit: unit)
+                SetupNumberField(title: "Starting weight", text: $startingWeight, unit: unit, placeholder: "Enter weight")
+                SetupNumberField(title: "Current weight", text: $currentWeight, unit: unit, placeholder: "Enter weight")
+                SetupNumberField(title: "Goal weight", text: $goalWeight, unit: unit, placeholder: "Enter weight")
+            }
+        }
+    }
+
+    private var measurementsStep: some View {
+        VStack(spacing: 14) {
+            AppCard(tint: true) {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Units")
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.text)
+
+                    Picker("Measurement units", selection: $bodyMeasurementUnit) {
+                        ForEach(BodyMeasurementUnit.allCases) { unit in
+                            Text(unit.rawValue).tag(unit.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    SetupNumberField(title: "Chest", text: $chestMeasurement, unit: bodyMeasurementUnit, placeholder: "Optional")
+                    SetupNumberField(title: "Waist", text: $waistMeasurement, unit: bodyMeasurementUnit, placeholder: "Optional")
+                    SetupNumberField(title: "Hips", text: $hipsMeasurement, unit: bodyMeasurementUnit, placeholder: "Optional")
+                }
+            }
+
+            AppCard(tint: true) {
+                HStack(spacing: 14) {
+                    IconBubble(symbol: "ruler", tone: .measurement)
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Measurements are optional.")
+                            .font(.system(size: 17, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppTheme.text)
+                        Text("They can help show progress beyond the scale later.")
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             }
         }
     }
@@ -326,13 +414,13 @@ struct OnboardingScreen: View {
         VStack(spacing: 14) {
             AppCard {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Weekly targets")
+                    Text("This week")
                         .font(.system(size: 21, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.text)
 
-                    TargetStepper(title: "Diet days", value: $weeklyDietTarget, range: 1...7)
-                    TargetStepper(title: "Move days", value: $weeklyMovementTarget, range: 1...7)
-                    TargetStepper(title: "Weigh-ins", value: $weeklyWeighInTarget, range: 1...7)
+                    TargetStepper(title: "On-plan days", subtitle: "Days you follow your plan intentionally.", value: $weeklyDietTarget, range: 1...7)
+                    TargetStepper(title: "Movement days", subtitle: "Walks, workouts, or any intentional movement.", value: $weeklyMovementTarget, range: 1...7)
+                    TargetStepper(title: "Weight logs", subtitle: "How often you want to check your trend.", value: $weeklyWeighInTarget, range: 1...7)
                 }
             }
 
@@ -340,10 +428,10 @@ struct OnboardingScreen: View {
                 VStack(alignment: .leading, spacing: 14) {
                     Toggle(isOn: $checkInReminderEnabled) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Check-in reminder")
+                            Text("Daily check-in reminder")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.text)
-                            Text("A gentle reminder to wrap up your day.")
+                            Text("Get a gentle nudge near the end of the day.")
                                 .font(AppTypography.body)
                                 .foregroundStyle(AppTheme.secondaryText)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -374,10 +462,10 @@ struct OnboardingScreen: View {
                 HStack(spacing: 14) {
                     IconBubble(symbol: "calendar.badge.checkmark", tone: .success)
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("Your weekly average matters more than one weigh-in.")
+                        Text("Start with a rhythm you can actually keep.")
                             .font(.system(size: 17, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppTheme.text)
-                        Text("Keep showing up for you.")
+                        Text("You can adjust this anytime.")
                             .font(AppTypography.body)
                             .foregroundStyle(AppTheme.secondaryText)
                     }
@@ -429,6 +517,8 @@ struct OnboardingScreen: View {
     private func advance() {
         validationMessage = ""
 
+        guard isOnboardingCTAEnabled else { return }
+
         switch step {
         case .welcome:
             let trimmedName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -438,6 +528,17 @@ struct OnboardingScreen: View {
             }
             step = .baseline
         case .baseline:
+            guard baselineWeightsAreValid else {
+                validationMessage = baselineValidationMessage
+                return
+            }
+            syncBodyMeasurementUnitIfEmpty(forWeightUnit: unit)
+            step = .measurements
+        case .measurements:
+            guard measurementsAreValid else {
+                validationMessage = measurementValidationMessage
+                return
+            }
             step = .targets
         case .targets:
             step = .flexDays
@@ -461,6 +562,10 @@ struct OnboardingScreen: View {
             startingWeight: startingWeight,
             currentWeight: currentWeight,
             goalWeight: goalWeight,
+            chestMeasurement: chestMeasurement,
+            waistMeasurement: waistMeasurement,
+            hipsMeasurement: hipsMeasurement,
+            bodyMeasurementUnit: bodyMeasurementUnit,
             weeklyDietTarget: weeklyDietTarget,
             weeklyMovementTarget: weeklyMovementTarget,
             weeklyWeighInTarget: weeklyWeighInTarget,
@@ -475,8 +580,10 @@ struct OnboardingScreen: View {
             onComplete(values)
         } else {
             validationMessage = result.message ?? "Check your numbers and try again."
-            if result.message == "Enter weights greater than zero." {
+            if result.message?.contains("Enter weights") == true {
                 step = .baseline
+            } else if result.message?.contains("Measurements should be between") == true {
+                step = .measurements
             }
         }
     }
@@ -494,6 +601,105 @@ struct OnboardingScreen: View {
         guard let value = Double(trimmed) else { return text }
         let converted = WeightUnitConverter.converted(value, from: oldUnit, to: newUnit)
         return String(format: "%.1f", converted)
+    }
+
+    private var onboardingCTATitle: String {
+        switch step {
+        case .flexDays:
+            "Start tracking"
+        case .welcome:
+            hasName ? "Continue" : "Skip"
+        case .measurements:
+            hasAnyMeasurement ? "Continue" : "Skip"
+        default:
+            "Continue"
+        }
+    }
+
+    private var isOnboardingCTAEnabled: Bool {
+        switch step {
+        case .welcome:
+            isNameValid
+        case .baseline:
+            baselineWeightsAreValid
+        case .measurements:
+            measurementsAreValid
+        case .targets, .flexDays:
+            true
+        }
+    }
+
+    private var activeValidationMessage: String {
+        if !validationMessage.isEmpty {
+            return validationMessage
+        }
+
+        if step == .welcome, !isNameValid {
+            return "Use 28 characters or fewer."
+        }
+
+        if step == .measurements, hasAnyMeasurement, !measurementsAreValid {
+            return measurementValidationMessage
+        }
+
+        return ""
+    }
+
+    private var isNameValid: Bool {
+        displayName.trimmingCharacters(in: .whitespacesAndNewlines).count <= 28
+    }
+
+    private var hasName: Bool {
+        !displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var baselineWeightsAreValid: Bool {
+        validWeight(startingWeight) != nil
+            && validWeight(currentWeight) != nil
+            && validWeight(goalWeight) != nil
+    }
+
+    private var baselineValidationMessage: String {
+        "Enter starting, current, and goal weights between \(WeightInputRules.rangeText(for: unit))."
+    }
+
+    private func validWeight(_ text: String) -> Double? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let value = Double(trimmed), WeightInputRules.realisticRange(for: unit).contains(value) else {
+            return nil
+        }
+        return value
+    }
+
+    private func syncBodyMeasurementUnitIfEmpty(forWeightUnit weightUnit: String) {
+        guard chestMeasurement.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              waistMeasurement.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              hipsMeasurement.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        bodyMeasurementUnit = BodyMeasurementUnit.defaultUnit(forWeightUnit: weightUnit).rawValue
+    }
+
+    private var hasAnyMeasurement: Bool {
+        !chestMeasurement.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !waistMeasurement.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !hipsMeasurement.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var measurementsAreValid: Bool {
+        let range = BodyMeasurementInputRules.realisticRange(for: bodyMeasurementUnit)
+        return isOptionalMeasurement(chestMeasurement, in: range)
+            && isOptionalMeasurement(waistMeasurement, in: range)
+            && isOptionalMeasurement(hipsMeasurement, in: range)
+    }
+
+    private var measurementValidationMessage: String {
+        "Measurements should be between \(BodyMeasurementInputRules.rangeText(for: bodyMeasurementUnit)), or left blank."
+    }
+
+    private func isOptionalMeasurement(_ text: String, in range: ClosedRange<Double>) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return true }
+        guard let value = Double(trimmed) else { return false }
+        return range.contains(value)
     }
 }
 
@@ -605,7 +811,7 @@ struct TodayScreen: View {
             AppCard {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 14) {
-                        IconBubble(symbol: "scalemass", tone: .neutral)
+                        IconBubble(symbol: "scalemass", tone: .info)
                         Text("Current Progress")
                             .font(.system(size: 19, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.text)
@@ -664,19 +870,25 @@ struct CheckInScreen: View {
     let profile: UserProfile
     let existingCheckIn: DailyCheckIn?
     let onCancel: () -> Void
-    let onSave: (DietStatus, Bool, Double?) -> Void
+    let onSave: (DietStatus, Bool, Double?, BodyMeasurementSnapshot?) -> Void
     @State private var dietStatus: DietStatus = .yes
     @State private var moved = true
     @State private var weightText = ""
+    @State private var isMeasurementsExpanded = false
+    @State private var measurementUnit = BodyMeasurementUnit.centimeters.rawValue
+    @State private var chestText = ""
+    @State private var waistText = ""
+    @State private var hipsText = ""
     @State private var validationMessage = ""
-    @FocusState private var isWeightFocused: Bool
+    @FocusState private var focusedInput: CheckInInputField?
     private let usesFlexCheckInMode: Bool
 
     init(
         profile: UserProfile,
         existingCheckIn: DailyCheckIn?,
+        latestMeasurement: BodyMeasurementSnapshot?,
         onCancel: @escaping () -> Void,
-        onSave: @escaping (DietStatus, Bool, Double?) -> Void
+        onSave: @escaping (DietStatus, Bool, Double?, BodyMeasurementSnapshot?) -> Void
     ) {
         self.profile = profile
         self.existingCheckIn = existingCheckIn
@@ -687,6 +899,16 @@ struct CheckInScreen: View {
         _dietStatus = State(initialValue: existingCheckIn?.dietStatus ?? (flexMode ? .flex : .yes))
         _moved = State(initialValue: existingCheckIn?.moved ?? true)
         _weightText = State(initialValue: existingCheckIn?.weight.map { String(format: "%.1f", $0) } ?? "")
+        let measurement = latestMeasurement ?? BodyMeasurementSnapshot(
+            chest: profile.chestMeasurement,
+            waist: profile.waistMeasurement,
+            hips: profile.hipsMeasurement,
+            unit: profile.bodyMeasurementUnit
+        )
+        _measurementUnit = State(initialValue: measurement.unit)
+        _chestText = State(initialValue: Self.measurementText(measurement.chest))
+        _waistText = State(initialValue: Self.measurementText(measurement.waist))
+        _hipsText = State(initialValue: Self.measurementText(measurement.hips))
     }
 
     var body: some View {
@@ -696,7 +918,7 @@ struct CheckInScreen: View {
             AppCard(tint: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack(spacing: 12) {
-                        CompactIconBubble(symbol: "target")
+                        CompactIconBubble(symbol: "target", tone: .primary)
                         Text(usesFlexCheckInMode ? "How did today go?" : "Did you follow your diet today?")
                             .font(AppTypography.cardTitle)
                             .foregroundStyle(AppTheme.text)
@@ -733,17 +955,58 @@ struct CheckInScreen: View {
             }
 
             AppCard(tint: true) {
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 12) {
-                        weightPrompt
-                        Spacer(minLength: 8)
-                        weightInput
-                    }
+                HStack(alignment: .center, spacing: 8) {
+                    weightPrompt
+                        .layoutPriority(1)
+                    Spacer(minLength: 4)
+                    weightInput
+                        .fixedSize()
+                }
+            }
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        weightPrompt
-                        weightInput
-                            .frame(maxWidth: .infinity, alignment: .trailing)
+            AppCard(tint: true) {
+                VStack(alignment: .leading, spacing: 14) {
+                    Button {
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
+                            isMeasurementsExpanded.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            CompactIconBubble(symbol: "ruler", tone: .measurement)
+                            VStack(alignment: .leading, spacing: 3) {
+                                OptionalTitle("Measurements")
+                                Text("Chest, waist, and hips")
+                                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.secondaryText)
+                            }
+                            .layoutPriority(1)
+                            Spacer(minLength: 8)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundStyle(AppTheme.secondaryText)
+                                .rotationEffect(.degrees(isMeasurementsExpanded ? 180 : 0))
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
+                    if isMeasurementsExpanded {
+                        VStack(alignment: .leading, spacing: 14) {
+                            Picker("Measurement units", selection: $measurementUnit) {
+                                ForEach(BodyMeasurementUnit.allCases) { unit in
+                                    Text(unit.rawValue).tag(unit.rawValue)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .onChange(of: measurementUnit) { oldUnit, newUnit in
+                                convertMeasurementFields(from: oldUnit, to: newUnit)
+                            }
+
+                            MeasurementFieldRow(title: "Chest", text: $chestText, unit: measurementUnit, field: .chest, focusedInput: $focusedInput)
+                            MeasurementFieldRow(title: "Waist", text: $waistText, unit: measurementUnit, field: .waist, focusedInput: $focusedInput)
+                            MeasurementFieldRow(title: "Hips", text: $hipsText, unit: measurementUnit, field: .hips, focusedInput: $focusedInput)
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
             }
@@ -761,38 +1024,90 @@ struct CheckInScreen: View {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") {
-                    isWeightFocused = false
+                    focusedInput = nil
                 }
             }
         }
     }
 
     private func submitCheckIn() {
-        isWeightFocused = false
+        focusedInput = nil
         validationMessage = ""
 
-        let trimmedWeight = weightText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedWeight.isEmpty else {
-            onSave(dietStatus, moved, nil)
-            return
-        }
-
-        guard let weight = Double(trimmedWeight) else {
+        guard let weight = parsedWeight else {
             validationMessage = "Enter a valid weight or leave it blank."
             return
         }
 
-        guard realisticWeightRange.contains(weight) else {
+        if let weight, !realisticWeightRange.contains(weight) {
             validationMessage = "Enter a weight between \(weightRangeText)."
             return
         }
 
-        onSave(dietStatus, moved, weight)
+        guard let measurement = parsedMeasurement else {
+            validationMessage = measurementValidationMessage
+            return
+        }
+
+        onSave(dietStatus, moved, weight, measurement)
     }
 
     private func cancelCheckIn() {
-        isWeightFocused = false
+        focusedInput = nil
         onCancel()
+    }
+
+    private var parsedWeight: Double?? {
+        let trimmedWeight = weightText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedWeight.isEmpty else { return .some(nil) }
+        guard let weight = Double(trimmedWeight) else { return nil }
+        return .some(weight)
+    }
+
+    private var parsedMeasurement: BodyMeasurementSnapshot?? {
+        guard isMeasurementsExpanded, hasAnyMeasurementText else { return .some(nil) }
+        let range = BodyMeasurementInputRules.realisticRange(for: measurementUnit)
+        guard let chest = optionalMeasurement(chestText, in: range),
+              let waist = optionalMeasurement(waistText, in: range),
+              let hips = optionalMeasurement(hipsText, in: range) else {
+            return nil
+        }
+        return .some(BodyMeasurementSnapshot(chest: chest, waist: waist, hips: hips, unit: measurementUnit))
+    }
+
+    private var hasAnyMeasurementText: Bool {
+        !chestText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !waistText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !hipsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var measurementValidationMessage: String {
+        "Measurements should be between \(BodyMeasurementInputRules.rangeText(for: measurementUnit)), or left blank."
+    }
+
+    private func optionalMeasurement(_ text: String, in range: ClosedRange<Double>) -> Double?? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return .some(nil) }
+        guard let value = Double(trimmed), range.contains(value) else { return nil }
+        return .some(value)
+    }
+
+    private func convertMeasurementFields(from oldUnit: String, to newUnit: String) {
+        chestText = convertedMeasurementText(chestText, from: oldUnit, to: newUnit)
+        waistText = convertedMeasurementText(waistText, from: oldUnit, to: newUnit)
+        hipsText = convertedMeasurementText(hipsText, from: oldUnit, to: newUnit)
+    }
+
+    private func convertedMeasurementText(_ text: String, from oldUnit: String, to newUnit: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let value = Double(trimmed) else { return text }
+        let converted = BodyMeasurementUnitConverter.converted(value, from: oldUnit, to: newUnit)
+        return Self.measurementText(converted)
+    }
+
+    private static func measurementText(_ value: Double?) -> String {
+        guard let value else { return "" }
+        return String(format: "%.1f", value)
     }
 
     private var dietOptions: [(status: DietStatus, title: String)] {
@@ -804,7 +1119,7 @@ struct CheckInScreen: View {
 
     private var movePrompt: some View {
         HStack(spacing: 12) {
-            CompactIconBubble(symbol: "shoeprints.fill")
+            CompactIconBubble(symbol: "shoeprints.fill", tone: .movement)
             Text("Did you move today?")
                 .font(AppTypography.cardTitle)
                 .foregroundStyle(AppTheme.text)
@@ -828,37 +1143,33 @@ struct CheckInScreen: View {
 
     private var weightPrompt: some View {
         HStack(spacing: 12) {
-            CompactIconBubble(symbol: "scalemass")
-            HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text("Log weight")
-                    .font(AppTypography.cardTitle)
-                    .foregroundStyle(AppTheme.text)
-                Text("(optional)")
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.secondaryText)
-            }
-            .lineLimit(1)
-            .minimumScaleFactor(0.72)
-            .allowsTightening(true)
-            .layoutPriority(1)
+            CompactIconBubble(symbol: "scalemass", tone: .info)
+            OptionalTitle("Weight")
+                .layoutPriority(1)
         }
     }
 
     private var weightInput: some View {
-        HStack(spacing: 8) {
-            TextField("", text: $weightText)
+        HStack(spacing: 6) {
+            TextField(
+                "",
+                text: $weightText,
+                prompt: Text("0.0")
+                    .foregroundStyle(AppTheme.secondaryText.opacity(0.58))
+            )
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .font(AppTypography.primaryAction)
                 .foregroundStyle(AppTheme.primary)
-                .frame(width: 68)
+                .tint(AppTheme.primary)
+                .frame(width: 54)
                 .accessibilityLabel("Weight")
-                .focused($isWeightFocused)
+                .focused($focusedInput, equals: .weight)
             Text(profile.unit)
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.secondaryText)
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 10)
         .frame(height: 50)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -876,6 +1187,91 @@ struct CheckInScreen: View {
 
     private var weightRangeText: String {
         WeightInputRules.rangeText(for: profile.unit)
+    }
+}
+
+private enum CheckInInputField: Hashable {
+    case weight
+    case chest
+    case waist
+    case hips
+}
+
+private struct OptionalTitle: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(title)
+                .font(AppTypography.cardTitle)
+                .foregroundStyle(AppTheme.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
+                .allowsTightening(true)
+                .layoutPriority(1)
+
+            Text("Optional")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.secondaryText)
+                .padding(.horizontal, 8)
+                .frame(height: 23)
+                .background(
+                    Capsule()
+                        .fill(AppTheme.track.opacity(0.78))
+                )
+                .fixedSize()
+        }
+    }
+}
+
+private struct MeasurementFieldRow: View {
+    let title: String
+    @Binding var text: String
+    let unit: String
+    let field: CheckInInputField
+    var focusedInput: FocusState<CheckInInputField?>.Binding
+
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.text)
+            Spacer()
+            HStack(spacing: 8) {
+                TextField(
+                    "",
+                    text: $text,
+                    prompt: Text("Optional")
+                        .foregroundStyle(AppTheme.secondaryText.opacity(0.58))
+                )
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.text)
+                .tint(AppTheme.primary)
+                .frame(width: 82)
+                .focused(focusedInput, equals: field)
+                .accessibilityLabel(title)
+
+                Text(unit)
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.secondaryText)
+            }
+            .padding(.horizontal, 12)
+            .frame(height: 48)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(AppTheme.divider, lineWidth: 1)
+                    )
+            )
+        }
     }
 }
 
@@ -899,6 +1295,8 @@ struct ProgressScreen: View {
     let metrics: TrackerMetrics
     let onProfileTap: () -> Void
     let onAddPastWeight: () -> Void
+    @State private var trendRange: TrendRange = .sixWeeks
+    @State private var selectedMeasurementMetric: BodyMeasurementMetric = .waist
 
     private var progress: UserProgress {
         metrics.progress
@@ -910,15 +1308,13 @@ struct ProgressScreen: View {
             StatCard(progress: progress, showIcons: true)
 
             AppCard {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 16) {
                     ViewThatFits(in: .horizontal) {
                         HStack(alignment: .center, spacing: 12) {
                             weightTrendTitle
                             Spacer(minLength: 8)
                             VStack(alignment: .trailing, spacing: 8) {
-                                Text("6 weeks")
-                                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                                    .foregroundStyle(AppTheme.secondaryText)
+                                trendRangePicker
                                 InlineActionButton(title: "Add past weight", action: onAddPastWeight)
                             }
                         }
@@ -927,24 +1323,28 @@ struct ProgressScreen: View {
                             HStack {
                                 weightTrendTitle
                                 Spacer()
-                                Text("6 weeks")
-                                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                                    .foregroundStyle(AppTheme.secondaryText)
+                                trendRangePicker
                             }
                             InlineActionButton(title: "Add past weight", action: onAddPastWeight)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
 
-                    WeightTrendChart(points: metrics.trendPoints)
+                    WeightTrendChart(points: metrics.trendPoints(for: trendRange), unit: progress.unit)
                         .frame(height: 260)
                 }
             }
 
+            BodyMeasurementsProgressCard(
+                metrics: metrics,
+                selectedMetric: $selectedMeasurementMetric,
+                range: trendRange
+            )
+
             AppCard {
                 VStack(spacing: 20) {
                     HStack(spacing: 18) {
-                        IconBubble(symbol: "calendar.badge.checkmark", tone: .neutral)
+                        IconBubble(symbol: "calendar.badge.checkmark", tone: .success)
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Consistency")
                                 .font(.system(size: 22, weight: .bold, design: .rounded))
@@ -979,15 +1379,133 @@ struct ProgressScreen: View {
         }
     }
 
+    private var trendRangePicker: some View {
+        Picker("Trend range", selection: $trendRange) {
+            ForEach(TrendRange.allCases) { range in
+                Text(range.rawValue).tag(range)
+            }
+        }
+        .pickerStyle(.segmented)
+        .frame(width: 154)
+    }
+
     private var weightTrendTitle: some View {
         HStack(spacing: 14) {
-            IconBubble(symbol: "chart.line.uptrend.xyaxis", tone: .neutral)
+            IconBubble(symbol: "chart.line.uptrend.xyaxis", tone: .info)
             Text("Weight trend")
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.text)
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
         }
+    }
+}
+
+struct BodyMeasurementsProgressCard: View {
+    let metrics: TrackerMetrics
+    @Binding var selectedMetric: BodyMeasurementMetric
+    let range: TrendRange
+
+    private var snapshot: BodyMeasurementSnapshot? {
+        metrics.latestMeasurementSnapshot
+    }
+
+    var body: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 14) {
+                    IconBubble(symbol: "ruler", tone: .measurement)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Body measurements")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.text)
+                        Text("Progress beyond the scale.")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    Spacer()
+                }
+
+                if let snapshot, snapshot.hasAnyValue {
+                    HStack(spacing: 0) {
+                        BodyMeasurementMetricTile(metric: .chest, snapshot: snapshot, change: metrics.measurementChange(for: .chest))
+                        VerticalDivider(height: 48)
+                        BodyMeasurementMetricTile(metric: .waist, snapshot: snapshot, change: metrics.measurementChange(for: .waist))
+                        VerticalDivider(height: 48)
+                        BodyMeasurementMetricTile(metric: .hips, snapshot: snapshot, change: metrics.measurementChange(for: .hips))
+                    }
+
+                    Picker("Measurement", selection: $selectedMetric) {
+                        ForEach(BodyMeasurementMetric.allCases) { metric in
+                            Text(metric.label).tag(metric)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    let points = metrics.measurementTrendPoints(for: selectedMetric, range: range)
+                    if points.isEmpty {
+                        measurementEmptyCopy
+                    } else {
+                        WeightTrendChart(points: points, unit: snapshot.unit, lineColor: AppTheme.teal)
+                            .frame(height: 220)
+                    }
+                } else {
+                    measurementEmptyCopy
+                }
+            }
+        }
+    }
+
+    private var measurementEmptyCopy: some View {
+        HStack(spacing: 14) {
+            CompactIconBubble(symbol: "ruler", tone: .measurement)
+            Text("Log measurements during check-in to see body changes beyond the scale.")
+                .font(.system(size: 17, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct BodyMeasurementMetricTile: View {
+    let metric: BodyMeasurementMetric
+    let snapshot: BodyMeasurementSnapshot
+    let change: Double?
+
+    var body: some View {
+        VStack(spacing: 5) {
+            Text(metricValue)
+                .font(.system(size: 21, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppTheme.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+            Text(metric.label)
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.secondaryText)
+            Text(changeText)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(changeColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var metricValue: String {
+        guard let value = snapshot.value(for: metric) else { return "--" }
+        return "\(String(format: "%.1f", value)) \(snapshot.unit)"
+    }
+
+    private var changeText: String {
+        guard let change else { return "Baseline" }
+        let sign = change > 0 ? "+" : ""
+        return "\(sign)\(String(format: "%.1f", change)) \(snapshot.unit)"
+    }
+
+    private var changeColor: Color {
+        guard let change else { return AppTheme.secondaryText }
+        return change <= 0 ? AppTheme.primary : AppTheme.orange
     }
 }
 
@@ -1003,73 +1521,121 @@ struct GoalsScreen: View {
         AppScroll {
             AppHeader(title: "Goals", subtitle: "Small targets, steady wins.", profileImageData: metrics.profile.profileImageData, onProfileTap: onProfileTap)
 
-            AppCard(tint: true) {
+            AppCard(tint: true, padding: 14) {
                 ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 14) {
+                    HStack(spacing: 12) {
                         targetsIntro
-                        Spacer(minLength: 8)
-                        InlineActionButton(title: "Adjust targets", action: onAdjustTargets)
+                        Spacer(minLength: 6)
+                        InlineActionButton(title: "Adjust", action: onAdjustTargets)
                     }
 
-                    VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 10) {
                         targetsIntro
-                        InlineActionButton(title: "Adjust targets", action: onAdjustTargets)
+                        InlineActionButton(title: "Adjust", action: onAdjustTargets)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
             }
 
-            SectionTitle("Core goals")
-            ForEach(metrics.coreGoalCards, id: \.goal.id) { item in
-                GoalCard(goal: item.goal, mode: item.mode, isCompleted: item.isCompleted)
+            GoalsSectionTitle("Core goals")
+            VStack(spacing: 10) {
+                ForEach(metrics.coreGoalCards, id: \.goal.id) { item in
+                    GoalCard(goal: item.goal, mode: item.mode, density: .compact, isCompleted: item.isCompleted)
+                }
             }
 
-            SectionTitle("Extra goals")
-            if metrics.extraActiveGoalCards.isEmpty {
-                EmptyStateCard(title: "No extra goals yet.", subtitle: "Create a small target to keep momentum visible.")
-            } else {
-                ForEach(metrics.extraActiveGoalCards, id: \.goal.id) { item in
-                    GoalCard(
-                        goal: item.goal,
-                        mode: item.mode,
-                        onEdit: { onEditGoal(item.goal) },
-                        onDelete: { onDeleteGoal(item.goal) }
-                    )
+            GoalsSectionTitle("Extra goals")
+            VStack(spacing: 10) {
+                if metrics.extraActiveGoalCards.isEmpty {
+                    GoalsEmptyStateCard(title: "No extra goals yet.", subtitle: "Create a small target to keep momentum visible.")
+                } else {
+                    ForEach(metrics.extraActiveGoalCards, id: \.goal.id) { item in
+                        GoalCard(
+                            goal: item.goal,
+                            mode: item.mode,
+                            density: .compact,
+                            onEdit: { onEditGoal(item.goal) },
+                            onDelete: { onDeleteGoal(item.goal) }
+                        )
+                    }
                 }
             }
 
             PrimaryButton(title: "Create goal", systemImage: "plus.circle", action: onCreateGoal)
 
-            SectionTitle("Completed")
-            if metrics.extraCompletedGoalCards.isEmpty {
-                EmptyStateCard(title: "No completed goals yet.", subtitle: "Small wins will show up here.")
-            } else {
-                ForEach(metrics.extraCompletedGoalCards, id: \.goal.id) { item in
-                    GoalCard(
-                        goal: item.goal,
-                        mode: item.mode,
-                        isCompleted: true,
-                        onEdit: { onEditGoal(item.goal) },
-                        onDelete: { onDeleteGoal(item.goal) }
-                    )
+            GoalsSectionTitle("Completed")
+            VStack(spacing: 10) {
+                if metrics.extraCompletedGoalCards.isEmpty {
+                    GoalsEmptyStateCard(title: "No completed goals yet.", subtitle: "Small wins will show up here.")
+                } else {
+                    ForEach(metrics.extraCompletedGoalCards, id: \.goal.id) { item in
+                        GoalCard(
+                            goal: item.goal,
+                            mode: item.mode,
+                            density: .compact,
+                            isCompleted: true,
+                            onEdit: { onEditGoal(item.goal) },
+                            onDelete: { onDeleteGoal(item.goal) }
+                        )
+                    }
                 }
             }
         }
     }
 
     private var targetsIntro: some View {
-        HStack(spacing: 14) {
-            IconBubble(symbol: "target", tone: .primary)
+        HStack(spacing: 12) {
+            IconBubble(symbol: "target", tone: .primary, size: 42)
             VStack(alignment: .leading, spacing: 5) {
                 Text("Your main targets")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.text)
-                Text("Keep the app aligned with what matters this week.")
+                Text("Adjust weekly targets.")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.secondaryText)
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .minimumScaleFactor(0.82)
             }
+        }
+    }
+}
+
+struct GoalsSectionTitle: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: 21, weight: .bold, design: .rounded))
+            .foregroundStyle(AppTheme.text)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 6)
+    }
+}
+
+struct GoalsEmptyStateCard: View {
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        AppCard(tint: true, padding: 14) {
+            HStack(spacing: 12) {
+                IconBubble(symbol: "leaf.fill", tone: .success, size: 42)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.text)
+                    Text(subtitle)
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.82)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
@@ -1199,9 +1765,9 @@ struct ProfileSettingsScreen: View {
                     VStack(alignment: .leading, spacing: 16) {
                         sectionHeader(title: "Your targets", destination: .targets)
 
-                        ProfileSummaryRow(symbol: "flag.fill", title: "Diet days", value: "\(metrics.profile.weeklyDietTarget) / week")
-                        ProfileSummaryRow(symbol: "shoeprints.fill", title: "Move days", value: "\(metrics.profile.weeklyMovementTarget) / week")
-                        ProfileSummaryRow(symbol: "calendar.badge.checkmark", title: "Weigh-ins", value: "\(metrics.profile.weeklyWeighInTarget) / week")
+                        ProfileSummaryRow(symbol: "flag.fill", title: "On-plan days", value: "\(metrics.profile.weeklyDietTarget) / week")
+                        ProfileSummaryRow(symbol: "shoeprints.fill", title: "Movement days", value: "\(metrics.profile.weeklyMovementTarget) / week")
+                        ProfileSummaryRow(symbol: "calendar.badge.checkmark", title: "Weight logs", value: "\(metrics.profile.weeklyWeighInTarget) / week")
                         ProfileSummaryRow(symbol: "scalemass", title: "Goal weight", value: weightText(progress.goalWeight))
                     }
                 }
@@ -1574,7 +2140,7 @@ struct PhotoOptionRow: View {
     }
 
     private var iconTone: IconTone {
-        role == .destructive ? .warning : .neutral
+        role == .destructive ? .destructive : .neutral
     }
 
     var body: some View {
@@ -1668,7 +2234,7 @@ struct ProfileSummaryRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            CompactIconBubble(symbol: symbol)
+            CompactIconBubble(symbol: symbol, tone: tone)
             Text(title)
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundStyle(AppTheme.text)
@@ -1682,6 +2248,21 @@ struct ProfileSummaryRow: View {
                 .minimumScaleFactor(0.72)
         }
     }
+
+    private var tone: IconTone {
+        switch symbol {
+        case "flag.fill":
+            .primary
+        case "shoeprints.fill":
+            .movement
+        case "calendar.badge.checkmark":
+            .info
+        case "scalemass":
+            .info
+        default:
+            .neutral
+        }
+    }
 }
 
 struct ProfileActionRow: View {
@@ -1692,7 +2273,7 @@ struct ProfileActionRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            CompactIconBubble(symbol: symbol)
+            CompactIconBubble(symbol: symbol, tone: tone)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
@@ -1719,6 +2300,17 @@ struct ProfileActionRow: View {
                         .overlay(Capsule().stroke(AppTheme.primary.opacity(0.28), lineWidth: 1))
                 )
                 .buttonStyle(.plain)
+        }
+    }
+
+    private var tone: IconTone {
+        switch symbol {
+        case "bell.fill":
+            .warning
+        case "sparkles":
+            .flex
+        default:
+            .neutral
         }
     }
 }
@@ -1946,17 +2538,17 @@ struct CheckInReminderSheet: View {
             AppTheme.background
                 .ignoresSafeArea()
 
-            SheetScaffold(title: "Check-in reminder", onClose: { dismiss() }) {
+            SheetScaffold(title: "Daily check-in reminder", onClose: { dismiss() }) {
                 AppCard {
                     VStack(alignment: .leading, spacing: 14) {
                         Toggle(isOn: $isEnabled) {
-                            Text("Check-in reminder")
+                            Text("Daily check-in reminder")
                                 .font(.system(size: 17, weight: .bold, design: .rounded))
                                 .foregroundStyle(AppTheme.text)
                         }
                         .tint(AppTheme.primary)
 
-                        Text("A gentle reminder to wrap up your day.")
+                        Text("Get a gentle nudge near the end of the day.")
                             .font(AppTypography.body)
                             .foregroundStyle(AppTheme.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
@@ -2145,6 +2737,36 @@ struct AppScroll<Content: View>: View {
     }
 }
 
+struct BottomActionScaffold<Content: View, Footer: View>: View {
+    var contentSpacing: CGFloat = 14
+    var horizontalPadding: CGFloat = 18
+    var footerTopPadding: CGFloat = 10
+    var footerBottomPadding: CGFloat = 12
+    @ViewBuilder let content: Content
+    @ViewBuilder let footer: Footer
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: contentSpacing) {
+                    content
+                }
+                .frame(width: max(proxy.size.width - (horizontalPadding * 2), 0))
+                .padding(.horizontal, horizontalPadding)
+                .padding(.bottom, 12)
+            }
+            .scrollDismissesKeyboard(.immediately)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                footer
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.top, footerTopPadding)
+                    .padding(.bottom, footerBottomPadding)
+                    .background(AppTheme.background)
+            }
+        }
+    }
+}
+
 struct SheetScroll<Content: View>: View {
     @ViewBuilder let content: Content
 
@@ -2187,11 +2809,13 @@ struct SheetScaffold<Content: View, Footer: View>: View {
                     .padding(.bottom, 12)
                 }
                 .scrollDismissesKeyboard(.immediately)
-
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 footer
                     .padding(.horizontal, 18)
-                    .padding(.top, 12)
-                    .padding(.bottom, max(proxy.safeAreaInsets.bottom + 10, 22))
+                    .padding(.top, 10)
+                    .padding(.bottom, 12)
+                    .background(AppTheme.background)
             }
         }
     }
@@ -2325,6 +2949,7 @@ struct SetupNumberField: View {
     let title: String
     @Binding var text: String
     let unit: String
+    var placeholder: String = ""
 
     var body: some View {
         HStack {
@@ -2333,11 +2958,17 @@ struct SetupNumberField: View {
                 .foregroundStyle(AppTheme.text)
             Spacer()
             HStack(spacing: 8) {
-                TextField("", text: $text)
+                TextField(
+                    "",
+                    text: $text,
+                    prompt: Text(placeholder)
+                        .foregroundStyle(AppTheme.secondaryText.opacity(0.58))
+                )
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .font(.system(size: 19, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.primary)
+                    .foregroundStyle(AppTheme.text)
+                    .tint(AppTheme.primary)
                     .frame(width: 82)
                 Text(unit)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
@@ -2359,21 +2990,97 @@ struct SetupNumberField: View {
 
 struct TargetStepper: View {
     let title: String
+    var subtitle: String?
     @Binding var value: Int
     let range: ClosedRange<Int>
 
     var body: some View {
-        Stepper(value: $value, in: range) {
-            HStack {
-                Text(title)
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(AppTheme.text)
-                Spacer()
-                Text("\(value)")
-                    .font(.system(size: 22, weight: .heavy, design: .rounded))
-                    .foregroundStyle(AppTheme.primary)
+        HStack(alignment: .center, spacing: 12) {
+            label
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
+            counter
+                .fixedSize()
+        }
+    }
+
+    private var label: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .foregroundStyle(AppTheme.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.86)
+            if let subtitle {
+                Text(subtitle)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
             }
         }
+    }
+
+    private var counter: some View {
+        HStack(spacing: 0) {
+            counterButton(systemName: "minus", isEnabled: value > range.lowerBound) {
+                value = max(range.lowerBound, value - 1)
+            }
+
+            Divider()
+                .frame(height: 22)
+
+            Text("\(value)")
+                .font(.system(size: 20, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppTheme.primary)
+                .monospacedDigit()
+                .frame(width: 34, height: 42)
+                .accessibilityHidden(true)
+
+            Divider()
+                .frame(height: 22)
+
+            counterButton(systemName: "plus", isEnabled: value < range.upperBound) {
+                value = min(range.upperBound, value + 1)
+            }
+        }
+        .frame(height: 42)
+        .background(
+            Capsule()
+                .fill(AppTheme.track)
+        )
+        .overlay(
+            Capsule()
+                .stroke(AppTheme.divider.opacity(0.7), lineWidth: 1)
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue("\(value)")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment:
+                value = min(range.upperBound, value + 1)
+            case .decrement:
+                value = max(range.lowerBound, value - 1)
+            @unknown default:
+                break
+            }
+        }
+    }
+
+    private func counterButton(systemName: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            guard isEnabled else { return }
+            action()
+        } label: {
+            Image(systemName: systemName)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(isEnabled ? AppTheme.text : AppTheme.secondaryText.opacity(0.38))
+                .frame(width: 38, height: 42)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
     }
 }
 
@@ -2461,9 +3168,9 @@ struct AdjustTargetsSheet: View {
                             .font(AppTypography.cardTitle)
                             .foregroundStyle(AppTheme.text)
 
-                        TargetStepper(title: "Diet days", value: $weeklyDietTarget, range: 1...7)
-                        TargetStepper(title: "Move days", value: $weeklyMovementTarget, range: 1...7)
-                        TargetStepper(title: "Weigh-ins", value: $weeklyWeighInTarget, range: 1...7)
+                        TargetStepper(title: "On-plan days", subtitle: "Days you follow your plan intentionally.", value: $weeklyDietTarget, range: 1...7)
+                        TargetStepper(title: "Movement days", subtitle: "Walks, workouts, or any intentional movement.", value: $weeklyMovementTarget, range: 1...7)
+                        TargetStepper(title: "Weight logs", subtitle: "How often you want to check your trend.", value: $weeklyWeighInTarget, range: 1...7)
                     }
                 }
 
@@ -2648,7 +3355,7 @@ struct CreateGoalSheet: View {
         case .dietDays:
             return "Follow diet \(targetText) days \(periodCopy)"
         case .movementDays:
-            return "Move \(targetText) days \(periodCopy)"
+            return "Move your body \(targetText) days \(periodCopy)"
         case .weighIns:
             return "Log weight \(targetText) times \(periodCopy)"
         case .weightTarget:
@@ -2762,6 +3469,8 @@ struct SmallChoiceButton: View {
 
 struct WeightTrendChart: View {
     let points: [TrendPoint]
+    var unit: String
+    var lineColor: Color = AppTheme.primary
 
     var body: some View {
         GeometryReader { proxy in
@@ -2795,10 +3504,10 @@ struct WeightTrendChart: View {
 
                 if points.count > 1 {
                     ChartAreaPath(points: points, leftPadding: leftPadding, topPadding: topPadding, width: width, height: height, minY: scale.minY, maxY: scale.maxY)
-                        .fill(AppTheme.primary.opacity(0.10))
+                        .fill(lineColor.opacity(0.10))
 
                     ChartLinePath(points: points, leftPadding: leftPadding, topPadding: topPadding, width: width, height: height, minY: scale.minY, maxY: scale.maxY)
-                        .stroke(AppTheme.primary, lineWidth: 3)
+                        .stroke(lineColor, lineWidth: 3)
                 }
 
                 ForEach(Array(points.enumerated()), id: \.element.id) { index, point in
@@ -2806,7 +3515,7 @@ struct WeightTrendChart: View {
                     let y = topPadding + CGFloat(scale.normalizedY(for: point.weight)) * height
 
                     Circle()
-                        .fill(AppTheme.primary)
+                        .fill(lineColor)
                         .frame(width: 12, height: 12)
                         .overlay(Circle().stroke(.white, lineWidth: 2))
                         .position(x: x, y: y)
@@ -2822,7 +3531,7 @@ struct WeightTrendChart: View {
                         )
                 }
 
-                Text("kg")
+                Text(unit)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
                     .foregroundStyle(AppTheme.secondaryText)
                     .position(x: 18, y: proxy.size.height - 18)

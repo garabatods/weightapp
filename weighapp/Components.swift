@@ -117,11 +117,12 @@ struct SecondaryHeader: View {
 
 struct AppCard<Content: View>: View {
     var tint: Bool = false
+    var padding: CGFloat = 16
     @ViewBuilder let content: Content
 
     var body: some View {
         content
-            .padding(16)
+            .padding(padding)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(tint ? AppTheme.cardTint : AppTheme.card)
@@ -139,25 +140,30 @@ struct IconBubble: View {
     var tone: IconTone = .neutral
     var color: Color? = nil
     var background: Color? = nil
+    var size: CGFloat = 50
 
     var body: some View {
         ZStack {
             Circle().fill(background ?? tone.background)
             Image(systemName: symbol)
-                .font(.system(size: 22, weight: .bold))
+                .font(.system(size: size * 0.44, weight: .bold))
                 .foregroundStyle(color ?? tone.foreground)
         }
-        .frame(width: 50, height: 50)
+        .frame(width: size, height: size)
     }
 }
 
 struct PrimaryButton: View {
     let title: String
     var systemImage: String?
+    var isEnabled = true
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            guard isEnabled else { return }
+            action()
+        } label: {
             HStack(spacing: 12) {
                 if let systemImage {
                     Image(systemName: systemImage)
@@ -173,11 +179,12 @@ struct PrimaryButton: View {
             .frame(minHeight: 58)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(AppTheme.primary)
-                    .shadow(color: AppTheme.primary.opacity(0.22), radius: 14, y: 7)
+                    .fill(isEnabled ? AppTheme.primary : AppTheme.primary.opacity(0.34))
+                    .shadow(color: isEnabled ? AppTheme.primary.opacity(0.22) : .clear, radius: 14, y: 7)
             )
         }
         .buttonStyle(.plain)
+        .disabled(!isEnabled)
     }
 }
 
@@ -193,21 +200,24 @@ struct StatCard: View {
                     value: String(format: "%.1f", progress.currentWeight),
                     unit: progress.unit,
                     label: "Current weight",
-                    valueColor: AppTheme.primary
+                    valueColor: AppTheme.primary,
+                    iconTone: .info
                 )
                 VerticalDivider()
                 MetricColumn(
                     icon: showIcons ? "arrow.down.forward" : nil,
                     value: String(format: "%.1f", progress.totalLost),
                     unit: progress.unit,
-                    label: "Total lost"
+                    label: "Total lost",
+                    iconTone: .success
                 )
                 VerticalDivider()
                 MetricColumn(
                     icon: showIcons ? "target" : nil,
                     value: String(format: "%.1f", progress.goalWeight),
                     unit: progress.unit,
-                    label: "Goal weight"
+                    label: "Goal weight",
+                    iconTone: .primary
                 )
             }
         }
@@ -253,10 +263,12 @@ struct MetricColumn: View {
 }
 
 struct VerticalDivider: View {
+    var height: CGFloat = 48
+
     var body: some View {
         Rectangle()
             .fill(AppTheme.divider)
-            .frame(width: 1, height: 48)
+            .frame(width: 1, height: height)
             .padding(.horizontal, 6)
     }
 }
@@ -427,19 +439,20 @@ struct CheckInCard: View {
 struct GoalCard: View {
     let goal: Goal
     var mode: GoalCardMode
+    var density: GoalCardDensity = .regular
     var isCompleted = false
     var onEdit: (() -> Void)?
     var onDelete: (() -> Void)?
 
     var body: some View {
-        AppCard {
-            HStack(alignment: .top, spacing: 18) {
-                IconBubble(symbol: goalIcon, tone: goalIconTone)
+        AppCard(padding: density.cardPadding) {
+            HStack(alignment: .top, spacing: density.outerSpacing) {
+                IconBubble(symbol: goalIcon, tone: goalIconTone, size: density.iconSize)
 
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: density.contentSpacing) {
+                    HStack(alignment: .top, spacing: density.headerSpacing) {
                         Text(goal.title)
-                            .font(.system(size: 21, weight: .bold, design: .rounded))
+                            .font(.system(size: density.titleSize, weight: .bold, design: .rounded))
                             .foregroundStyle(AppTheme.text)
                             .lineLimit(2)
                             .minimumScaleFactor(0.82)
@@ -455,47 +468,50 @@ struct GoalCard: View {
                                 }
                             } label: {
                                 Image(systemName: "ellipsis")
-                                    .font(.system(size: 18, weight: .bold))
+                                    .font(.system(size: density.menuIconSize, weight: .bold))
                                     .foregroundStyle(AppTheme.secondaryText)
-                                    .frame(width: 38, height: 38)
+                                    .frame(width: density.actionSize, height: density.actionSize)
                                     .background(Circle().fill(AppTheme.mint.opacity(0.55)))
                             }
                             .buttonStyle(.plain)
-                        } else if mode.isCompleted || isCompleted {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 22, weight: .heavy))
-                                .foregroundStyle(.white)
-                                .frame(width: 46, height: 46)
-                                .background(Circle().fill(AppTheme.primary))
                         }
                     }
 
                     switch mode {
                     case .count(let current, let target, let label):
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack(alignment: .firstTextBaseline, spacing: 7) {
-                                Text("\(current)")
-                                    .font(.system(size: 37, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(AppTheme.primary)
-                                Text("/ \(target)")
-                                    .font(.system(size: 31, weight: .bold, design: .rounded))
-                                    .foregroundStyle(AppTheme.secondaryText)
-                            }
-                            if let label {
-                                Text(label)
-                                    .font(.system(size: 17, weight: .medium, design: .rounded))
-                                    .foregroundStyle(AppTheme.secondaryText)
-                            }
-                            ProgressBar(value: Double(current), total: Double(target), segments: target)
-                        }
+                        countGoalContent(current: current, target: target, label: label)
                     case .weight(let current, let toGo, let target, let unit, let progressValue, let totalValue):
-                        VStack(spacing: 14) {
+                        VStack(spacing: density.metricSpacing) {
                             HStack(spacing: 0) {
-                                WeightMetric(value: String(format: "%.1f", current), unit: unit, label: "Current")
-                                VerticalDivider()
-                                WeightMetric(value: String(format: "%.1f", toGo), unit: unit, label: "To go")
-                                VerticalDivider()
-                                WeightMetric(value: String(format: "%.1f", target), unit: unit, label: "Goal")
+                                WeightMetric(
+                                    value: String(format: "%.1f", current),
+                                    unit: unit,
+                                    label: "Current",
+                                    valueSize: density.weightValueSize,
+                                    unitSize: density.weightUnitSize,
+                                    labelSize: density.weightLabelSize,
+                                    spacing: density.weightMetricSpacing
+                                )
+                                VerticalDivider(height: density.dividerHeight)
+                                WeightMetric(
+                                    value: String(format: "%.1f", toGo),
+                                    unit: unit,
+                                    label: "To go",
+                                    valueSize: density.weightValueSize,
+                                    unitSize: density.weightUnitSize,
+                                    labelSize: density.weightLabelSize,
+                                    spacing: density.weightMetricSpacing
+                                )
+                                VerticalDivider(height: density.dividerHeight)
+                                WeightMetric(
+                                    value: String(format: "%.1f", target),
+                                    unit: unit,
+                                    label: "Goal",
+                                    valueSize: density.weightValueSize,
+                                    unitSize: density.weightUnitSize,
+                                    labelSize: density.weightLabelSize,
+                                    spacing: density.weightMetricSpacing
+                                )
                             }
                             ProgressBar(value: progressValue, total: totalValue)
                         }
@@ -509,6 +525,58 @@ struct GoalCard: View {
         }
     }
 
+    private func countGoalContent(current: Int, target: Int, label: String?) -> some View {
+        VStack(alignment: .leading, spacing: density.metricSpacing) {
+            if density == .compact, let label {
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        countValue(current: current, target: target)
+                        Text(label)
+                            .font(.system(size: density.helperSize, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.78)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        countValue(current: current, target: target)
+                        Text(label)
+                            .font(.system(size: density.helperSize, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.78)
+                    }
+                }
+            } else {
+                countValue(current: current, target: target)
+                if let label {
+                    Text(label)
+                        .font(.system(size: density.helperSize, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                }
+            }
+
+            ProgressBar(value: Double(current), total: Double(target), segments: target)
+        }
+    }
+
+    private func countValue(current: Int, target: Int) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: density.countSpacing) {
+            Text("\(current)")
+                .font(.system(size: density.countCurrentSize, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppTheme.primary)
+            Text("/ \(target)")
+                .font(.system(size: density.countTargetSize, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.secondaryText)
+        }
+    }
+
+    private var isGoalCompleted: Bool {
+        mode.isCompleted || isCompleted
+    }
+
     private static let completedDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
@@ -516,28 +584,167 @@ struct GoalCard: View {
     }()
 
     private var goalIcon: String {
+        if isGoalCompleted {
+            return "checkmark"
+        }
+
         switch goal.type {
         case .dietDays:
-            "flag.fill"
+            return "flag.fill"
         case .weightTarget:
-            "scalemass"
+            return "scalemass"
         case .movementDays:
-            "shoeprints.fill"
+            return "shoeprints.fill"
         case .weighIns:
-            "calendar.badge.checkmark"
+            return "calendar.badge.checkmark"
         }
     }
 
     private var goalIconTone: IconTone {
-        if mode.isCompleted || isCompleted {
+        if isGoalCompleted {
             return .success
         }
 
         switch goal.type {
-        case .movementDays, .weighIns:
+        case .dietDays:
+            return .primary
+        case .movementDays:
+            return .movement
+        case .weightTarget:
             return .info
-        case .dietDays, .weightTarget:
-            return .neutral
+        case .weighIns:
+            return .info
+        }
+    }
+}
+
+enum GoalCardDensity: Equatable {
+    case regular
+    case compact
+
+    var cardPadding: CGFloat {
+        switch self {
+        case .regular: 16
+        case .compact: 14
+        }
+    }
+
+    var outerSpacing: CGFloat {
+        switch self {
+        case .regular: 18
+        case .compact: 12
+        }
+    }
+
+    var contentSpacing: CGFloat {
+        switch self {
+        case .regular: 14
+        case .compact: 9
+        }
+    }
+
+    var headerSpacing: CGFloat {
+        switch self {
+        case .regular: 12
+        case .compact: 8
+        }
+    }
+
+    var iconSize: CGFloat {
+        switch self {
+        case .regular: 50
+        case .compact: 42
+        }
+    }
+
+    var actionSize: CGFloat {
+        switch self {
+        case .regular: 46
+        case .compact: 38
+        }
+    }
+
+    var menuIconSize: CGFloat {
+        switch self {
+        case .regular: 18
+        case .compact: 16
+        }
+    }
+
+    var titleSize: CGFloat {
+        switch self {
+        case .regular: 21
+        case .compact: 18
+        }
+    }
+
+    var metricSpacing: CGFloat {
+        switch self {
+        case .regular: 12
+        case .compact: 8
+        }
+    }
+
+    var countSpacing: CGFloat {
+        switch self {
+        case .regular: 7
+        case .compact: 5
+        }
+    }
+
+    var countCurrentSize: CGFloat {
+        switch self {
+        case .regular: 37
+        case .compact: 29
+        }
+    }
+
+    var countTargetSize: CGFloat {
+        switch self {
+        case .regular: 31
+        case .compact: 24
+        }
+    }
+
+    var helperSize: CGFloat {
+        switch self {
+        case .regular: 17
+        case .compact: 14
+        }
+    }
+
+    var weightValueSize: CGFloat {
+        switch self {
+        case .regular: 25
+        case .compact: 21
+        }
+    }
+
+    var weightUnitSize: CGFloat {
+        switch self {
+        case .regular: 14
+        case .compact: 12
+        }
+    }
+
+    var weightLabelSize: CGFloat {
+        switch self {
+        case .regular: 14
+        case .compact: 12
+        }
+    }
+
+    var weightMetricSpacing: CGFloat {
+        switch self {
+        case .regular: 6
+        case .compact: 4
+        }
+    }
+
+    var dividerHeight: CGFloat {
+        switch self {
+        case .regular: 48
+        case .compact: 38
         }
     }
 }
@@ -571,20 +778,24 @@ struct WeightMetric: View {
     let unit: String
     let label: String
     var valueColor: Color = AppTheme.text
+    var valueSize: CGFloat = 25
+    var unitSize: CGFloat = 14
+    var labelSize: CGFloat = 14
+    var spacing: CGFloat = 6
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: spacing) {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text(value)
-                    .font(.system(size: 25, weight: .heavy, design: .rounded))
+                    .font(.system(size: valueSize, weight: .heavy, design: .rounded))
                 Text(unit)
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .font(.system(size: unitSize, weight: .semibold, design: .rounded))
             }
             .foregroundStyle(valueColor)
             .lineLimit(1)
             .minimumScaleFactor(0.78)
             Text(label)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .font(.system(size: labelSize, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.secondaryText)
         }
         .frame(maxWidth: .infinity)

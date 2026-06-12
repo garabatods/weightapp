@@ -1,6 +1,6 @@
 # WeighApp Current State
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
 
 ## Product Summary
 
@@ -15,9 +15,11 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 ## What The App Can Do
 
 - First-run onboarding:
-  - 4-step onboarding for optional name, weight unit, baseline weights, weekly targets, optional check-in reminder setup, and optional Flex Days setup.
+  - 5-step onboarding for optional name, weight unit, baseline weights, optional body measurements, weekly targets, optional check-in reminder setup, and optional Flex Days setup.
   - Supports `kg` and `lb`.
   - Unit changes in onboarding convert starting/current/goal weight fields immediately.
+  - Optional body measurements capture chest, waist, and hips with `cm` or `in` units and seed measurement history when any value is entered.
+  - Required onboarding CTAs stay disabled until required fields are valid; optional name and measurements steps show `Skip` when blank and `Continue` once optional input is entered.
   - Reminder setup defaults off and only requests notification permission if enabled when onboarding completes.
   - Flex Days default off and let the user select fixed planned weekdays without auto-selecting days.
 
@@ -27,6 +29,7 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
   - 4 main tabs using native iOS `TabView`: Today, Progress, Goals, History.
   - Main tab headers include a top-right profile/avatar button.
   - Profile opens as a full-screen flow, not a fifth tab.
+  - Weekly target controls use a custom minus/value/plus counter instead of the native right-side `Stepper`.
 
 - Today:
   - Shows a compact daily check-in card.
@@ -47,17 +50,21 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
   - Captures movement: `Yes` or `No`.
   - Supports optional weight entry.
   - If a weight is saved, it creates or updates today’s `WeightEntry`.
+  - Includes a collapsed optional body measurements section for chest, waist, and hips.
+  - If measurements are expanded and at least one value is saved, it creates or updates today’s `BodyMeasurementEntry`.
 
 - Progress:
-  - Shows current weight, total lost, goal weight, 6-week weight trend chart, and monthly consistency.
+  - Shows current weight, total lost, goal weight, true-range weight trend chart, body measurements trend, and monthly consistency.
+  - Weight trend supports `6W`, `3M`, and `All` range filters based on real entry dates.
   - Includes `Add past weight` for manually entering older weigh-ins from notes or prior tracking.
   - Past weight entries update the chart, history dots, and weigh-in goals without creating fake habit check-ins.
+  - Body measurements show latest chest, waist, and hips values, change from first logged value, and a segmented Chest/Waist/Hips trend chart.
 
 - Goals:
   - Uses a hybrid goals model.
   - Four core goals are always present and derived from the profile:
     - Follow diet X days per week.
-    - Move X days per week.
+    - Move your body X days per week.
     - Log weight X times per week.
     - Reach target weight.
   - `Adjust targets` edits profile targets and refreshes Today, Progress, and Goals.
@@ -115,7 +122,7 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 ## SwiftData Models
 
 - `UserProfile`
-  - Stores starting/current/goal weight, unit, weekly targets, optional display name, optional profile image data, optional check-in reminder settings, optional Flex Day settings, and timestamps.
+  - Stores starting/current/goal weight, unit, optional baseline body measurements, weekly targets, optional display name, optional profile image data, optional check-in reminder settings, optional Flex Day settings, and timestamps.
 
 - `DailyCheckIn`
   - Stores one daily habit check-in: date, diet status, moved boolean, optional weight, and timestamps.
@@ -125,6 +132,12 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 - `WeightEntry`
   - Stores standalone weigh-ins by date.
   - Used for current/latest weight, trend chart, history weigh-in dots, and weigh-in goals.
+  - One entry per calendar day by behavior.
+
+- `BodyMeasurementEntry`
+  - Stores standalone body measurement snapshots by date.
+  - Supports optional chest, waist, and hips values plus `cm` or `in` unit.
+  - Used for the Progress measurement summary and trend chart.
   - One entry per calendar day by behavior.
 
 - `Goal`
@@ -141,7 +154,9 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 - No network or account system exists.
 - Today’s check-in updates existing check-in for the day instead of creating duplicates.
 - Saving a check-in weight upserts today’s `WeightEntry`.
+- Saving check-in body measurements upserts today’s `BodyMeasurementEntry`.
 - Adding a past weight upserts a `WeightEntry` for that date only.
+- Existing baseline measurement values backfill one `BodyMeasurementEntry` when measurement history is empty.
 - Habit streaks and consistency are based on real `DailyCheckIn` records, not standalone weight entries.
 - Flex Days pause streaks and do not increment or break them.
 - Planned Flex weekdays pause streaks even if no check-in is saved for that Flex Day.
@@ -149,6 +164,7 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 - Diet goal progress counts only `yes`; saved Flex Days are not counted as completed or missed diet days.
 - Monthly consistency is `yes / checked-in non-flex days`; saved Flex Days are excluded from the denominator.
 - Weight trend and weigh-in counts are based on `WeightEntry`.
+- Body measurement trends are based on `BodyMeasurementEntry`.
 - Core goals are recreated/normalized on app launch if missing or duplicated.
 - Runtime backfill creates `WeightEntry` records from older `DailyCheckIn.weight` values when needed.
 - Reminder scheduling refreshes on app launch, foreground activation, reminder settings changes, and daily check-in saves.

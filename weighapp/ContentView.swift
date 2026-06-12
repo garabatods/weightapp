@@ -8,6 +8,7 @@ struct ContentView: View {
     @Query(sort: \UserProfile.createdAt) private var profiles: [UserProfile]
     @Query(sort: \DailyCheckIn.date) private var checkIns: [DailyCheckIn]
     @Query(sort: \WeightEntry.date) private var weightEntries: [WeightEntry]
+    @Query(sort: \BodyMeasurementEntry.date) private var measurementEntries: [BodyMeasurementEntry]
     @Query(sort: \Goal.createdAt) private var goals: [Goal]
 
     @State private var isShowingLaunchSplash = true
@@ -36,7 +37,7 @@ struct ContentView: View {
     private var appContent: some View {
         Group {
             if let profile = profiles.first {
-                MainAppShell(profile: profile, checkIns: checkIns, weightEntries: weightEntries, goals: goals)
+                MainAppShell(profile: profile, checkIns: checkIns, weightEntries: weightEntries, measurementEntries: measurementEntries, goals: goals)
             } else {
                 OnboardingScreen { setup in
                     createProfile(setup)
@@ -88,10 +89,31 @@ struct ContentView: View {
             checkInReminderHour: setup.checkInReminderHour,
             checkInReminderMinute: setup.checkInReminderMinute,
             flexDaysEnabled: setup.flexDaysEnabled,
-            flexWeekdayMask: setup.flexWeekdayMask
+            flexWeekdayMask: setup.flexWeekdayMask,
+            chestMeasurement: setup.chestMeasurement,
+            waistMeasurement: setup.waistMeasurement,
+            hipsMeasurement: setup.hipsMeasurement,
+            bodyMeasurementUnit: setup.bodyMeasurementUnit
         )
         modelContext.insert(profile)
         modelContext.insert(WeightEntry(date: Date(), weight: setup.currentWeight))
+        let measurementSnapshot = BodyMeasurementSnapshot(
+            chest: setup.chestMeasurement,
+            waist: setup.waistMeasurement,
+            hips: setup.hipsMeasurement,
+            unit: setup.bodyMeasurementUnit
+        )
+        if measurementSnapshot.hasAnyValue {
+            modelContext.insert(
+                BodyMeasurementEntry(
+                    date: Date(),
+                    chest: measurementSnapshot.chest,
+                    waist: measurementSnapshot.waist,
+                    hips: measurementSnapshot.hips,
+                    unit: measurementSnapshot.unit
+                )
+            )
+        }
         Goal.defaults(for: profile).forEach(modelContext.insert)
         try? modelContext.save()
         Task { @MainActor in
@@ -183,6 +205,7 @@ struct MainAppShell: View {
     let profile: UserProfile
     let checkIns: [DailyCheckIn]
     let weightEntries: [WeightEntry]
+    let measurementEntries: [BodyMeasurementEntry]
     let goals: [Goal]
 
     @State private var selectedTab: AppTab = .today
@@ -193,7 +216,7 @@ struct MainAppShell: View {
     @State private var isAddingPastWeight = false
 
     private var metrics: TrackerMetrics {
-        TrackerMetrics(profile: profile, checkIns: checkIns, weightEntries: weightEntries, goals: goals, displayedMonth: displayedMonth)
+        TrackerMetrics(profile: profile, checkIns: checkIns, weightEntries: weightEntries, measurementEntries: measurementEntries, goals: goals, displayedMonth: displayedMonth)
     }
 
     var body: some View {
@@ -204,6 +227,7 @@ struct MainAppShell: View {
                 CheckInScreen(
                     profile: profile,
                     existingCheckIn: metrics.todayCheckIn,
+                    latestMeasurement: metrics.latestMeasurementSnapshot,
                     onCancel: { isCheckingIn = false },
                     onSave: saveCheckIn
                 )
@@ -341,6 +365,7 @@ struct MainAppShell: View {
         }
         .task {
             backfillWeightEntries()
+            backfillBodyMeasurementEntries()
             ensureCoreGoals()
             refreshGoals()
             await CheckInReminderScheduler.refresh(profile: profile, checkIns: checkIns)
@@ -360,7 +385,7 @@ struct MainAppShell: View {
         }
     }
 
-    private func saveCheckIn(dietStatus: DietStatus, moved: Bool, weight: Double?) {
+    private func saveCheckIn(dietStatus: DietStatus, moved: Bool, weight: Double?, measurement: BodyMeasurementSnapshot?) {
         let today = Calendar.current.startOfDay(for: Date())
         let hadWeight = metrics.todayCheckIn?.weight != nil
         let savedCheckIn: DailyCheckIn
@@ -388,6 +413,10 @@ struct MainAppShell: View {
             modelContext.delete(existingEntry)
             profile.currentWeight = latestWeightExcluding(date: today) ?? profile.currentWeight
             profile.updatedAt = Date()
+        }
+
+        if let measurement, measurement.hasAnyValue {
+            upsertBodyMeasurementEntry(on: today, snapshot: measurement)
         }
 
         ensureCoreGoals()
@@ -429,7 +458,7 @@ struct MainAppShell: View {
                 .forEach { updateCoreGoal($0, type: type) }
         }
 
-        let freshMetrics = TrackerMetrics(profile: profile, checkIns: checkIns, weightEntries: weightEntries, goals: goals, displayedMonth: displayedMonth)
+        let freshMetrics = TrackerMetrics(profile: profile, checkIns: checkIns, weightEntries: weightEntries, measurementEntries: measurementEntries, goals: goals, displayedMonth: displayedMonth)
         for goal in goals {
             goal.currentValue = freshMetrics.currentValue(for: goal)
             let status = freshMetrics.displayStatus(for: goal)
@@ -554,6 +583,7 @@ struct MainAppShell: View {
         }
         checkIns.forEach(modelContext.delete)
         weightEntries.forEach(modelContext.delete)
+        measurementEntries.forEach(modelContext.delete)
         goals.forEach(modelContext.delete)
         modelContext.delete(profile)
         try? modelContext.save()
@@ -600,6 +630,27 @@ struct MainAppShell: View {
         }
     }
 
+    private func upsertBodyMeasurementEntry(on date: Date, snapshot: BodyMeasurementSnapshot) {
+        let day = Calendar.current.startOfDay(for: date)
+        if let existing = bodyMeasurementEntry(on: day) {
+            existing.chest = snapshot.chest
+            existing.waist = snapshot.waist
+            existing.hips = snapshot.hips
+            existing.unit = snapshot.unit
+            existing.updatedAt = Date()
+        } else {
+            modelContext.insert(
+                BodyMeasurementEntry(
+                    date: day,
+                    chest: snapshot.chest,
+                    waist: snapshot.waist,
+                    hips: snapshot.hips,
+                    unit: snapshot.unit
+                )
+            )
+        }
+    }
+
     private func backfillWeightEntries() {
         var didInsert = false
         for checkIn in checkIns {
@@ -625,9 +676,38 @@ struct MainAppShell: View {
         }
     }
 
+    private func backfillBodyMeasurementEntries() {
+        guard measurementEntries.isEmpty else { return }
+        let snapshot = BodyMeasurementSnapshot(
+            chest: profile.chestMeasurement,
+            waist: profile.waistMeasurement,
+            hips: profile.hipsMeasurement,
+            unit: profile.bodyMeasurementUnit
+        )
+        guard snapshot.hasAnyValue else { return }
+
+        modelContext.insert(
+            BodyMeasurementEntry(
+                date: profile.createdAt,
+                chest: snapshot.chest,
+                waist: snapshot.waist,
+                hips: snapshot.hips,
+                unit: snapshot.unit,
+                createdAt: profile.createdAt,
+                updatedAt: profile.updatedAt
+            )
+        )
+        try? modelContext.save()
+    }
+
     private func weightEntry(on date: Date) -> WeightEntry? {
         let day = Calendar.current.startOfDay(for: date)
         return weightEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day) }
+    }
+
+    private func bodyMeasurementEntry(on date: Date) -> BodyMeasurementEntry? {
+        let day = Calendar.current.startOfDay(for: date)
+        return measurementEntries.first { Calendar.current.isDate($0.date, inSameDayAs: day) }
     }
 
     private var latestWeightEntry: WeightEntry? {
