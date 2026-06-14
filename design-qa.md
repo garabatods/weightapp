@@ -27,6 +27,7 @@ final result: passed
 - Confirmed placeholder glyphs/numbers were removed from the card icon slots.
 - Confirmed trust-chip placeholders were replaced with generated icons.
 - Confirmed avatar video loads with native controls and no autoplay audio.
+- Confirmed mobile trust/problem sections were refined after live review: trust icons render at 56px, problem-band icons render at 64px, and no horizontal overflow is present at 390px.
 - Confirmed reduced-motion support exists in JS and CSS: JS exits before enabling motion, and CSS disables animation/transition under `prefers-reduced-motion`.
 - Confirmed no forms, auth, backend, dashboard, check-in, or web tracking behavior was added.
 

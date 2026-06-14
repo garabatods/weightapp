@@ -1098,7 +1098,34 @@ details p {
 
   .trust-chips {
     grid-template-columns: 1fr;
+    gap: 14px;
     margin-top: 22px;
+    padding: 16px;
+    border: 1px solid var(--line-soft);
+    border-radius: 22px;
+    background: rgba(255, 253, 246, 0.54);
+    box-shadow: 0 12px 34px rgba(21, 42, 35, 0.05);
+    backdrop-filter: blur(16px);
+  }
+
+  .trust-chip {
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 14px;
+    min-height: 58px;
+  }
+
+  .trust-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+  }
+
+  .trust-chip strong {
+    font-size: 0.98rem;
+  }
+
+  .trust-chip > span > span {
+    font-size: 0.92rem;
   }
 
   .hero-visual {
@@ -1128,15 +1155,38 @@ details p {
   }
 
   .problem-band {
-    padding: 26px;
+    gap: 24px;
+    padding: 30px 26px;
   }
 
-  .problem-item,
+  .problem-title h2 {
+    font-size: clamp(2rem, 9.6vw, 2.65rem);
+  }
+
+  .problem-item {
+    grid-template-columns: 74px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+  }
+
+  .problem-item h3 {
+    font-size: 1.1rem;
+  }
+
+  .problem-item p {
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
   .step-card {
     grid-template-columns: 56px minmax(0, 1fr);
   }
 
-  .icon-circle,
+  .icon-circle {
+    width: 68px;
+    height: 68px;
+  }
+
   .step-icon {
     width: 50px;
     height: 50px;
@@ -1195,12 +1245,26 @@ details p {
 
 @media (max-width: 480px) {
   .trust-chip {
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: 56px minmax(0, 1fr);
   }
 
   .trust-icon {
-    width: 40px;
-    height: 40px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .problem-band {
+    padding: 28px 22px;
+  }
+
+  .problem-item {
+    grid-template-columns: 70px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .icon-circle {
+    width: 64px;
+    height: 64px;
   }
 }
 
