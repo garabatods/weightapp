@@ -8,8 +8,8 @@
       content="Leafstep is a private habit tracker for calmer weight-loss consistency without calorie counting, food databases, or pressure."
     >
     <title>Leafstep | Private Habit Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=20260614-platform-neutral">
-    <script src="script.js?v=20260614-platform-neutral" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20260614-download-polish">
+    <script src="script.js?v=20260614-download-polish" defer></script>
   </head>
   <body>
     <header class="site-header">
@@ -24,9 +24,9 @@
           <a href="#privacy">Privacy</a>
           <a href="#faq">FAQ</a>
         </div>
-        <!-- Replace this mailto with the beta signup or store URL when ready. -->
-        <a class="button button-primary header-cta" href="mailto:hello@leafstep.app?subject=Leafstep%20beta">
-          Join the beta
+        <!-- Replace this placeholder with store badge links when they are ready. -->
+        <a class="button button-primary header-cta" href="#download">
+          Download the app
         </a>
       </nav>
     </header>
@@ -46,8 +46,8 @@
             trend follow without calorie counting, food databases, or pressure.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
-            <a class="button button-primary button-large" href="mailto:hello@leafstep.app?subject=Leafstep%20beta">
-              Join the beta
+            <a class="button button-primary button-large" href="#download">
+              Download the app
             </a>
             <a class="button button-secondary button-large" href="#how-it-works">See how it works</a>
           </div>
@@ -69,21 +69,22 @@
             <div class="trust-chip">
               <img class="trust-icon" src="assets/icons/trust-local-iphone.png" alt="" width="34" height="34">
               <span>
-                <strong>Local-first privacy</strong>
+                <strong>Built for mobile</strong>
                 <span>Your data stays with you.</span>
               </span>
             </div>
           </div>
         </div>
 
-        <div class="hero-visual" aria-label="A calm Leafstep moment on mobile">
-          <figure class="hero-photo-card">
-            <img
-              src="assets/hero/leafstep-lifestyle-phone.png"
-              alt="A person sitting in a calm home while holding a phone."
-              width="1264"
-              height="848"
-            >
+        <div class="hero-visual app-preview-stack" aria-label="Leafstep mobile app screen previews">
+          <figure class="app-phone app-phone-left">
+            <img src="assets/screens/progress.png" alt="Leafstep Progress screen showing a calm weight trend preview." width="390" height="844">
+          </figure>
+          <figure class="app-phone app-phone-main">
+            <img src="assets/screens/today.png" alt="Leafstep Today screen showing a simple daily check-in preview." width="390" height="844">
+          </figure>
+          <figure class="app-phone app-phone-right">
+            <img src="assets/screens/history.png" alt="Leafstep History screen showing a monthly consistency calendar." width="390" height="844">
           </figure>
           <div class="hero-badges" aria-hidden="true">
             <div class="mini-badge">
@@ -127,30 +128,6 @@
             <p>Today stays simple. Deeper trends live where they belong.</p>
           </div>
         </article>
-      </section>
-
-      <section class="video-section" aria-labelledby="video-title">
-        <div class="video-copy">
-          <p class="section-eyebrow">Meet Leafstep</p>
-          <h2 id="video-title">A calmer intro to consistency.</h2>
-          <p>
-            A quick walkthrough of the idea behind Leafstep: fewer inputs, more rhythm, and a
-            supportive place to keep showing up.
-          </p>
-        </div>
-        <figure class="video-card">
-          <video
-            controls
-            playsinline
-            preload="metadata"
-            poster="assets/video/avatar-poster.jpg"
-            width="832"
-            height="1088"
-          >
-            <source src="assets/video/ElevenLabs_video_creatify-aurora_2026-06-14T00_11_45.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-        </figure>
       </section>
 
       <section id="how-it-works" class="workflow" aria-labelledby="steps-title">
@@ -244,11 +221,13 @@
           </div>
         </article>
 
-        <article class="quote-card">
-          <span aria-hidden="true">“</span>
-          <p>Leafstep keeps me consistent without the noise. Flex Days changed everything.</p>
-          <small>— Example beta user</small>
-          <div class="quote-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <article class="principle-card">
+          <img class="principle-icon" src="assets/icons/feature-flex-days.png" alt="" width="62" height="62" loading="lazy">
+          <h2>Real life counts.</h2>
+          <p>
+            Flex Days are built for travel, stress, rest, and imperfect weeks. They help you stay
+            intentional without turning one missed day into a reason to stop.
+          </p>
         </article>
 
         <section id="faq" class="faq-card" aria-labelledby="faq-title">
@@ -261,6 +240,10 @@
             <details>
               <summary>Do I need an account?</summary>
               <p>No. Leafstep is designed to keep your data on your device, without an account or cloud dashboard.</p>
+            </details>
+            <details>
+              <summary>Is Leafstep a web app?</summary>
+              <p>No. This website is informational only. Leafstep is a downloadable mobile app.</p>
             </details>
             <details>
               <summary>What are Flex Days?</summary>
@@ -278,15 +261,14 @@
         </section>
       </section>
 
-      <section class="final-cta" aria-labelledby="final-title">
+      <section id="download" class="final-cta" aria-labelledby="final-title">
         <img src="assets/brand/app-icon.png" alt="" width="92" height="92">
         <div>
           <h2 id="final-title">Start with one small step.</h2>
           <p>Consistency today. Progress tomorrow.</p>
         </div>
         <div class="final-actions">
-          <a class="button button-primary button-large" href="mailto:hello@leafstep.app?subject=Leafstep%20beta">Join the beta</a>
-          <span>Coming soon for mobile</span>
+          <a class="button button-primary button-large" href="#download">Download the app</a>
         </div>
       </section>
     </main>

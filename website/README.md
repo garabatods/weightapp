@@ -1,6 +1,6 @@
 # Leafstep Informational Website
 
-This folder contains a static single-page informational website for the Leafstep mobile app.
+This folder contains a static single-page informational website for the downloadable Leafstep mobile app.
 
 ## Preview locally
 
@@ -18,7 +18,7 @@ http://localhost:8080
 
 ## Replace later
 
-- Replace the `mailto:` beta CTAs in `index.html` with the real beta signup or store URL.
+- Replace placeholder download CTAs in `index.html` with real store URLs or store badge assets when available.
 - Replace files in `assets/screens/` when final app screenshots are ready.
 - Replace `assets/brand/app-icon.png` if a dedicated website logo mark is created.
 
