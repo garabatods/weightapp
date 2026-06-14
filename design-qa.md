@@ -9,10 +9,10 @@ final result: passed
 
 ## Checks
 
-- Reworked the landing page toward the reference composition: serif hero, centered nav, overlapping app screen previews, trust chips, compact contrast band, workflow row, feature band, lower privacy/principle/FAQ grid, and final CTA.
+- Reworked the landing page toward the reference composition: serif hero, centered nav, warm lifestyle hero image, trust chips, compact contrast band, workflow row, feature band, lower privacy/principle/FAQ grid, and final CTA.
 - Added no-people wellness visuals: a warm journal still life and a subtle botanical paper texture.
 - Added generated no-people raster icons for all placeholder card and mini-badge icon slots.
-- Restored the hero as an app-focused static mobile UI mockup cluster.
+- Restored the human lifestyle photo as the hero visual at user request and removed the top screenshot cluster.
 - Added generated raster icons for the three hero trust chips.
 - Removed the avatar video section so no video fallback text can appear.
 - Replaced the fake testimonial with a Flex Days product principle card.
@@ -36,7 +36,7 @@ final result: passed
 
 ## Notes
 
-- The hero uses static app screenshots from `website/assets/screens/`; the supplied lifestyle image remains available but is no longer the primary hero visual.
+- The hero uses the supplied lifestyle image from `website/assets/hero/leafstep-lifestyle-phone.png`; static app screenshots remain available as assets but are no longer used in the hero.
 - Wellness assets were generated with the built-in ImageGen workflow and copied into `website/assets/wellness/`.
 - Card icons were generated with the built-in ImageGen workflow and copied into `website/assets/icons/`.
 - Trust-chip icons were generated with the built-in ImageGen workflow and copied into `website/assets/icons/`.
