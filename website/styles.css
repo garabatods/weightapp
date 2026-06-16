@@ -535,18 +535,18 @@ details {
 
 .problem-band {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1fr;
-  gap: 0;
+  grid-template-columns: minmax(250px, 1.05fr) repeat(3, minmax(210px, 1fr));
+  gap: 34px;
   align-items: stretch;
-  margin-top: 10px;
-  padding: 36px 40px;
+  margin-top: 18px;
+  padding: 46px 56px;
   border-radius: 28px;
 }
 
 .problem-title {
   display: flex;
   align-items: center;
-  padding-right: 42px;
+  padding-right: 10px;
 }
 
 .problem-title h2 {
@@ -557,11 +557,11 @@ details {
 
 .problem-item {
   display: grid;
-  grid-template-columns: 66px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
-  padding: 0 28px;
-  border-left: 1px solid var(--line-soft);
+  padding: 0 0 0 28px;
+  border-left: 1px solid rgba(15, 34, 38, 0.055);
 }
 
 .problem-item p {
@@ -600,17 +600,17 @@ img.feature-icon {
 }
 
 .icon-circle {
-  width: 66px;
-  height: 66px;
+  width: 70px;
+  height: 70px;
 }
 
 .workflow {
-  padding: 28px 0 40px;
+  padding: 58px 0 68px;
 }
 
 .center-heading {
   max-width: 720px;
-  margin: 0 auto 34px;
+  margin: 0 auto 48px;
   text-align: center;
 }
 
@@ -624,15 +624,15 @@ img.feature-icon {
 
 .step-row {
   display: grid;
-  grid-template-columns: 1fr 48px 1fr 48px 1fr;
-  gap: 22px;
+  grid-template-columns: 1fr 58px 1fr 58px 1fr;
+  gap: 32px;
   align-items: center;
 }
 
 .step-card {
   display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
-  gap: 22px;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 28px;
   align-items: start;
 }
 
@@ -654,14 +654,26 @@ img.feature-icon {
 }
 
 .feature-band {
-  padding: 28px 28px 22px;
+  padding: 46px 40px 36px;
   border-radius: 28px;
+}
+
+.feature-band .center-heading {
+  margin-bottom: 44px;
+}
+
+.feature-band .center-heading h2 {
+  max-width: 780px;
+  margin-right: auto;
+  margin-left: auto;
+  font-size: clamp(2.1rem, 2.7vw, 2.76rem);
+  line-height: 1.08;
 }
 
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 40px;
+  gap: 28px;
 }
 
 .feature-card {
@@ -882,6 +894,25 @@ details p {
   gap: 72px;
 }
 
+@media (max-width: 1320px) {
+  .problem-band {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 42px 40px;
+  }
+
+  .problem-title,
+  .problem-item {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
 @media (max-width: 1180px) {
   .site-header,
   main,
@@ -913,7 +944,8 @@ details p {
 
   .problem-band {
     grid-template-columns: 1fr;
-    gap: 22px;
+    gap: 30px;
+    padding: 42px 40px;
   }
 
   .problem-title,
@@ -924,7 +956,7 @@ details p {
 
   .feature-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
+    gap: 24px;
   }
 
   .lower-grid {
@@ -1079,8 +1111,8 @@ details p {
   }
 
   .problem-band {
-    gap: 24px;
-    padding: 30px 26px;
+    gap: 30px;
+    padding: 36px 28px;
   }
 
   .problem-title h2 {
@@ -1104,6 +1136,7 @@ details p {
 
   .step-card {
     grid-template-columns: 56px minmax(0, 1fr);
+    gap: 20px;
   }
 
   .icon-circle {
@@ -1118,6 +1151,7 @@ details p {
 
   .step-row {
     grid-template-columns: 1fr;
+    gap: 30px;
   }
 
   .step-arrow {
@@ -1126,6 +1160,27 @@ details p {
 
   .feature-grid {
     grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .workflow {
+    padding: 46px 0 56px;
+  }
+
+  .center-heading {
+    margin-bottom: 38px;
+  }
+
+  .feature-band {
+    padding: 38px 26px 30px;
+  }
+
+  .feature-band .center-heading {
+    margin-bottom: 34px;
+  }
+
+  .feature-band .center-heading h2 {
+    font-size: clamp(2rem, 9vw, 2.55rem);
   }
 
   .privacy-card {
@@ -1168,7 +1223,8 @@ details p {
   }
 
   .problem-band {
-    padding: 28px 22px;
+    gap: 28px;
+    padding: 32px 22px;
   }
 
   .problem-item {
