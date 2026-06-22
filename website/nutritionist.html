@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Leafstep Pro nutritionist workspace for privacy-preserving meal plan publishing and QR pairing."
+    >
+    <title>Leafstep Pro | Nutritionist Workspace</title>
+    <link rel="stylesheet" href="nutritionist.css?v=20260621-cms">
+    <script src="nutritionist.js?v=20260621-cms" defer></script>
+  </head>
+  <body>
+    <main>
+      <section id="login-panel" class="access-page" aria-labelledby="access-title">
+        <nav class="access-nav" aria-label="Leafstep Pro navigation">
+          <a class="brand" href="index.html" aria-label="Leafstep home">
+            <img src="assets/brand/app-icon.png" alt="" width="40" height="40">
+            <span>Leafstep <strong>Pro</strong></span>
+          </a>
+          <div class="access-nav-links">
+            <a href="index.html">Patient app</a>
+            <a href="#privacy-model">Privacy model</a>
+          </div>
+        </nav>
+
+        <div class="access-layout">
+          <section class="access-copy">
+            <p class="access-kicker">Nutritionist meal plan workspace</p>
+            <h1 id="access-title">Publish meal plans without collecting extra patient data.</h1>
+            <p class="access-lede">
+              Leafstep Pro is a supervised-care workspace for reusable meal plans, pseudonymous
+              patient slots, and short-lived QR pairing. The app stays private by default.
+            </p>
+
+            <form id="login-form" class="access-card" aria-label="Professional demo access">
+              <div>
+                <h2>Professional access</h2>
+                <p>Use the workspace access code to review the supervised-care console.</p>
+              </div>
+              <label>
+                Access code
+                <input id="access-code" autocomplete="off" placeholder="leafstep-pro">
+              </label>
+              <button class="button primary wide" type="submit">Enter workspace</button>
+              <p id="login-error" class="form-message" role="status" aria-live="polite"></p>
+            </form>
+
+            <div id="privacy-model" class="privacy-strip" aria-label="Privacy defaults">
+              <article>
+                <span class="mini-mark" aria-hidden="true"></span>
+                <strong>Private access slots</strong>
+                <p>Use internal codes only, such as Client 014 or Practice ID 7.</p>
+              </article>
+              <article>
+                <span class="mini-mark blue" aria-hidden="true"></span>
+                <strong>QR activation</strong>
+                <p>Pairing uses short-lived one-time credentials.</p>
+              </article>
+              <article>
+                <span class="mini-mark lavender" aria-hidden="true"></span>
+                <strong>No progress import</strong>
+                <p>Leafstep does not upload check-ins, weight history, or goals.</p>
+              </article>
+            </div>
+          </section>
+
+          <aside class="access-visual" aria-label="Leafstep Pro workspace preview">
+            <img
+              src="assets/pro/leafstep-pro-workspace.png"
+              alt="Leafstep Pro nutritionist workspace showing meal plans, patient slots, and a pairing code."
+              width="1792"
+              height="1024"
+            >
+          </aside>
+        </div>
+      </section>
+
+      <section id="app-panel" class="cms-shell hidden" aria-label="Leafstep Pro CMS workspace">
+        <aside class="cms-sidebar" aria-label="Workspace navigation">
+          <a class="brand cms-brand" href="index.html" aria-label="Leafstep home">
+            <img src="assets/brand/app-icon.png" alt="" width="38" height="38">
+            <span>Leafstep <strong>Pro</strong></span>
+          </a>
+
+          <nav class="cms-nav" aria-label="Workspace sections">
+            <button class="nav-item active" type="button" data-view="overview" aria-pressed="true">Overview</button>
+            <button class="nav-item" type="button" data-view="meal-plans" aria-pressed="false">Plans</button>
+            <button class="nav-item" type="button" data-view="patient-slots" aria-pressed="false">Client Access</button>
+            <button class="nav-item" type="button" data-view="pairing-codes" aria-pressed="false">Pairing Links</button>
+            <button class="nav-item" type="button" data-view="privacy" aria-pressed="false">Privacy</button>
+          </nav>
+
+          <section class="sidebar-card">
+            <h2>Privacy first</h2>
+            <p>
+              Use internal codes only. Do not enter names, initials, email, diagnosis, weight,
+              goals, measurements, check-ins, or app history.
+            </p>
+          </section>
+
+          <button id="reset-demo" class="button subtle wide" type="button">Restore sample workspace</button>
+        </aside>
+
+        <div class="cms-main">
+          <header class="cms-topbar">
+            <div>
+              <p id="view-kicker" class="topline">Practice workspace</p>
+              <h1 id="view-title">Meal plan publishing console</h1>
+            </div>
+            <div class="topbar-actions">
+              <label id="search-wrapper" class="search-field">
+                <span id="search-label">Search</span>
+                <input id="workspace-search" type="search" placeholder="Search plans, slots, or codes">
+              </label>
+              <button id="quick-plan-action" class="button subtle" type="button" data-open-plan>Create plan</button>
+              <button id="quick-slot-action" class="button primary" type="button" data-focus-slot>Create access slot</button>
+            </div>
+          </header>
+
+          <section id="overview" class="dashboard-section view-panel active-view" data-view-panel="overview" aria-labelledby="overview-title">
+            <div class="section-heading">
+              <div>
+                <p class="topline">Overview</p>
+                <h2 id="overview-title">Workspace status</h2>
+              </div>
+              <p class="section-note">Plans you publish appear read-only in the Leafstep app.</p>
+            </div>
+            <div id="metric-grid" class="metric-grid" aria-live="polite"></div>
+            <div class="overview-grid">
+              <section class="panel next-steps-panel" aria-labelledby="next-steps-title">
+                <div class="panel-head">
+                  <h3 id="next-steps-title">Next steps</h3>
+                </div>
+                <ol class="next-steps">
+                  <li>Create or review a reusable meal plan.</li>
+                  <li>Create a private access slot with an internal code.</li>
+                  <li>Generate a one-time pairing link when the patient is ready.</li>
+                </ol>
+              </section>
+
+              <section class="panel table-panel" aria-labelledby="recent-plans-title">
+                <div class="panel-head">
+                  <h3 id="recent-plans-title">Recently updated plans</h3>
+                  <button class="button subtle" type="button" data-view-shortcut="meal-plans">View plans</button>
+                </div>
+                <div id="overview-plan-list" class="record-list compact"></div>
+              </section>
+
+              <section class="panel table-panel" aria-labelledby="recent-activity-title">
+                <div class="panel-head">
+                  <h3 id="recent-activity-title">Pairing activity</h3>
+                  <button class="button subtle" type="button" data-view-shortcut="pairing-codes">View links</button>
+                </div>
+                <div id="overview-activity-list" class="record-list compact"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="meal-plans" class="workspace-grid dashboard-section view-panel" data-view-panel="meal-plans" aria-labelledby="plans-title">
+            <div class="section-heading full-row">
+              <div>
+                <p class="topline">Reusable guidance</p>
+                <h2 id="plans-title">Library and plan preview</h2>
+              </div>
+              <div class="heading-actions">
+                <button id="seed-plan" class="button subtle" type="button">Add template</button>
+                <button class="button primary" type="button" data-open-plan>Create plan</button>
+              </div>
+            </div>
+
+            <section class="panel table-panel" aria-label="Meal plan library">
+              <div class="panel-head">
+                <h3>Plan library</h3>
+                <span id="plan-count" class="count-label"></span>
+              </div>
+              <div id="plan-list" class="record-list" aria-live="polite"></div>
+            </section>
+
+            <aside id="plan-detail" class="panel detail-panel" aria-live="polite"></aside>
+          </section>
+
+          <section id="patient-slots" class="dashboard-section split-section view-panel" data-view-panel="patient-slots" aria-labelledby="patients-title">
+            <div class="section-heading">
+              <div>
+                <p class="topline">Pseudonymous access</p>
+                <h2 id="patients-title">Assign plans and generate access</h2>
+              </div>
+            </div>
+
+            <div class="split-grid">
+              <form id="patient-form" class="panel slot-form">
+                <h3>Create access slot</h3>
+                <p>Use an internal code only. Do not enter names, initials, email, diagnosis, weight, goals, measurements, or app history.</p>
+                <label>
+                  Internal reference
+                  <input id="patient-label" placeholder="Client 014" required>
+                </label>
+                <label>
+                  Active plan
+                  <select id="patient-plan" required></select>
+                </label>
+                <button class="button primary wide" type="submit">Create access slot</button>
+              </form>
+
+              <section class="panel table-panel" aria-label="Patient slot table">
+                <div class="panel-head">
+                  <h3>Assigned slots</h3>
+                  <span id="patient-count" class="count-label"></span>
+                </div>
+                <div id="patient-list" class="record-list compact" aria-live="polite"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="pairing-codes" class="dashboard-section split-section view-panel" data-view-panel="pairing-codes" aria-labelledby="codes-title">
+            <div class="section-heading">
+              <div>
+                <p class="topline">Pairing access</p>
+                <h2 id="codes-title">Access history</h2>
+              </div>
+              <p class="section-note">
+                Pairing links are short-lived, one-time access credentials.
+              </p>
+            </div>
+            <section class="panel table-panel">
+              <div class="panel-head">
+                <h3>Recent access</h3>
+                <span id="code-count" class="count-label"></span>
+              </div>
+              <div id="code-list" class="record-list compact" aria-live="polite"></div>
+            </section>
+          </section>
+
+          <section id="privacy" class="dashboard-section privacy-panel view-panel" data-view-panel="privacy" aria-labelledby="privacy-title">
+            <div>
+              <p class="topline">Privacy boundary</p>
+              <h2 id="privacy-title">What Leafstep Pro intentionally avoids</h2>
+              <p>
+                Leafstep Pro only publishes meal guidance and pairing access. It does not
+                become an EHR, food database, messaging system, or remote progress dashboard.
+              </p>
+            </div>
+            <ul class="privacy-checks">
+              <li>No patient email, full name, diagnosis, or weight history</li>
+              <li>No check-ins, goals, measurements, achievements, or app history uploaded</li>
+              <li>No calories, macros, barcode scanning, meal logging, or food database</li>
+              <li>Patient can disconnect and delete the local cached meal plan</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="plan-dialog" class="modal-card" aria-labelledby="plan-dialog-title">
+      <form id="plan-form" method="dialog" class="plan-form">
+        <div class="modal-head">
+          <div>
+            <p class="topline">Meal plan editor</p>
+            <h2 id="plan-dialog-title">Create plan</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Close plan editor"></button>
+        </div>
+
+        <input id="plan-id" type="hidden">
+        <div class="form-grid">
+          <label>
+            Plan title
+            <input id="plan-title" placeholder="Steady Week Meal Plan" required>
+          </label>
+          <label>
+            Effective dates
+            <input id="plan-effective" placeholder="June 24 - June 30" required>
+          </label>
+          <label class="full">
+            Nutritionist note
+            <textarea id="plan-note" rows="3" placeholder="Portions, timing, swaps, and supportive context. No calorie or macro database."></textarea>
+          </label>
+        </div>
+
+        <div class="meal-editor">
+          <div class="meal-editor-head">
+            <h3>Structured meals</h3>
+            <button id="add-meal-row" class="button subtle" type="button">Add meal row</button>
+          </div>
+          <div id="meal-rows" class="meal-rows"></div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="button subtle" type="button" data-close-dialog>Cancel</button>
+          <button class="button primary" type="submit">Save plan</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="pairing-dialog" class="modal-card pairing-modal" aria-labelledby="pairing-dialog-title">
+      <div class="modal-head">
+        <div>
+          <p class="topline">Pairing access</p>
+          <h2 id="pairing-dialog-title">Pairing link</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-pairing aria-label="Close pairing code"></button>
+      </div>
+      <div id="pairing-dialog-body"></div>
+    </dialog>
+
+    <dialog id="confirm-dialog" class="modal-card confirm-modal" aria-labelledby="confirm-dialog-title">
+      <form method="dialog" class="confirm-form">
+        <div>
+          <p class="topline">Confirm change</p>
+          <h2 id="confirm-dialog-title">Confirm action</h2>
+          <p id="confirm-dialog-body"></p>
+        </div>
+        <div class="modal-actions">
+          <button id="confirm-cancel" class="button subtle" type="button">Cancel</button>
+          <button id="confirm-approve" class="button danger" type="button">Confirm</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

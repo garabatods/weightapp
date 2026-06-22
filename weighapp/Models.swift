@@ -102,6 +102,54 @@ enum GoalStatus: String, Codable {
     case completed
 }
 
+enum NutritionistConnectionStatus: String, Codable {
+    case active
+    case expired
+    case revoked
+
+    var label: String {
+        switch self {
+        case .active: "Active"
+        case .expired: "Expired"
+        case .revoked: "Revoked"
+        }
+    }
+}
+
+enum ChallengeKind: String, CaseIterable, Identifiable, Codable {
+    case checkInDays = "check_in_days"
+    case weightLoss = "weight_loss"
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .checkInDays: "Check-in days"
+        case .weightLoss: "Weight loss"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .checkInDays: "calendar.badge.checkmark"
+        case .weightLoss: "scalemass"
+        }
+    }
+
+    var tone: IconTone {
+        switch self {
+        case .checkInDays: .success
+        case .weightLoss: .info
+        }
+    }
+}
+
+enum ChallengeState {
+    case active
+    case completed
+    case finished
+}
+
 enum BodyMeasurementUnit: String, CaseIterable, Identifiable, Codable {
     case centimeters = "cm"
     case inches = "in"
@@ -135,6 +183,107 @@ enum TrendRange: String, CaseIterable, Identifiable {
     case all = "All"
 
     var id: String { rawValue }
+}
+
+struct AchievementDefinition: Identifiable {
+    let key: String
+    let title: String
+    let subtitle: String
+    let symbol: String
+    let tone: IconTone
+
+    var id: String { key }
+}
+
+enum AchievementCatalog {
+    static let definitions: [AchievementDefinition] = [
+        AchievementDefinition(
+            key: "first_check_in",
+            title: "First check-in",
+            subtitle: "You showed up once. That counts.",
+            symbol: "checkmark.circle.fill",
+            tone: .success
+        ),
+        AchievementDefinition(
+            key: "first_weight_log",
+            title: "First weight log",
+            subtitle: "Your trend has a starting point.",
+            symbol: "scalemass",
+            tone: .info
+        ),
+        AchievementDefinition(
+            key: "steady_week",
+            title: "Steady week",
+            subtitle: "A week with real check-ins.",
+            symbol: "calendar.badge.checkmark",
+            tone: .success
+        ),
+        AchievementDefinition(
+            key: "on_plan_week",
+            title: "On-plan week",
+            subtitle: "You hit your weekly diet target.",
+            symbol: "flag.fill",
+            tone: .primary
+        ),
+        AchievementDefinition(
+            key: "movement_month",
+            title: "Movement rhythm",
+            subtitle: "Movement showed up across the month.",
+            symbol: "shoeprints.fill",
+            tone: .movement
+        ),
+        AchievementDefinition(
+            key: "trend_builder",
+            title: "Trend builder",
+            subtitle: "Enough weigh-ins to see a pattern.",
+            symbol: "chart.line.uptrend.xyaxis",
+            tone: .info
+        ),
+        AchievementDefinition(
+            key: "measurement_trend",
+            title: "Beyond the scale",
+            subtitle: "Measurements are becoming a trend.",
+            symbol: "ruler",
+            tone: .measurement
+        ),
+        AchievementDefinition(
+            key: "three_month_rhythm",
+            title: "3-month rhythm",
+            subtitle: "Your habits have history now.",
+            symbol: "calendar",
+            tone: .primary
+        ),
+        AchievementDefinition(
+            key: "six_month_rhythm",
+            title: "6-month rhythm",
+            subtitle: "Half a year of showing up.",
+            symbol: "leaf.fill",
+            tone: .success
+        ),
+        AchievementDefinition(
+            key: "year_of_showing_up",
+            title: "Year of small steps",
+            subtitle: "A full year of consistency work.",
+            symbol: "sparkles",
+            tone: .warning
+        )
+    ]
+
+    static var totalCount: Int {
+        definitions.count
+    }
+
+    static func definition(for key: String) -> AchievementDefinition? {
+        definitions.first { $0.key == key }
+    }
+
+    static func contains(_ key: String) -> Bool {
+        definition(for: key) != nil
+    }
+
+    static func index(for key: String) -> Int {
+        definitions.firstIndex { $0.key == key } ?? definitions.count
+    }
 }
 
 struct BodyMeasurementSnapshot {
@@ -490,6 +639,142 @@ final class Goal {
     }
 }
 
+@Model
+final class Challenge {
+    @Attribute(.unique) var id: UUID
+    var title: String
+    var kindRaw: String
+    var startDate: Date
+    var endDate: Date
+    var targetValue: Double
+    var baselineWeight: Double?
+    var unit: String
+    var isPinned: Bool
+    var createdAt: Date
+    var updatedAt: Date
+    var completedAt: Date?
+    var archivedAt: Date?
+
+    init(
+        id: UUID = UUID(),
+        title: String,
+        kind: ChallengeKind,
+        startDate: Date,
+        endDate: Date,
+        targetValue: Double,
+        baselineWeight: Double? = nil,
+        unit: String,
+        isPinned: Bool = false,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date(),
+        completedAt: Date? = nil,
+        archivedAt: Date? = nil
+    ) {
+        let calendar = Calendar.current
+        self.id = id
+        self.title = title
+        self.kindRaw = kind.rawValue
+        self.startDate = calendar.startOfDay(for: startDate)
+        self.endDate = calendar.startOfDay(for: endDate)
+        self.targetValue = targetValue
+        self.baselineWeight = baselineWeight
+        self.unit = unit
+        self.isPinned = isPinned
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.completedAt = completedAt
+        self.archivedAt = archivedAt
+    }
+
+    var kind: ChallengeKind {
+        get { ChallengeKind(rawValue: kindRaw) ?? .checkInDays }
+        set { kindRaw = newValue.rawValue }
+    }
+}
+
+@Model
+final class NutritionistConnection {
+    @Attribute(.unique) var id: UUID
+    var connectionID: String
+    var nutritionistDisplayName: String
+    var planID: String
+    var statusRaw: String
+    var accessToken: String
+    var pairedAt: Date
+    var lastSyncAt: Date?
+    var updatedAt: Date
+
+    init(
+        id: UUID = UUID(),
+        connectionID: String,
+        nutritionistDisplayName: String,
+        planID: String,
+        status: NutritionistConnectionStatus = .active,
+        accessToken: String,
+        pairedAt: Date = Date(),
+        lastSyncAt: Date? = nil,
+        updatedAt: Date = Date()
+    ) {
+        self.id = id
+        self.connectionID = connectionID
+        self.nutritionistDisplayName = nutritionistDisplayName
+        self.planID = planID
+        self.statusRaw = status.rawValue
+        self.accessToken = accessToken
+        self.pairedAt = pairedAt
+        self.lastSyncAt = lastSyncAt
+        self.updatedAt = updatedAt
+    }
+
+    var status: NutritionistConnectionStatus {
+        get { NutritionistConnectionStatus(rawValue: statusRaw) ?? .expired }
+        set { statusRaw = newValue.rawValue }
+    }
+}
+
+@Model
+final class MealPlanCache {
+    @Attribute(.unique) var id: UUID
+    var connectionID: String
+    var planID: String
+    var revision: Int
+    var title: String
+    var effectiveStart: Date
+    var effectiveEnd: Date?
+    var planJSON: String
+    var createdAt: Date
+    var updatedAt: Date
+
+    init(
+        id: UUID = UUID(),
+        connectionID: String,
+        planID: String,
+        revision: Int,
+        title: String,
+        effectiveStart: Date,
+        effectiveEnd: Date? = nil,
+        planJSON: String,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date()
+    ) {
+        self.id = id
+        self.connectionID = connectionID
+        self.planID = planID
+        self.revision = revision
+        self.title = title
+        self.effectiveStart = Calendar.current.startOfDay(for: effectiveStart)
+        self.effectiveEnd = effectiveEnd.map { Calendar.current.startOfDay(for: $0) }
+        self.planJSON = planJSON
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    var plan: MealPlan? {
+        guard let data = planJSON.data(using: .utf8) else { return nil }
+        return try? JSONDecoder().decode(MealPlan.self, from: data)
+    }
+}
+
 struct UserProgress {
     let startingWeight: Double
     let currentWeight: Double
@@ -511,6 +796,181 @@ struct TrendPoint: Identifiable {
     let id = UUID()
     let label: String
     let weight: Double
+}
+
+struct MealPlan: Codable {
+    var title: String
+    var revision: Int
+    var effectiveSummary: String
+    var overviewNote: String
+    var days: [MealPlanDay]
+}
+
+struct MealPlanDay: Codable, Identifiable {
+    var id: String
+    var title: String
+    var meals: [MealPlanMeal]
+
+    var shortTitle: String {
+        String(title.prefix(3))
+    }
+}
+
+struct MealPlanMeal: Codable, Identifiable {
+    var id: String
+    var title: String
+    var time: String
+    var items: [String]
+    var swaps: [String]
+    var note: String?
+}
+
+enum MealPlanDemoFactory {
+    static func plan() -> MealPlan {
+        MealPlan(
+            title: "Steady Week Support Plan",
+            revision: 1,
+            effectiveSummary: "This week",
+            overviewNote: "Meal plans are provided by your nutritionist. Use this as read-only guidance for timing, portions, swaps, and notes. Leafstep keeps your habit check-ins and weight history on this device.",
+            days: [
+                MealPlanDay(
+                    id: "monday",
+                    title: "Monday",
+                    meals: [
+                        meal(id: "mon-breakfast", title: "Breakfast", time: "8:00 AM", items: ["Greek yogurt bowl", "Berries", "Chia seeds", "Water or unsweet tea"], swaps: ["Swap yogurt for cottage cheese if preferred."], note: "Keep this one simple and repeatable."),
+                        meal(id: "mon-lunch", title: "Lunch", time: "12:30 PM", items: ["Chicken salad wrap", "Cucumber slices", "Side of fruit"], swaps: ["Use tofu, tuna, or turkey instead of chicken."], note: nil),
+                        meal(id: "mon-dinner", title: "Dinner", time: "6:30 PM", items: ["Salmon plate", "Roasted vegetables", "Small rice portion"], swaps: ["Swap salmon for beans, turkey, or eggs."], note: "Stop when comfortably satisfied.")
+                    ]
+                ),
+                MealPlanDay(
+                    id: "tuesday",
+                    title: "Tuesday",
+                    meals: [
+                        meal(id: "tue-breakfast", title: "Breakfast", time: "8:00 AM", items: ["Egg scramble", "Spinach", "Whole-grain toast"], swaps: ["Swap eggs for tofu scramble."], note: nil),
+                        meal(id: "tue-lunch", title: "Lunch", time: "12:30 PM", items: ["Turkey bowl", "Greens", "Avocado", "Salsa"], swaps: ["Use beans for a vegetarian option."], note: "Build the bowl around the portion guide you reviewed together."),
+                        meal(id: "tue-dinner", title: "Dinner", time: "6:30 PM", items: ["Lean protein", "Two vegetables", "Small potato"], swaps: ["Use the protein option your nutritionist approved."], note: "This is guidance, not a tracker.")
+                    ]
+                ),
+                MealPlanDay(
+                    id: "wednesday",
+                    title: "Wednesday",
+                    meals: [
+                        meal(id: "wed-breakfast", title: "Breakfast", time: "7:45 AM", items: ["Overnight oats", "Berries", "Plain yogurt"], swaps: ["Swap oats for whole-grain toast with nut butter."], note: "Prep this the night before if mornings are rushed."),
+                        meal(id: "wed-lunch", title: "Lunch", time: "12:15 PM", items: ["Lentil soup", "Side salad", "Whole-grain crackers"], swaps: ["Swap soup for chicken vegetable soup."], note: nil),
+                        meal(id: "wed-dinner", title: "Dinner", time: "6:45 PM", items: ["Chicken fajita plate", "Peppers and onions", "Beans or rice portion"], swaps: ["Use shrimp, tofu, or mushrooms for the main protein."], note: "Choose one starchy side unless your nutritionist changes the plan.")
+                    ]
+                ),
+                MealPlanDay(
+                    id: "thursday",
+                    title: "Thursday",
+                    meals: [
+                        meal(id: "thu-breakfast", title: "Breakfast", time: "8:00 AM", items: ["Protein smoothie", "Spinach", "Frozen berries", "Nut butter portion"], swaps: ["Use kefir or lactose-free milk if preferred."], note: nil),
+                        meal(id: "thu-lunch", title: "Lunch", time: "12:30 PM", items: ["Tuna salad plate", "Greens", "Tomatoes", "Whole-grain toast"], swaps: ["Swap tuna for chickpea salad."], note: "Keep dressings measured using your nutritionist's portion guide."),
+                        meal(id: "thu-dinner", title: "Dinner", time: "6:30 PM", items: ["Turkey meatballs", "Zucchini or mixed vegetables", "Small pasta portion"], swaps: ["Swap turkey for lentil meatballs."], note: nil)
+                    ]
+                ),
+                MealPlanDay(
+                    id: "friday",
+                    title: "Friday",
+                    meals: [
+                        meal(id: "fri-breakfast", title: "Breakfast", time: "8:15 AM", items: ["Cottage cheese bowl", "Peach or berries", "Pumpkin seeds"], swaps: ["Swap cottage cheese for Greek yogurt."], note: nil),
+                        meal(id: "fri-lunch", title: "Lunch", time: "12:30 PM", items: ["Chicken quinoa salad", "Greens", "Cucumber", "Light vinaigrette"], swaps: ["Use tofu or beans instead of chicken."], note: "Pack this ahead if the afternoon gets busy."),
+                        meal(id: "fri-dinner", title: "Dinner", time: "7:00 PM", items: ["Restaurant-style plate", "Lean protein", "Vegetable side", "One chosen starch"], swaps: ["If eating out, choose grilled, roasted, or steamed options."], note: "Use the plan as a guide, not a pass/fail test.")
+                    ]
+                ),
+                MealPlanDay(
+                    id: "saturday",
+                    title: "Saturday",
+                    meals: [
+                        meal(id: "sat-breakfast", title: "Breakfast", time: "8:30 AM", items: ["Veggie omelet", "Fruit", "Whole-grain toast"], swaps: ["Swap omelet for tofu scramble."], note: nil),
+                        meal(id: "sat-lunch", title: "Lunch", time: "1:00 PM", items: ["Turkey lettuce wraps", "Carrot sticks", "Hummus portion"], swaps: ["Use grilled chicken, tofu, or beans."], note: nil),
+                        meal(id: "sat-dinner", title: "Dinner", time: "6:30 PM", items: ["Build-your-plate dinner", "Half plate vegetables", "Protein portion", "Small starch portion"], swaps: ["Use your approved home or restaurant option."], note: "A flexible meal can still follow the structure.")
+                    ]
+                ),
+                MealPlanDay(
+                    id: "sunday",
+                    title: "Sunday",
+                    meals: [
+                        meal(id: "sun-breakfast", title: "Breakfast", time: "8:30 AM", items: ["Greek yogurt parfait", "Berries", "Low-sugar granola portion"], swaps: ["Swap parfait for eggs and toast."], note: nil),
+                        meal(id: "sun-lunch", title: "Lunch", time: "12:45 PM", items: ["Meal-prep bowl", "Protein choice", "Greens", "Roasted vegetables"], swaps: ["Use leftovers from Saturday dinner."], note: "Notice what meals felt easiest this week."),
+                        meal(id: "sun-dinner", title: "Dinner", time: "6:00 PM", items: ["Simple soup or chili", "Side salad", "Fruit"], swaps: ["Use bean chili, turkey chili, or vegetable soup."], note: "Prep one breakfast or lunch component for tomorrow.")
+                    ]
+                )
+            ]
+        )
+    }
+
+    private static func meal(id: String, title: String, time: String, items: [String], swaps: [String], note: String?) -> MealPlanMeal {
+        MealPlanMeal(
+            id: id,
+            title: title,
+            time: time,
+            items: items,
+            swaps: swaps,
+            note: note
+        )
+    }
+
+    static func encodedPlan() -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        guard let data = try? encoder.encode(plan()) else { return "{}" }
+        return String(data: data, encoding: .utf8) ?? "{}"
+    }
+}
+
+struct ChallengeProgress {
+    let challenge: Challenge
+    let state: ChallengeState
+    let currentValue: Double
+    let targetValue: Double
+    let unit: String?
+    let detail: String
+
+    var isActive: Bool {
+        state == .active
+    }
+
+    var progressValue: Double {
+        min(max(currentValue, 0), targetValue)
+    }
+
+    var progressText: String {
+        switch challenge.kind {
+        case .checkInDays:
+            "\(Int(progressValue)) / \(Int(targetValue)) check-ins"
+        case .weightLoss:
+            "\(Self.numberText(progressValue)) / \(Self.numberText(targetValue)) \(unit ?? challenge.unit)"
+        }
+    }
+
+    var stateLabel: String {
+        switch state {
+        case .active:
+            "Challenge"
+        case .completed:
+            "Completed"
+        case .finished:
+            "Finished"
+        }
+    }
+
+    static func numberText(_ value: Double) -> String {
+        String(format: "%.1f", value)
+    }
+}
+
+@Model
+final class EarnedAchievement {
+    @Attribute(.unique) var key: String
+    var earnedAt: Date
+    var createdAt: Date
+
+    init(key: String, earnedAt: Date = Date(), createdAt: Date = Date()) {
+        self.key = key
+        self.earnedAt = earnedAt
+        self.createdAt = createdAt
+    }
 }
 
 enum CalendarDayStatus {
@@ -535,6 +995,8 @@ struct TrackerMetrics {
     let weightEntries: [WeightEntry]
     let measurementEntries: [BodyMeasurementEntry]
     let goals: [Goal]
+    let challenges: [Challenge]
+    let earnedAchievements: [EarnedAchievement]
     var displayedMonth: Date = Date()
 
     private var calendar: Calendar {
@@ -599,6 +1061,58 @@ struct TrackerMetrics {
 
     var isTodayPlannedFlexDay: Bool {
         profile.isPlannedFlexDay(Date(), calendar: calendar)
+    }
+
+    var earnedAchievementKeys: Set<String> {
+        Set(earnedAchievements.map(\.key).filter(AchievementCatalog.contains))
+    }
+
+    var earnedAchievementCount: Int {
+        earnedAchievementKeys.count
+    }
+
+    var latestEarnedAchievements: [AchievementDefinition] {
+        earnedAchievements
+            .sorted {
+                if $0.earnedAt == $1.earnedAt {
+                    return AchievementCatalog.index(for: $0.key) < AchievementCatalog.index(for: $1.key)
+                }
+                return $0.earnedAt > $1.earnedAt
+            }
+            .compactMap { AchievementCatalog.definition(for: $0.key) }
+    }
+
+    var achievementProgressSummary: String {
+        "\(earnedAchievementCount) of \(AchievementCatalog.totalCount) earned"
+    }
+
+    var activeChallengeProgress: [ChallengeProgress] {
+        challengeProgressCards
+            .filter(\.isActive)
+            .sorted { lhs, rhs in
+                if lhs.challenge.isPinned != rhs.challenge.isPinned {
+                    return lhs.challenge.isPinned
+                }
+                return lhs.challenge.createdAt < rhs.challenge.createdAt
+            }
+    }
+
+    var finishedChallengeProgress: [ChallengeProgress] {
+        challengeProgressCards
+            .filter { !$0.isActive }
+            .sorted { lhs, rhs in
+                let lhsDate = lhs.challenge.completedAt ?? lhs.challenge.endDate
+                let rhsDate = rhs.challenge.completedAt ?? rhs.challenge.endDate
+                return lhsDate > rhsDate
+            }
+    }
+
+    var pinnedChallengeProgress: ChallengeProgress? {
+        activeChallengeProgress.first { $0.challenge.isPinned }
+    }
+
+    var activeChallengeCount: Int {
+        activeChallengeProgress.count
     }
 
     var latestMeasurementEntry: BodyMeasurementEntry? {
@@ -778,6 +1292,27 @@ struct TrackerMetrics {
         }
     }
 
+    func progress(for challenge: Challenge) -> ChallengeProgress {
+        let current = currentValue(for: challenge)
+        let state: ChallengeState
+        if current >= challenge.targetValue || challenge.completedAt != nil {
+            state = .completed
+        } else if calendar.startOfDay(for: Date()) > calendar.startOfDay(for: challenge.endDate) {
+            state = .finished
+        } else {
+            state = .active
+        }
+
+        return ChallengeProgress(
+            challenge: challenge,
+            state: state,
+            currentValue: current,
+            targetValue: challenge.targetValue,
+            unit: challenge.kind == .weightLoss ? challenge.unit : nil,
+            detail: detailText(for: challenge, state: state)
+        )
+    }
+
     private var checkInsThisWeek: [DailyCheckIn] {
         guard let week = calendar.dateInterval(of: .weekOfYear, for: Date()) else { return [] }
         return checkIns.filter { week.contains($0.date) }
@@ -796,6 +1331,66 @@ struct TrackerMetrics {
     private var weightEntriesThisMonth: [WeightEntry] {
         guard let month = calendar.dateInterval(of: .month, for: Date()) else { return [] }
         return weightEntries.filter { month.contains($0.date) }
+    }
+
+    private var challengeProgressCards: [ChallengeProgress] {
+        challenges
+            .filter { $0.archivedAt == nil }
+            .map(progress(for:))
+    }
+
+    private func currentValue(for challenge: Challenge) -> Double {
+        switch challenge.kind {
+        case .checkInDays:
+            return Double(checkIns(in: challenge).count)
+        case .weightLoss:
+            guard let baseline = challenge.baselineWeight else { return 0 }
+            let latest = latestWeightEntry(in: challenge)?.weight ?? baseline
+            return max(baseline - latest, 0)
+        }
+    }
+
+    private func checkIns(in challenge: Challenge) -> [DailyCheckIn] {
+        let start = calendar.startOfDay(for: challenge.startDate)
+        let end = calendar.startOfDay(for: challenge.endDate)
+        return checkIns.filter {
+            let day = calendar.startOfDay(for: $0.date)
+            return day >= start && day <= end
+        }
+    }
+
+    private func latestWeightEntry(in challenge: Challenge) -> WeightEntry? {
+        let start = calendar.startOfDay(for: challenge.startDate)
+        let end = min(calendar.startOfDay(for: Date()), calendar.startOfDay(for: challenge.endDate))
+        return weightEntries
+            .filter {
+                let day = calendar.startOfDay(for: $0.date)
+                return day >= start && day <= end
+            }
+            .sorted {
+                if calendar.isDate($0.date, inSameDayAs: $1.date) {
+                    return $0.updatedAt < $1.updatedAt
+                }
+                return $0.date < $1.date
+            }
+            .last
+    }
+
+    private func detailText(for challenge: Challenge, state: ChallengeState) -> String {
+        switch state {
+        case .completed:
+            return "Finished with care."
+        case .finished:
+            return "A focus window you showed up for."
+        case .active:
+            return dateRangeText(start: challenge.startDate, end: challenge.endDate)
+        }
+    }
+
+    private func dateRangeText(start: Date, end: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return "\(formatter.string(from: start)) - \(formatter.string(from: end))"
     }
 
     private func filteredWeightEntries(for range: TrendRange) -> [WeightEntry] {
@@ -980,6 +1575,84 @@ struct TrackerMetrics {
                 totalValue: max(profile.startingWeight - goal.targetValue, 0.1)
             )
         }
+    }
+}
+
+enum AchievementEvaluator {
+    static func unlockedKeys(using metrics: TrackerMetrics) -> Set<String> {
+        var keys = Set<String>()
+
+        if !metrics.checkIns.isEmpty {
+            keys.insert("first_check_in")
+        }
+        if !metrics.weightEntries.isEmpty {
+            keys.insert("first_weight_log")
+        }
+
+        let checkInWeekCounts = countsByWeek(metrics.checkIns.map(\.date))
+        let yesWeekCounts = countsByWeek(metrics.checkIns.filter { $0.dietStatus == .yes }.map(\.date))
+        let activeMonthCount = countsByMonth(metrics.checkIns.map(\.date)).values.filter { $0 >= 8 }.count
+
+        if checkInWeekCounts.values.contains(where: { $0 >= 3 }) {
+            keys.insert("steady_week")
+        }
+        if yesWeekCounts.values.contains(where: { $0 >= metrics.profile.weeklyDietTarget }) {
+            keys.insert("on_plan_week")
+        }
+        if distinctWeeks(metrics.checkIns.filter(\.moved).map(\.date)).count >= 4 {
+            keys.insert("movement_month")
+        }
+        if metrics.weightEntries.count >= 8 && distinctWeeks(metrics.weightEntries.map(\.date)).count >= 4 {
+            keys.insert("trend_builder")
+        }
+        let measurementDates = metrics.measurementEntries
+            .filter { $0.snapshot.hasAnyValue }
+            .map(\.date)
+        if measurementDates.count >= 3 && distinctMonths(measurementDates).count >= 2 {
+            keys.insert("measurement_trend")
+        }
+        if activeMonthCount >= 3 {
+            keys.insert("three_month_rhythm")
+        }
+        if activeMonthCount >= 6 {
+            keys.insert("six_month_rhythm")
+        }
+        if activeMonthCount >= 12 {
+            keys.insert("year_of_showing_up")
+        }
+
+        return keys
+    }
+
+    private static var calendar: Calendar {
+        Calendar.current
+    }
+
+    private static func countsByWeek(_ dates: [Date]) -> [Date: Int] {
+        countsByPeriod(dates, component: .weekOfYear)
+    }
+
+    private static func countsByMonth(_ dates: [Date]) -> [Date: Int] {
+        countsByPeriod(dates, component: .month)
+    }
+
+    private static func distinctWeeks(_ dates: [Date]) -> Set<Date> {
+        Set(dates.compactMap { periodStart(for: $0, component: .weekOfYear) })
+    }
+
+    private static func distinctMonths(_ dates: [Date]) -> Set<Date> {
+        Set(dates.compactMap { periodStart(for: $0, component: .month) })
+    }
+
+    private static func countsByPeriod(_ dates: [Date], component: Calendar.Component) -> [Date: Int] {
+        dates.reduce(into: [:]) { counts, date in
+            guard let start = periodStart(for: date, component: component) else { return }
+            counts[start, default: 0] += 1
+        }
+    }
+
+    private static func periodStart(for date: Date, component: Calendar.Component) -> Date? {
+        calendar.dateInterval(of: component, for: date).map(\.start)
     }
 }
 

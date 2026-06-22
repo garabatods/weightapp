@@ -1,3 +1,4 @@
+import AVFoundation
 import PhotosUI
 import SwiftUI
 import UIKit
@@ -131,6 +132,11 @@ struct ProfileBaselineValues {
     let goalWeight: Double
 }
 
+struct UnitPreferenceValues {
+    let weightUnit: String
+    let bodyMeasurementUnit: String
+}
+
 struct ProfileIdentityValues {
     let displayName: String?
 }
@@ -187,6 +193,17 @@ struct GoalFormValues {
     let type: GoalType
     let targetValue: Double
     let period: GoalPeriod
+}
+
+struct ChallengeFormValues {
+    let title: String
+    let kind: ChallengeKind
+    let startDate: Date
+    let endDate: Date
+    let targetValue: Double
+    let baselineWeight: Double?
+    let unit: String
+    let isPinned: Bool
 }
 
 private enum OnboardingStep: Int, CaseIterable {
@@ -724,6 +741,7 @@ struct TodayScreen: View {
     let metrics: TrackerMetrics
     let onProfileTap: () -> Void
     let onStartCheckIn: () -> Void
+    let onLogWeight: () -> Void
 
     private var progress: UserProgress {
         metrics.progress
@@ -732,13 +750,9 @@ struct TodayScreen: View {
     private var checkInStatusText: String {
         guard metrics.todayCheckIn == nil else { return "Saved for today" }
         if metrics.isTodayPlannedFlexDay {
-            return "Planned break. No pressure - keep it intentional."
+            return "Planned break"
         }
-        let reminderTime = CheckInReminderDefaults.date(
-            hour: metrics.profile.checkInReminderHour,
-            minute: metrics.profile.checkInReminderMinute
-        )
-        return Date() >= reminderTime ? "Ready to wrap up today." : "Come back when your day winds down."
+        return "Ready when you are"
     }
 
     private var checkInCardTitle: String {
@@ -746,56 +760,75 @@ struct TodayScreen: View {
             return "Flex Day saved"
         }
         if metrics.todayCheckIn == nil && metrics.isTodayPlannedFlexDay {
-            return "Today is a Flex Day"
+            return "Flex Day"
         }
         return "Today’s check-in"
     }
 
     private var checkInCardStatus: String {
         if metrics.todayCheckIn?.dietStatus == .flex {
-            return "Your streak is paused, not broken."
+            return "Streak paused, not broken."
         }
         return checkInStatusText
     }
 
     private var checkInActionTitle: String {
-        metrics.todayCheckIn == nil && metrics.isTodayPlannedFlexDay ? "Quick check-in" : "Start check-in"
+        metrics.todayCheckIn == nil && metrics.isTodayPlannedFlexDay ? "Check in" : "Start check-in"
+    }
+
+    private var flexDaysCopy: String {
+        let count = metrics.plannedFlexDaysThisWeek
+        return count == 1 ? "1 Flex Day planned this week" : "\(count) Flex Days planned this week"
     }
 
     var body: some View {
-        AppScroll {
+        AppScroll(bottomPadding: 132, floatingAction: onLogWeight) {
             AppHeader(title: "Today", subtitle: "Small steps count.", profileImageData: metrics.profile.profileImageData, onProfileTap: onProfileTap)
-            CheckInCard(
-                hasCheckIn: metrics.todayCheckIn != nil,
-                title: checkInCardTitle,
-                statusText: checkInCardStatus,
-                helperText: metrics.todayCheckIn == nil && metrics.isTodayPlannedFlexDay ? "Flex Days do not count as missed days." : nil,
-                actionTitle: checkInActionTitle,
-                iconSymbol: metrics.isTodayPlannedFlexDay || metrics.todayCheckIn?.dietStatus == .flex ? "sparkles" : "target",
-                iconTone: metrics.isTodayPlannedFlexDay || metrics.todayCheckIn?.dietStatus == .flex ? .flex : .primary,
-                onStart: onStartCheckIn
-            )
+            TimelineView(.periodic(from: Date(), by: 60)) { timeline in
+                if shouldShowCheckInCard(at: timeline.date) {
+                    CheckInCard(
+                        hasCheckIn: metrics.todayCheckIn != nil,
+                        title: checkInCardTitle,
+                        statusText: checkInCardStatus,
+                        helperText: nil,
+                        actionTitle: checkInActionTitle,
+                        iconSymbol: metrics.isTodayPlannedFlexDay || metrics.todayCheckIn?.dietStatus == .flex ? "sparkles" : "target",
+                        iconTone: metrics.isTodayPlannedFlexDay || metrics.todayCheckIn?.dietStatus == .flex ? .flex : .primary,
+                        onStart: onStartCheckIn
+                    )
+                }
+            }
 
-            AppCard {
+            if let pinnedChallenge = metrics.pinnedChallengeProgress {
+                ChallengeCard(progress: pinnedChallenge, compact: true)
+            }
+
+            AppCard(padding: 14) {
                 HStack(alignment: .top, spacing: 14) {
                     IconBubble(symbol: "flag.fill", tone: .primary)
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("Weekly Goal")
-                            .font(.system(size: 19, weight: .bold, design: .rounded))
+                            .font(AppTypography.cardHeaderTitle)
                             .foregroundStyle(AppTheme.text)
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text("\(metrics.weeklyDietCount)")
-                                .font(.system(size: 36, weight: .heavy, design: .rounded))
-                                .foregroundStyle(AppTheme.primary)
-                            Text("/ \(metrics.profile.weeklyDietTarget)")
-                                .font(.system(size: 30, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.secondaryText)
+                        ViewThatFits(in: .horizontal) {
+                            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                weeklyDietMetric
+                                Text("diet days completed")
+                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.secondaryText)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.78)
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                weeklyDietMetric
+                                Text("diet days completed")
+                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .foregroundStyle(AppTheme.secondaryText)
+                            }
                         }
-                        Text("diet days completed")
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundStyle(AppTheme.secondaryText)
                         if metrics.plannedFlexDaysThisWeek > 0 {
-                            Text("\(metrics.plannedFlexDaysThisWeek) Flex Days planned this week")
+                            Text(flexDaysCopy)
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                                 .foregroundStyle(AppTheme.lavender)
                         }
@@ -813,7 +846,7 @@ struct TodayScreen: View {
                     HStack(spacing: 14) {
                         IconBubble(symbol: "scalemass", tone: .info)
                         Text("Current Progress")
-                            .font(.system(size: 19, weight: .bold, design: .rounded))
+                            .font(AppTypography.cardHeaderTitle)
                             .foregroundStyle(AppTheme.text)
                         Spacer()
                     }
@@ -832,7 +865,7 @@ struct TodayScreen: View {
                     HStack(spacing: 14) {
                         IconBubble(symbol: "flame.fill", color: AppTheme.orange, background: AppTheme.orangeSoft)
                         Text("Streak")
-                            .font(.system(size: 19, weight: .bold, design: .rounded))
+                            .font(AppTypography.cardHeaderTitle)
                             .foregroundStyle(AppTheme.text)
                         Spacer()
                     }
@@ -850,7 +883,7 @@ struct TodayScreen: View {
                     IconBubble(symbol: "leaf.fill", tone: .success)
                     VStack(alignment: .leading, spacing: 5) {
                         Text("You’re building a healthier future.")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                            .font(AppTypography.compactCardTitle)
                             .foregroundStyle(AppTheme.text)
                         Text("Keep showing up for you.")
                             .font(.system(size: 15, weight: .medium, design: .rounded))
@@ -864,6 +897,44 @@ struct TodayScreen: View {
             }
         }
     }
+
+    private var weeklyDietMetric: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text("\(metrics.weeklyDietCount)")
+                .font(.system(size: 36, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppTheme.primary)
+            Text("/ \(metrics.profile.weeklyDietTarget)")
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.secondaryText)
+        }
+    }
+
+    private func shouldShowCheckInCard(at date: Date) -> Bool {
+        if let todayCheckIn = metrics.todayCheckIn {
+            return date < todayCheckIn.updatedAt.addingTimeInterval(2 * 60 * 60)
+        }
+
+        return date >= checkInWindowStart(for: date)
+    }
+
+    private func checkInWindowStart(for date: Date) -> Date {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+
+        if metrics.profile.checkInReminderEnabled {
+            var components = calendar.dateComponents([.year, .month, .day], from: date)
+            components.hour = metrics.profile.checkInReminderHour
+            components.minute = metrics.profile.checkInReminderMinute
+            let reminderDate = calendar.date(from: components) ?? CheckInReminderDefaults.date(
+                hour: metrics.profile.checkInReminderHour,
+                minute: metrics.profile.checkInReminderMinute
+            )
+            let windowStart = reminderDate.addingTimeInterval(-2 * 60 * 60)
+            return max(windowStart, startOfDay)
+        }
+
+        return calendar.date(bySettingHour: 12, minute: 0, second: 0, of: date) ?? startOfDay
+    }
 }
 
 struct CheckInScreen: View {
@@ -874,11 +945,6 @@ struct CheckInScreen: View {
     @State private var dietStatus: DietStatus = .yes
     @State private var moved = true
     @State private var weightText = ""
-    @State private var isMeasurementsExpanded = false
-    @State private var measurementUnit = BodyMeasurementUnit.centimeters.rawValue
-    @State private var chestText = ""
-    @State private var waistText = ""
-    @State private var hipsText = ""
     @State private var validationMessage = ""
     @FocusState private var focusedInput: CheckInInputField?
     private let usesFlexCheckInMode: Bool
@@ -886,7 +952,6 @@ struct CheckInScreen: View {
     init(
         profile: UserProfile,
         existingCheckIn: DailyCheckIn?,
-        latestMeasurement: BodyMeasurementSnapshot?,
         onCancel: @escaping () -> Void,
         onSave: @escaping (DietStatus, Bool, Double?, BodyMeasurementSnapshot?) -> Void
     ) {
@@ -899,16 +964,6 @@ struct CheckInScreen: View {
         _dietStatus = State(initialValue: existingCheckIn?.dietStatus ?? (flexMode ? .flex : .yes))
         _moved = State(initialValue: existingCheckIn?.moved ?? true)
         _weightText = State(initialValue: existingCheckIn?.weight.map { String(format: "%.1f", $0) } ?? "")
-        let measurement = latestMeasurement ?? BodyMeasurementSnapshot(
-            chest: profile.chestMeasurement,
-            waist: profile.waistMeasurement,
-            hips: profile.hipsMeasurement,
-            unit: profile.bodyMeasurementUnit
-        )
-        _measurementUnit = State(initialValue: measurement.unit)
-        _chestText = State(initialValue: Self.measurementText(measurement.chest))
-        _waistText = State(initialValue: Self.measurementText(measurement.waist))
-        _hipsText = State(initialValue: Self.measurementText(measurement.hips))
     }
 
     var body: some View {
@@ -964,53 +1019,6 @@ struct CheckInScreen: View {
                 }
             }
 
-            AppCard(tint: true) {
-                VStack(alignment: .leading, spacing: 14) {
-                    Button {
-                        withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
-                            isMeasurementsExpanded.toggle()
-                        }
-                    } label: {
-                        HStack(spacing: 12) {
-                            CompactIconBubble(symbol: "ruler", tone: .measurement)
-                            VStack(alignment: .leading, spacing: 3) {
-                                OptionalTitle("Measurements")
-                                Text("Chest, waist, and hips")
-                                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                                    .foregroundStyle(AppTheme.secondaryText)
-                            }
-                            .layoutPriority(1)
-                            Spacer(minLength: 8)
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundStyle(AppTheme.secondaryText)
-                                .rotationEffect(.degrees(isMeasurementsExpanded ? 180 : 0))
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-
-                    if isMeasurementsExpanded {
-                        VStack(alignment: .leading, spacing: 14) {
-                            Picker("Measurement units", selection: $measurementUnit) {
-                                ForEach(BodyMeasurementUnit.allCases) { unit in
-                                    Text(unit.rawValue).tag(unit.rawValue)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                            .onChange(of: measurementUnit) { oldUnit, newUnit in
-                                convertMeasurementFields(from: oldUnit, to: newUnit)
-                            }
-
-                            MeasurementFieldRow(title: "Chest", text: $chestText, unit: measurementUnit, field: .chest, focusedInput: $focusedInput)
-                            MeasurementFieldRow(title: "Waist", text: $waistText, unit: measurementUnit, field: .waist, focusedInput: $focusedInput)
-                            MeasurementFieldRow(title: "Hips", text: $hipsText, unit: measurementUnit, field: .hips, focusedInput: $focusedInput)
-                        }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-                }
-            }
-
             if !validationMessage.isEmpty {
                 Text(validationMessage)
                     .font(AppTypography.body)
@@ -1044,12 +1052,7 @@ struct CheckInScreen: View {
             return
         }
 
-        guard let measurement = parsedMeasurement else {
-            validationMessage = measurementValidationMessage
-            return
-        }
-
-        onSave(dietStatus, moved, weight, measurement)
+        onSave(dietStatus, moved, weight, nil)
     }
 
     private func cancelCheckIn() {
@@ -1062,52 +1065,6 @@ struct CheckInScreen: View {
         guard !trimmedWeight.isEmpty else { return .some(nil) }
         guard let weight = Double(trimmedWeight) else { return nil }
         return .some(weight)
-    }
-
-    private var parsedMeasurement: BodyMeasurementSnapshot?? {
-        guard isMeasurementsExpanded, hasAnyMeasurementText else { return .some(nil) }
-        let range = BodyMeasurementInputRules.realisticRange(for: measurementUnit)
-        guard let chest = optionalMeasurement(chestText, in: range),
-              let waist = optionalMeasurement(waistText, in: range),
-              let hips = optionalMeasurement(hipsText, in: range) else {
-            return nil
-        }
-        return .some(BodyMeasurementSnapshot(chest: chest, waist: waist, hips: hips, unit: measurementUnit))
-    }
-
-    private var hasAnyMeasurementText: Bool {
-        !chestText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || !waistText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || !hipsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    private var measurementValidationMessage: String {
-        "Measurements should be between \(BodyMeasurementInputRules.rangeText(for: measurementUnit)), or left blank."
-    }
-
-    private func optionalMeasurement(_ text: String, in range: ClosedRange<Double>) -> Double?? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return .some(nil) }
-        guard let value = Double(trimmed), range.contains(value) else { return nil }
-        return .some(value)
-    }
-
-    private func convertMeasurementFields(from oldUnit: String, to newUnit: String) {
-        chestText = convertedMeasurementText(chestText, from: oldUnit, to: newUnit)
-        waistText = convertedMeasurementText(waistText, from: oldUnit, to: newUnit)
-        hipsText = convertedMeasurementText(hipsText, from: oldUnit, to: newUnit)
-    }
-
-    private func convertedMeasurementText(_ text: String, from oldUnit: String, to newUnit: String) -> String {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let value = Double(trimmed) else { return text }
-        let converted = BodyMeasurementUnitConverter.converted(value, from: oldUnit, to: newUnit)
-        return Self.measurementText(converted)
-    }
-
-    private static func measurementText(_ value: Double?) -> String {
-        guard let value else { return "" }
-        return String(format: "%.1f", value)
     }
 
     private var dietOptions: [(status: DietStatus, title: String)] {
@@ -1278,24 +1235,27 @@ private struct MeasurementFieldRow: View {
 struct CompactIconBubble: View {
     let symbol: String
     var tone: IconTone = .neutral
+    var size: CGFloat = 44
+    var symbolSize: CGFloat = 20
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(tone.background)
             Image(systemName: symbol)
-                .font(.system(size: 20, weight: .bold))
+                .font(.system(size: symbolSize, weight: .bold))
                 .foregroundStyle(tone.foreground)
         }
-        .frame(width: 44, height: 44)
+        .frame(width: size, height: size)
     }
 }
 
 struct ProgressScreen: View {
     let metrics: TrackerMetrics
     let onProfileTap: () -> Void
-    let onAddPastWeight: () -> Void
+    let onLogWeight: () -> Void
     let onAddMeasurements: () -> Void
+    let onShowAchievements: () -> Void
     @State private var trendRange: TrendRange = .sixWeeks
     @State private var selectedMeasurementMetric: BodyMeasurementMetric = .waist
 
@@ -1304,7 +1264,7 @@ struct ProgressScreen: View {
     }
 
     var body: some View {
-        AppScroll {
+        AppScroll(bottomPadding: 132, floatingAction: onLogWeight) {
             AppHeader(title: "Progress", subtitle: "Your trend over time.", profileImageData: metrics.profile.profileImageData, onProfileTap: onProfileTap)
             StatCard(progress: progress, showIcons: true)
 
@@ -1314,10 +1274,7 @@ struct ProgressScreen: View {
                         HStack(alignment: .center, spacing: 12) {
                             weightTrendTitle
                             Spacer(minLength: 8)
-                            VStack(alignment: .trailing, spacing: 8) {
-                                trendRangePicker
-                                InlineActionButton(title: "Add past weight", action: onAddPastWeight)
-                            }
+                            trendRangePicker
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
@@ -1326,8 +1283,6 @@ struct ProgressScreen: View {
                                 Spacer()
                                 trendRangePicker
                             }
-                            InlineActionButton(title: "Add past weight", action: onAddPastWeight)
-                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
 
@@ -1349,7 +1304,7 @@ struct ProgressScreen: View {
                         IconBubble(symbol: "calendar.badge.checkmark", tone: .success)
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Consistency")
-                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                                .font(AppTypography.featureCardTitle)
                                 .foregroundStyle(AppTheme.text)
                             HStack(alignment: .firstTextBaseline, spacing: 2) {
                                 Text("\(metrics.monthlyConsistency)")
@@ -1378,6 +1333,8 @@ struct ProgressScreen: View {
                     }
                 }
             }
+
+            AchievementsProgressCard(metrics: metrics, onViewAll: onShowAchievements)
         }
     }
 
@@ -1395,11 +1352,275 @@ struct ProgressScreen: View {
         HStack(spacing: 14) {
             IconBubble(symbol: "chart.line.uptrend.xyaxis", tone: .info)
             Text("Weight trend")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(AppTypography.featureCardTitle)
                 .foregroundStyle(AppTheme.text)
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
         }
+    }
+
+}
+
+struct AchievementsProgressCard: View {
+    let metrics: TrackerMetrics
+    let onViewAll: () -> Void
+
+    private var latestAchievements: [AchievementDefinition] {
+        Array(metrics.latestEarnedAchievements.prefix(3))
+    }
+
+    var body: some View {
+        AppCard(padding: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 14) {
+                    IconBubble(symbol: "medal.fill", tone: .warning)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Achievements")
+                            .font(AppTypography.featureCardTitle)
+                            .foregroundStyle(AppTheme.text)
+                        Text(metrics.achievementProgressSummary)
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    .layoutPriority(1)
+                    Spacer(minLength: 8)
+                    InlineActionButton(title: "View all", action: onViewAll)
+                }
+
+                if latestAchievements.isEmpty {
+                    AchievementEmptyState()
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Latest wins")
+                            .font(AppTypography.label)
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .textCase(.uppercase)
+
+                        VStack(spacing: 0) {
+                            ForEach(Array(latestAchievements.enumerated()), id: \.element.id) { index, definition in
+                                AchievementPreviewRow(definition: definition)
+                                if index < latestAchievements.count - 1 {
+                                    Divider()
+                                        .background(AppTheme.divider.opacity(0.7))
+                                        .padding(.leading, 48)
+                                }
+                            }
+                        }
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(AppTheme.cardTint)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .stroke(AppTheme.divider.opacity(0.75), lineWidth: 1)
+                                )
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct AchievementEmptyState: View {
+    var body: some View {
+        Text("Wins will show up as you keep checking in.")
+            .font(.system(size: 16, weight: .medium, design: .rounded))
+            .foregroundStyle(AppTheme.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+struct AchievementPreviewRow: View {
+    let definition: AchievementDefinition
+
+    var body: some View {
+        HStack(spacing: 10) {
+            CompactIconBubble(symbol: definition.symbol, tone: definition.tone, size: 38, symbolSize: 18)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(definition.title)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.text)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+                Text(definition.subtitle)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
+            }
+            .layoutPriority(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 6)
+    }
+}
+
+struct AchievementUnlockSheet: View {
+    let achievements: [AchievementDefinition]
+    let onNice: () -> Void
+    let onViewAll: () -> Void
+
+    private var isMultiple: Bool {
+        achievements.count > 1
+    }
+
+    private var title: String {
+        isMultiple ? "Achievements unlocked" : "Achievement unlocked"
+    }
+
+    private var subtitle: String {
+        if isMultiple {
+            return "\(achievements.count) new wins earned"
+        }
+        return achievements.first?.title ?? "A new win earned"
+    }
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            SheetScaffold(title: title, onClose: onNice) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(subtitle)
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .multilineTextAlignment(.center)
+
+                    if let achievement = achievements.first, achievements.count == 1 {
+                        singleAchievementCard(achievement)
+                    } else {
+                        VStack(spacing: 10) {
+                            ForEach(achievements) { achievement in
+                                AppCard(tint: true, padding: 14) {
+                                    AchievementRow(
+                                        definition: achievement,
+                                        isEarned: true,
+                                        showsState: false
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            } footer: {
+                VStack(spacing: 10) {
+                    PrimaryButton(title: "Nice", action: onNice)
+
+                    Button(action: onViewAll) {
+                        Text("View all")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.primary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 42)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func singleAchievementCard(_ achievement: AchievementDefinition) -> some View {
+        AppCard(tint: true, padding: 18) {
+            VStack(spacing: 14) {
+                CompactIconBubble(symbol: achievement.symbol, tone: achievement.tone, size: 62, symbolSize: 28)
+
+                VStack(spacing: 6) {
+                    Text(achievement.title)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.text)
+                        .multilineTextAlignment(.center)
+                    Text(achievement.subtitle)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+struct AchievementsSheet: View {
+    let metrics: TrackerMetrics
+    @Environment(\.dismiss) private var dismiss
+
+    private var earnedKeys: Set<String> {
+        metrics.earnedAchievementKeys
+    }
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                SheetHeader(title: "Achievements", onClose: { dismiss() })
+                    .padding(.horizontal, 18)
+
+                Text(metrics.achievementProgressSummary)
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .padding(.top, 2)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 10) {
+                        ForEach(AchievementCatalog.definitions) { definition in
+                            AppCard(tint: !earnedKeys.contains(definition.key), padding: 14) {
+                                AchievementRow(
+                                    definition: definition,
+                                    isEarned: earnedKeys.contains(definition.key),
+                                    showsState: true
+                                )
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 14)
+                    .padding(.bottom, 24)
+                }
+            }
+        }
+    }
+}
+
+struct AchievementRow: View {
+    let definition: AchievementDefinition
+    let isEarned: Bool
+    var showsState = true
+
+    var body: some View {
+        HStack(spacing: 12) {
+            CompactIconBubble(symbol: definition.symbol, tone: isEarned ? definition.tone : .neutral)
+                .opacity(isEarned ? 1 : 0.58)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(definition.title)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(isEarned ? AppTheme.text : AppTheme.secondaryText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
+                Text(definition.subtitle)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
+            }
+            .layoutPriority(1)
+
+            if showsState {
+                Spacer(minLength: 8)
+                Image(systemName: isEarned ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(isEarned ? AppTheme.primary : AppTheme.divider)
+                    .accessibilityLabel(isEarned ? "Earned" : "Not earned yet")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -1420,7 +1641,7 @@ struct BodyMeasurementsProgressCard: View {
                     IconBubble(symbol: "ruler", tone: .measurement)
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Body measurements")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .font(AppTypography.featureCardTitle)
                             .foregroundStyle(AppTheme.text)
                         Text("Progress beyond the scale.")
                             .font(.system(size: 16, weight: .medium, design: .rounded))
@@ -1432,9 +1653,9 @@ struct BodyMeasurementsProgressCard: View {
                 if let snapshot, snapshot.hasAnyValue {
                     HStack(spacing: 0) {
                         BodyMeasurementMetricTile(metric: .chest, snapshot: snapshot, change: metrics.measurementChange(for: .chest))
-                        VerticalDivider(height: 48)
+                        VerticalDivider(height: 42)
                         BodyMeasurementMetricTile(metric: .waist, snapshot: snapshot, change: metrics.measurementChange(for: .waist))
-                        VerticalDivider(height: 48)
+                        VerticalDivider(height: 42)
                         BodyMeasurementMetricTile(metric: .hips, snapshot: snapshot, change: metrics.measurementChange(for: .hips))
                     }
 
@@ -1490,11 +1711,14 @@ struct BodyMeasurementMetricTile: View {
             Text(metric.label)
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.secondaryText)
-            Text(changeText)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                .foregroundStyle(changeColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
+
+            if let changeText {
+                Text(changeText)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(changeColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+            }
         }
         .frame(maxWidth: .infinity)
     }
@@ -1504,8 +1728,8 @@ struct BodyMeasurementMetricTile: View {
         return "\(String(format: "%.1f", value)) \(snapshot.unit)"
     }
 
-    private var changeText: String {
-        guard let change else { return "Baseline" }
+    private var changeText: String? {
+        guard let change else { return nil }
         let sign = change > 0 ? "+" : ""
         return "\(sign)\(String(format: "%.1f", change)) \(snapshot.unit)"
     }
@@ -1523,6 +1747,10 @@ struct GoalsScreen: View {
     let onCreateGoal: () -> Void
     let onEditGoal: (Goal) -> Void
     let onDeleteGoal: (Goal) -> Void
+    let onCreateChallenge: () -> Void
+    let onEditChallenge: (Challenge) -> Void
+    let onDeleteChallenge: (Challenge) -> Void
+    let onToggleChallengePin: (Challenge) -> Void
 
     var body: some View {
         AppScroll {
@@ -1540,6 +1768,44 @@ struct GoalsScreen: View {
                         targetsIntro
                         InlineActionButton(title: "Adjust", action: onAdjustTargets)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+
+            GoalsSectionTitle("Challenges")
+            VStack(spacing: 10) {
+                if metrics.activeChallengeProgress.isEmpty {
+                    GoalsEmptyStateCard(title: "No challenges yet.", subtitle: "Create a focus window for a small run.")
+                } else {
+                    ForEach(metrics.activeChallengeProgress, id: \.challenge.id) { item in
+                        ChallengeCard(
+                            progress: item,
+                            compact: true,
+                            onEdit: { onEditChallenge(item.challenge) },
+                            onDelete: { onDeleteChallenge(item.challenge) },
+                            onTogglePin: { onToggleChallengePin(item.challenge) }
+                        )
+                    }
+                }
+            }
+
+            PrimaryButton(
+                title: metrics.activeChallengeCount >= 3 ? "3 active challenges" : "Create challenge",
+                systemImage: metrics.activeChallengeCount >= 3 ? nil : "plus.circle",
+                isEnabled: metrics.activeChallengeCount < 3,
+                action: onCreateChallenge
+            )
+
+            if !metrics.finishedChallengeProgress.isEmpty {
+                GoalsSectionTitle("Finished challenges")
+                VStack(spacing: 10) {
+                    ForEach(metrics.finishedChallengeProgress, id: \.challenge.id) { item in
+                        ChallengeCard(
+                            progress: item,
+                            compact: true,
+                            onEdit: { onEditChallenge(item.challenge) },
+                            onDelete: { onDeleteChallenge(item.challenge) }
+                        )
                     }
                 }
             }
@@ -1595,7 +1861,7 @@ struct GoalsScreen: View {
             IconBubble(symbol: "target", tone: .primary, size: 42)
             VStack(alignment: .leading, spacing: 5) {
                 Text("Your main targets")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(AppTypography.compactCardTitle)
                     .foregroundStyle(AppTheme.text)
                 Text("Adjust weekly targets.")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
@@ -1616,7 +1882,7 @@ struct GoalsSectionTitle: View {
 
     var body: some View {
         Text(title)
-            .font(.system(size: 21, weight: .bold, design: .rounded))
+            .font(AppTypography.sectionTitle)
             .foregroundStyle(AppTheme.text)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, 6)
@@ -1640,6 +1906,555 @@ struct GoalsEmptyStateCard: View {
                         .foregroundStyle(AppTheme.secondaryText)
                         .lineLimit(2)
                         .minimumScaleFactor(0.82)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+struct ChallengeCard: View {
+    let progress: ChallengeProgress
+    var compact = false
+    var onEdit: (() -> Void)?
+    var onDelete: (() -> Void)?
+    var onTogglePin: (() -> Void)?
+
+    private var challenge: Challenge {
+        progress.challenge
+    }
+
+    private var hasActions: Bool {
+        onEdit != nil || onDelete != nil || onTogglePin != nil
+    }
+
+    var body: some View {
+        AppCard(tint: progress.isActive && challenge.isPinned, padding: compact ? 14 : 15) {
+            HStack(alignment: .center, spacing: compact ? 12 : 14) {
+                ChallengeProgressRing(
+                    progress: progress,
+                    size: compact ? 58 : 64
+                )
+                .fixedSize()
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(progress.stateLabel)
+                            .font(AppTypography.label)
+                            .foregroundStyle(progress.isActive ? AppTheme.primary : AppTheme.secondaryText)
+                            .textCase(.uppercase)
+                        if challenge.isPinned && progress.isActive {
+                            Image(systemName: "pin.fill")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(AppTheme.primary)
+                        }
+                    }
+
+                    Text(challenge.title)
+                        .font(AppTypography.compactCardTitle)
+                        .foregroundStyle(AppTheme.text)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.82)
+
+                    Text(progress.detail)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.82)
+
+                    if showsMetricSummary {
+                        Text(metricSummary)
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.82)
+                    }
+                }
+                .layoutPriority(1)
+
+                if hasActions {
+                    Spacer(minLength: 8)
+
+                    challengeMenu
+                        .fixedSize(horizontal: true, vertical: false)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var challengeMenu: some View {
+        Menu {
+            if let onTogglePin, progress.isActive {
+                Button(challenge.isPinned ? "Unpin from Today" : "Pin to Today", action: onTogglePin)
+            }
+            if let onEdit {
+                Button("Edit challenge", action: onEdit)
+            }
+            if let onDelete {
+                Button("Delete challenge", role: .destructive, action: onDelete)
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(AppTheme.secondaryText)
+                .frame(width: 38, height: 38)
+                .background(Circle().fill(AppTheme.mint.opacity(0.55)))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var showsMetricSummary: Bool {
+        challenge.kind == .weightLoss
+    }
+
+    private var metricSummary: String {
+        switch challenge.kind {
+        case .checkInDays:
+            "\(Int(progress.progressValue)) of \(Int(progress.targetValue)) check-ins"
+        case .weightLoss:
+            "\(ChallengeProgress.numberText(progress.progressValue)) of \(ChallengeProgress.numberText(progress.targetValue)) \(progress.unit ?? challenge.unit) lost"
+        }
+    }
+}
+
+struct ChallengeProgressRing: View {
+    let progress: ChallengeProgress
+    var size: CGFloat = 54
+
+    private var fraction: Double {
+        guard progress.targetValue > 0 else { return 0 }
+        return min(max(progress.progressValue / progress.targetValue, 0), 1)
+    }
+
+    private var percentText: String {
+        "\(Int((fraction * 100).rounded()))%"
+    }
+
+    private var strokeColor: Color {
+        switch progress.state {
+        case .active, .completed:
+            switch progress.challenge.kind {
+            case .checkInDays:
+                AppTheme.primary
+            case .weightLoss:
+                AppTheme.blue
+            }
+        case .finished:
+            AppTheme.secondaryText.opacity(0.55)
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(AppTheme.track, lineWidth: 6)
+
+            Circle()
+                .trim(from: 0, to: fraction)
+                .stroke(
+                    strokeColor,
+                    style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+
+            Text(percentText)
+                .font(.system(size: size <= 48 ? 11 : 12, weight: .bold, design: .rounded))
+                .foregroundStyle(progress.state == .finished ? AppTheme.secondaryText : AppTheme.text)
+                .minimumScaleFactor(0.75)
+                .lineLimit(1)
+        }
+        .frame(width: size, height: size)
+        .accessibilityLabel("Challenge progress \(percentText)")
+    }
+}
+
+struct MealPlanScreen: View {
+    let connection: NutritionistConnection?
+    let cache: MealPlanCache?
+    let profileImageData: Data?
+    let onProfileTap: () -> Void
+    let onRefresh: () -> Void
+    let onDisconnect: () -> Void
+
+    @State private var selectedDayID: String?
+
+    private var plan: MealPlan? {
+        cache?.plan
+    }
+
+    var body: some View {
+        AppScroll {
+            AppHeader(
+                title: "Meal Plan",
+                subtitle: "Provided by your nutritionist.",
+                profileImageData: profileImageData,
+                onProfileTap: onProfileTap
+            )
+
+            if let connection {
+                connectionStatusCard(connection, cache: cache)
+
+                switch connection.status {
+                case .active:
+                    if let plan, let cache {
+                        mealPlanContent(plan: plan, cache: cache)
+                    } else {
+                        EmptyStateCard(
+                            title: "Plan not downloaded yet.",
+                            subtitle: "Refresh when you have a connection. Leafstep will keep a read-only copy for offline viewing."
+                        )
+                    }
+                case .expired:
+                    MealPlanStateCard(
+                        symbol: "clock.badge.exclamationmark",
+                        tone: .warning,
+                        title: "Meal plan access expired.",
+                        subtitle: "Ask your nutritionist for a fresh pairing code when they are ready."
+                    )
+                case .revoked:
+                    MealPlanStateCard(
+                        symbol: "lock.slash",
+                        tone: .destructive,
+                        title: "Meal plan access was removed.",
+                        subtitle: "Your local habit data is still on this device. Only the meal plan connection changed."
+                    )
+                }
+            } else {
+                EmptyStateCard(
+                    title: "No meal plan connected.",
+                    subtitle: "Meal Plan appears only after your nutritionist activates access."
+                )
+            }
+        }
+        .onAppear {
+            selectFirstDayIfNeeded()
+        }
+        .onChange(of: plan?.days.map(\.id) ?? []) { _, _ in
+            selectFirstDayIfNeeded()
+        }
+    }
+
+    private func mealPlanContent(plan: MealPlan, cache: MealPlanCache) -> some View {
+        let selectedDay = selectedDay(in: plan)
+
+        return VStack(spacing: 14) {
+            AppCard(tint: true) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 12) {
+                        IconBubble(symbol: "fork.knife", tone: .info)
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(plan.title)
+                                .font(AppTypography.featureCardTitle)
+                                .foregroundStyle(AppTheme.text)
+                                .lineLimit(2)
+                            Text(Self.effectiveDateText(cache: cache, fallback: plan.effectiveSummary))
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppTheme.secondaryText)
+                        }
+                        Spacer(minLength: 0)
+                    }
+
+                    HStack(spacing: 8) {
+                        MealPlanMetaPill(symbol: "eye", text: "Read-only")
+                        MealPlanMetaPill(symbol: "arrow.down.doc", text: "Available offline")
+                    }
+
+                    Text(plan.overviewNote)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label("Last updated \(Self.dateText(cache.updatedAt))", systemImage: "clock")
+                        Text("Rev \(cache.revision)")
+                    }
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppTheme.secondaryText)
+                }
+            }
+
+            MealPlanDaySelector(
+                days: plan.days,
+                selectedDayID: Binding(
+                    get: { selectedDay?.id ?? selectedDayID ?? "" },
+                    set: { selectedDayID = $0 }
+                )
+            )
+
+            if let selectedDay {
+                MealPlanDayCard(day: selectedDay)
+            }
+        }
+    }
+
+    private func connectionStatusCard(_ connection: NutritionistConnection, cache: MealPlanCache?) -> some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 12) {
+                    CompactIconBubble(symbol: "person.crop.circle.badge.checkmark", tone: connection.status == .active ? .success : .warning)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(connection.nutritionistDisplayName)
+                            .font(AppTypography.cardTitle)
+                            .foregroundStyle(AppTheme.text)
+                        Text("Meal plans are provided by your nutritionist.")
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    Spacer()
+                    Text(connection.status.label)
+                        .font(AppTypography.label)
+                        .foregroundStyle(connection.status == .active ? AppTheme.primary : AppTheme.secondaryText)
+                        .padding(.horizontal, 10)
+                        .frame(height: 28)
+                        .background(Capsule().fill(connection.status == .active ? AppTheme.successSoft : AppTheme.neutralIconBackground))
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    MealPlanStatusRow(symbol: "doc.text.fill", title: "Active plan", value: cache?.title ?? "Waiting for plan")
+                    MealPlanStatusRow(symbol: "arrow.clockwise", title: "Last sync", value: connection.lastSyncAt.map(Self.dateText) ?? "Not yet")
+                    MealPlanStatusRow(symbol: "lock.shield.fill", title: "Privacy", value: "No check-ins, weight, goals, or history are shared.")
+                }
+
+                HStack(spacing: 10) {
+                    InlineActionButton(title: "Refresh", action: onRefresh)
+                    InlineActionButton(title: "Disconnect", action: onDisconnect)
+                }
+            }
+        }
+    }
+
+    private func selectedDay(in plan: MealPlan) -> MealPlanDay? {
+        if let selectedDayID, let selected = plan.days.first(where: { $0.id == selectedDayID }) {
+            return selected
+        }
+        return plan.days.first
+    }
+
+    private func selectFirstDayIfNeeded() {
+        guard let plan else {
+            selectedDayID = nil
+            return
+        }
+
+        if let selectedDayID, plan.days.contains(where: { $0.id == selectedDayID }) {
+            return
+        }
+
+        selectedDayID = plan.days.first?.id
+    }
+
+    private static func dateText(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+
+    private static func effectiveDateText(cache: MealPlanCache, fallback: String) -> String {
+        guard let effectiveEnd = cache.effectiveEnd else { return fallback }
+
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return "\(formatter.string(from: cache.effectiveStart)) - \(formatter.string(from: effectiveEnd))"
+    }
+}
+
+struct MealPlanStatusRow: View {
+    let symbol: String
+    let title: String
+    let value: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(AppTheme.primary)
+                .frame(width: 18)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AppTypography.label)
+                    .foregroundStyle(AppTheme.secondaryText)
+                Text(value)
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppTheme.text)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+struct MealPlanMetaPill: View {
+    let symbol: String
+    let text: String
+
+    var body: some View {
+        Label(text, systemImage: symbol)
+            .font(AppTypography.label)
+            .foregroundStyle(AppTheme.primary)
+            .padding(.horizontal, 10)
+            .frame(height: 28)
+            .background(Capsule().fill(AppTheme.successSoft))
+    }
+}
+
+struct MealPlanDaySelector: View {
+    let days: [MealPlanDay]
+    @Binding var selectedDayID: String
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(days) { day in
+                    Button {
+                        selectedDayID = day.id
+                    } label: {
+                        Text(day.shortTitle)
+                            .font(AppTypography.label)
+                            .foregroundStyle(selectedDayID == day.id ? .white : AppTheme.primary)
+                            .frame(minWidth: 54)
+                            .frame(height: 38)
+                            .background(
+                                Capsule()
+                                    .fill(selectedDayID == day.id ? AppTheme.primary : AppTheme.mint.opacity(0.7))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(day.title)
+                }
+            }
+            .padding(.horizontal, 18)
+        }
+        .padding(.horizontal, -18)
+    }
+}
+
+struct MealPlanDayCard: View {
+    let day: MealPlanDay
+
+    var body: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .firstTextBaseline) {
+                    ProfileSectionHeader(title: day.title)
+                    Spacer(minLength: 10)
+                    Text("\(day.meals.count) meals")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(day.meals.enumerated()), id: \.element.id) { index, meal in
+                        MealPlanMealBlock(meal: meal, isLast: index == day.meals.count - 1)
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct MealPlanMealBlock: View {
+    let meal: MealPlanMeal
+    let isLast: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(spacing: 8) {
+                Text(meal.time)
+                    .font(AppTypography.label)
+                    .foregroundStyle(AppTheme.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .frame(width: 64, height: 30)
+                    .background(Capsule().fill(AppTheme.mint.opacity(0.78)))
+
+                if !isLast {
+                    Rectangle()
+                        .fill(AppTheme.divider)
+                        .frame(width: 2)
+                        .frame(maxHeight: .infinity)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text(meal.title)
+                    .font(AppTypography.cardTitle)
+                    .foregroundStyle(AppTheme.text)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(meal.items, id: \.self) { item in
+                        MealPlanBullet(text: item, symbol: "checkmark.circle.fill", tone: .success)
+                    }
+                }
+
+                if !meal.swaps.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Swaps")
+                            .font(AppTypography.label)
+                            .foregroundStyle(AppTheme.secondaryText)
+                        ForEach(meal.swaps, id: \.self) { swap in
+                            MealPlanBullet(text: swap, symbol: "arrow.triangle.2.circlepath", tone: .info)
+                        }
+                    }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(AppTheme.blueSoft.opacity(0.55))
+                    )
+                }
+
+                if let note = meal.note, !note.isEmpty {
+                    Label(note, systemImage: "note.text")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.bottom, isLast ? 0 : 18)
+        }
+    }
+}
+
+struct MealPlanBullet: View {
+    let text: String
+    let symbol: String
+    let tone: IconTone
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(tone.foreground)
+                .padding(.top, 2)
+            Text(text)
+                .font(AppTypography.body)
+                .foregroundStyle(AppTheme.text)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+struct MealPlanStateCard: View {
+    let symbol: String
+    let tone: IconTone
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        AppCard(tint: true) {
+            HStack(alignment: .top, spacing: 14) {
+                IconBubble(symbol: symbol, tone: tone)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(title)
+                        .font(AppTypography.cardTitle)
+                        .foregroundStyle(AppTheme.text)
+                    Text(subtitle)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -1700,25 +2515,32 @@ private enum ProfileEditDestination: String, Identifiable {
     case units
     case reminder
     case flexDays
+    case mealPlanAccess
 
     var id: String { rawValue }
 }
 
 struct ProfileSettingsScreen: View {
     let metrics: TrackerMetrics
+    let mealPlanConnection: NutritionistConnection?
+    let mealPlanCache: MealPlanCache?
     let onClose: () -> Void
     let onSaveIdentity: (ProfileIdentityValues) -> Void
     let onSaveProfileImage: (Data) -> Void
     let onRemoveProfileImage: () -> Void
     let onSaveBaseline: (ProfileBaselineValues) -> Void
     let onSaveTargets: (GoalTargetValues) -> Void
-    let onSaveUnit: (String) -> Void
+    let onSaveUnit: (UnitPreferenceValues) -> Void
     let onSaveReminder: (CheckInReminderValues) -> Void
     let onSaveFlexDays: (FlexDaysPreferenceValues) -> Void
+    let onPairMealPlan: (String) -> String?
+    let onRefreshMealPlan: () -> Void
+    let onDisconnectMealPlan: () -> Void
     let onResetData: () -> Void
 
     @State private var editDestination: ProfileEditDestination?
     @State private var isConfirmingReset = false
+    @State private var isShowingAchievements = false
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var isShowingPhotoOptions = false
     @State private var isShowingPhotoLibrary = false
@@ -1757,6 +2579,15 @@ struct ProfileSettingsScreen: View {
 
                 AppCard {
                     VStack(alignment: .leading, spacing: 16) {
+                        ProfileSectionHeader(title: "Achievements")
+                        ProfileActionRow(symbol: "medal.fill", title: "Achievements", value: "\(metrics.earnedAchievementCount) earned", actionTitle: "View") {
+                            isShowingAchievements = true
+                        }
+                    }
+                }
+
+                AppCard {
+                    VStack(alignment: .leading, spacing: 16) {
                         sectionHeader(title: "Today’s baseline", destination: .baseline)
 
                         LazyVGrid(columns: profileGridColumns, spacing: 12) {
@@ -1782,7 +2613,7 @@ struct ProfileSettingsScreen: View {
                 AppCard {
                     VStack(alignment: .leading, spacing: 16) {
                         ProfileSectionHeader(title: "Preferences")
-                        ProfileActionRow(symbol: "textformat.size", title: "Weight units", value: progress.unit) {
+                        ProfileActionRow(symbol: "textformat.size", title: "Units", value: "\(progress.unit) · \(metrics.profile.bodyMeasurementUnit)") {
                             editDestination = .units
                         }
                         ProfileActionRow(symbol: "bell.fill", title: "Check-in reminder", value: reminderSummary) {
@@ -1791,7 +2622,10 @@ struct ProfileSettingsScreen: View {
                         ProfileActionRow(symbol: "sparkles", title: "Flex Days", value: metrics.profile.flexDaysSummary) {
                             editDestination = .flexDays
                         }
-                        Text("Units are used across cards, charts, and check-ins. Changing units converts saved weights.")
+                        ProfileActionRow(symbol: "fork.knife", title: "Meal Plan access", value: mealPlanAccessSummary, actionTitle: mealPlanConnection == nil ? "Connect" : "Manage") {
+                            editDestination = .mealPlanAccess
+                        }
+                        Text("Units are used across cards, charts, check-ins, and measurements.")
                             .font(AppTypography.body)
                             .foregroundStyle(AppTheme.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
@@ -1841,7 +2675,7 @@ struct ProfileSettingsScreen: View {
                     .presentationDragIndicator(.visible)
             case .units:
                 UnitPreferenceSheet(profile: metrics.profile, onSave: onSaveUnit)
-                    .presentationDetents([.height(290)])
+                    .presentationDetents([.height(390)])
                     .presentationDragIndicator(.visible)
             case .reminder:
                 CheckInReminderSheet(profile: metrics.profile, onSave: onSaveReminder)
@@ -1851,6 +2685,16 @@ struct ProfileSettingsScreen: View {
                 FlexDaysPreferenceSheet(profile: metrics.profile, onSave: onSaveFlexDays)
                     .presentationDetents([.height(430)])
                     .presentationDragIndicator(.visible)
+            case .mealPlanAccess:
+                MealPlanAccessSheet(
+                    connection: mealPlanConnection,
+                    cache: mealPlanCache,
+                    onPair: onPairMealPlan,
+                    onRefresh: onRefreshMealPlan,
+                    onDisconnect: onDisconnectMealPlan
+                )
+                .presentationDetents([.height(620)])
+                .presentationDragIndicator(.visible)
             }
         }
         .onChange(of: selectedPhotoItem) { _, newItem in
@@ -1887,6 +2731,11 @@ struct ProfileSettingsScreen: View {
             )
             .presentationDetents([.height(metrics.profile.profileImageData == nil ? 250 : 310)])
             .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isShowingAchievements) {
+            AchievementsSheet(metrics: metrics)
+                .presentationDetents([.height(620)])
+                .presentationDragIndicator(.visible)
         }
         .alert("Reset local data?", isPresented: $isConfirmingReset) {
             Button("Cancel", role: .cancel) {}
@@ -1973,6 +2822,11 @@ struct ProfileSettingsScreen: View {
             hour: metrics.profile.checkInReminderHour,
             minute: metrics.profile.checkInReminderMinute
         )
+    }
+
+    private var mealPlanAccessSummary: String {
+        guard let mealPlanConnection else { return "Not connected" }
+        return "\(mealPlanConnection.status.label) · \(mealPlanConnection.nutritionistDisplayName)"
     }
 
     private func sectionHeader(title: String, destination: ProfileEditDestination) -> some View {
@@ -2276,6 +3130,7 @@ struct ProfileActionRow: View {
     let symbol: String
     let title: String
     let value: String
+    var actionTitle = "Edit"
     let action: () -> Void
 
     var body: some View {
@@ -2296,7 +3151,7 @@ struct ProfileActionRow: View {
 
             Spacer(minLength: 8)
 
-            Button("Edit", action: action)
+            Button(actionTitle, action: action)
                 .font(.system(size: 14, weight: .bold, design: .rounded))
                 .foregroundStyle(AppTheme.primary)
                 .padding(.horizontal, 14)
@@ -2316,6 +3171,10 @@ struct ProfileActionRow: View {
             .warning
         case "sparkles":
             .flex
+        case "medal.fill":
+            .warning
+        case "fork.knife":
+            .info
         default:
             .neutral
         }
@@ -2475,15 +3334,17 @@ struct ProfileBaselineSheet: View {
 
 struct UnitPreferenceSheet: View {
     let profile: UserProfile
-    let onSave: (String) -> Void
+    let onSave: (UnitPreferenceValues) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var unit: String
+    @State private var weightUnit: String
+    @State private var bodyMeasurementUnit: String
 
-    init(profile: UserProfile, onSave: @escaping (String) -> Void) {
+    init(profile: UserProfile, onSave: @escaping (UnitPreferenceValues) -> Void) {
         self.profile = profile
         self.onSave = onSave
-        _unit = State(initialValue: profile.unit)
+        _weightUnit = State(initialValue: profile.unit)
+        _bodyMeasurementUnit = State(initialValue: profile.bodyMeasurementUnit)
     }
 
     var body: some View {
@@ -2494,16 +3355,31 @@ struct UnitPreferenceSheet: View {
             SheetScaffold(title: "Units", onClose: { dismiss() }) {
                 AppCard(tint: true) {
                     VStack(alignment: .leading, spacing: 16) {
-                        Picker("Weight units", selection: $unit) {
+                        Text("Weight")
+                            .font(AppTypography.cardTitle)
+                            .foregroundStyle(AppTheme.text)
+
+                        Picker("Weight units", selection: $weightUnit) {
                             ForEach(WeightUnitConverter.supportedUnits, id: \.self) { value in
                                 Text(value).tag(value)
                             }
                         }
                         .pickerStyle(.segmented)
 
+                        Text("Body measurements")
+                            .font(AppTypography.cardTitle)
+                            .foregroundStyle(AppTheme.text)
+
+                        Picker("Body measurement units", selection: $bodyMeasurementUnit) {
+                            ForEach(BodyMeasurementUnit.allCases) { unit in
+                                Text(unit.rawValue).tag(unit.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
                         HStack(spacing: 12) {
                             CompactIconBubble(symbol: "arrow.left.arrow.right")
-                            Text("Changing units converts saved weights, check-ins, and weight goals.")
+                            Text("Changing units converts saved entries so your trends stay consistent.")
                                 .font(AppTypography.body)
                                 .foregroundStyle(AppTheme.secondaryText)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -2512,7 +3388,7 @@ struct UnitPreferenceSheet: View {
                 }
             } footer: {
                 PrimaryButton(title: "Save units") {
-                    onSave(unit)
+                    onSave(UnitPreferenceValues(weightUnit: weightUnit, bodyMeasurementUnit: bodyMeasurementUnit))
                     dismiss()
                 }
             }
@@ -2651,6 +3527,330 @@ struct FlexDaysPreferenceSheet: View {
     }
 }
 
+struct MealPlanAccessSheet: View {
+    let connection: NutritionistConnection?
+    let cache: MealPlanCache?
+    let onPair: (String) -> String?
+    let onRefresh: () -> Void
+    let onDisconnect: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var pairingCode = ""
+    @State private var message = ""
+    @State private var isShowingScanner = false
+    @State private var isConfirmingDisconnect = false
+
+    private var isConnected: Bool {
+        connection != nil
+    }
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            SheetScaffold(title: "Meal Plan access", onClose: { dismiss() }) {
+                AppCard(tint: true) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack(alignment: .top, spacing: 12) {
+                            CompactIconBubble(symbol: "fork.knife", tone: .info)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Supervised meal plans")
+                                    .font(AppTypography.cardTitle)
+                                    .foregroundStyle(AppTheme.text)
+                                Text("Meal plans are provided by your nutritionist. Leafstep does not send your check-ins, weight, goals, or history back to them.")
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppTheme.secondaryText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                }
+
+                if let connection {
+                    connectedContent(connection)
+                } else {
+                    pairingContent
+                }
+
+                if !message.isEmpty {
+                    Text(message)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } footer: {
+                if isConnected {
+                    PrimaryButton(title: "Done") {
+                        dismiss()
+                    }
+                } else {
+                    PrimaryButton(title: "Connect meal plan", systemImage: "link", isEnabled: !pairingCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
+                        submitPairing()
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingScanner) {
+            QRCodeScannerSheet { code in
+                pairingCode = code
+                isShowingScanner = false
+                submitPairing()
+            }
+            .presentationDetents([.large])
+        }
+        .alert("Disconnect meal plan?", isPresented: $isConfirmingDisconnect) {
+            Button("Cancel", role: .cancel) {}
+            Button("Disconnect", role: .destructive) {
+                onDisconnect()
+                dismiss()
+            }
+        } message: {
+            Text("This removes the nutritionist connection and cached meal plan from this device. Your check-ins, weight entries, goals, and history stay local.")
+        }
+    }
+
+    private var pairingContent: some View {
+        VStack(spacing: 12) {
+            AppCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("Pair with a nutritionist")
+                        .font(AppTypography.cardTitle)
+                        .foregroundStyle(AppTheme.text)
+
+                    Text("Scan the QR code they provide, or paste the pairing link or code below.")
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Button {
+                        isShowingScanner = true
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "qrcode.viewfinder")
+                            Text("Scan QR code")
+                        }
+                        .font(AppTypography.rowTitle)
+                        .foregroundStyle(AppTheme.primary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(AppTheme.mint.opacity(0.78))
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    SetupTextField(title: "Pairing link or code", text: $pairingCode)
+
+                    Button {
+                        pairingCode = "leafstep://pair?token=demo-steady-week"
+                        submitPairing()
+                    } label: {
+                        Text("Preview sample meal plan")
+                            .font(AppTypography.rowTitle)
+                            .foregroundStyle(AppTheme.primary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(.white)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .stroke(AppTheme.primary.opacity(0.28), lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func connectedContent(_ connection: NutritionistConnection) -> some View {
+        VStack(spacing: 12) {
+            AppCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    ProfileSummaryRow(symbol: "person.crop.circle.badge.checkmark", title: "Nutritionist", value: connection.nutritionistDisplayName)
+                    ProfileSummaryRow(symbol: "checkmark.shield.fill", title: "Status", value: connection.status.label)
+                    ProfileSummaryRow(symbol: "doc.text.fill", title: "Plan", value: cache?.title ?? "Waiting for plan")
+                    ProfileSummaryRow(symbol: "arrow.clockwise", title: "Last updated", value: connection.lastSyncAt.map(Self.dateText) ?? "Not yet")
+
+                    HStack(spacing: 10) {
+                        InlineActionButton(title: "Refresh") {
+                            onRefresh()
+                            message = "Meal plan refreshed. No habit data was sent."
+                        }
+                        InlineActionButton(title: "Disconnect") {
+                            isConfirmingDisconnect = true
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func submitPairing() {
+        message = ""
+        if let error = onPair(pairingCode) {
+            message = error
+            return
+        }
+
+        message = "Meal plan connected. Your Leafstep progress remains on this device."
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            dismiss()
+        }
+    }
+
+    private static func dateText(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+}
+
+struct QRCodeScannerSheet: View {
+    let onCode: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var errorMessage = ""
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            VStack(spacing: 14) {
+                SheetHeader(title: "Scan QR code", onClose: { dismiss() })
+                    .padding(.horizontal, 18)
+
+                AppCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Point the camera at your nutritionist’s pairing QR code.")
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        QRCodeScannerView(
+                            onCode: onCode,
+                            onError: { errorMessage = $0 }
+                        )
+                        .frame(height: 360)
+                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    }
+                }
+                .padding(.horizontal, 18)
+
+                if !errorMessage.isEmpty {
+                    Text(errorMessage)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .padding(.horizontal, 18)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Spacer(minLength: 0)
+            }
+        }
+    }
+}
+
+struct QRCodeScannerView: UIViewControllerRepresentable {
+    let onCode: (String) -> Void
+    let onError: (String) -> Void
+
+    func makeUIViewController(context: Context) -> QRCodeScannerViewController {
+        let controller = QRCodeScannerViewController()
+        controller.onCode = onCode
+        controller.onError = onError
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: QRCodeScannerViewController, context: Context) {}
+}
+
+final class QRCodeScannerViewController: UIViewController, @preconcurrency AVCaptureMetadataOutputObjectsDelegate {
+    var onCode: ((String) -> Void)?
+    var onError: ((String) -> Void)?
+    private let captureSession = AVCaptureSession()
+    private var previewLayer: AVCaptureVideoPreviewLayer?
+    private var didFindCode = false
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor(AppTheme.neutralIconBackground)
+        configureScanner()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        previewLayer?.frame = view.bounds
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if !captureSession.isRunning {
+            captureSession.startRunning()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if captureSession.isRunning {
+            captureSession.stopRunning()
+        }
+    }
+
+    private func configureScanner() {
+        guard let device = AVCaptureDevice.default(for: .video) else {
+            onError?("Camera is unavailable. Paste the pairing code instead.")
+            return
+        }
+
+        do {
+            let input = try AVCaptureDeviceInput(device: device)
+            guard captureSession.canAddInput(input) else {
+                onError?("Camera input is unavailable. Paste the pairing code instead.")
+                return
+            }
+            captureSession.addInput(input)
+        } catch {
+            onError?("Camera permission is needed to scan QR codes. Paste the pairing code instead.")
+            return
+        }
+
+        let metadataOutput = AVCaptureMetadataOutput()
+        guard captureSession.canAddOutput(metadataOutput) else {
+            onError?("QR scanning is unavailable. Paste the pairing code instead.")
+            return
+        }
+
+        captureSession.addOutput(metadataOutput)
+        metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+        metadataOutput.metadataObjectTypes = [.qr]
+
+        let preview = AVCaptureVideoPreviewLayer(session: captureSession)
+        preview.videoGravity = .resizeAspectFill
+        preview.frame = view.bounds
+        view.layer.addSublayer(preview)
+        previewLayer = preview
+    }
+
+    func metadataOutput(
+        _ output: AVCaptureMetadataOutput,
+        didOutput metadataObjects: [AVMetadataObject],
+        from connection: AVCaptureConnection
+    ) {
+        guard !didFindCode,
+              let object = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+              let value = object.stringValue else { return }
+        didFindCode = true
+        captureSession.stopRunning()
+        onCode?(value)
+    }
+}
+
 struct AddWeightEntrySheet: View {
     let profile: UserProfile
     let onSave: (Date, Double) -> Void
@@ -2671,7 +3871,7 @@ struct AddWeightEntrySheet: View {
             AppTheme.background
                 .ignoresSafeArea()
 
-            SheetScaffold(title: "Add past weight", onClose: { dismiss() }) {
+            SheetScaffold(title: "Log weight", onClose: { dismiss() }) {
                 AppCard(tint: true) {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
@@ -2887,6 +4087,8 @@ struct AddBodyMeasurementsSheet: View {
 }
 
 struct AppScroll<Content: View>: View {
+    var bottomPadding: CGFloat = 74
+    var floatingAction: (() -> Void)? = nil
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -2897,9 +4099,32 @@ struct AppScroll<Content: View>: View {
                 }
                 .frame(width: max(proxy.size.width - 36, 0))
                 .padding(.horizontal, 18)
-                .padding(.bottom, 74)
+                .padding(.bottom, bottomPadding)
             }
             .scrollDismissesKeyboard(.immediately)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if let floatingAction {
+                    HStack {
+                        Spacer()
+                        FloatingWeightButton(action: floatingAction)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 6)
+                    .padding(.bottom, 12)
+                    .background(
+                        LinearGradient(
+                            colors: [
+                                AppTheme.background.opacity(0),
+                                AppTheme.background.opacity(0.96),
+                                AppTheme.background
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .ignoresSafeArea(edges: .bottom)
+                    )
+                }
+            }
         }
     }
 }
@@ -3375,6 +4600,244 @@ struct AdjustTargetsSheet: View {
                     dismiss()
                 }
             }
+        }
+    }
+}
+
+struct CreateChallengeSheet: View {
+    let profile: UserProfile
+    let latestWeight: Double
+    let activeChallengeCount: Int
+    let challenge: Challenge?
+    let onSave: (ChallengeFormValues) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var kind: ChallengeKind
+    @State private var title: String
+    @State private var startDate: Date
+    @State private var endDate: Date
+    @State private var targetValue: String
+    @State private var baselineWeight: String
+    @State private var isPinned: Bool
+    @State private var validationMessage = ""
+
+    init(
+        profile: UserProfile,
+        latestWeight: Double,
+        activeChallengeCount: Int,
+        challenge: Challenge? = nil,
+        onSave: @escaping (ChallengeFormValues) -> Void
+    ) {
+        self.profile = profile
+        self.latestWeight = latestWeight
+        self.activeChallengeCount = activeChallengeCount
+        self.challenge = challenge
+        self.onSave = onSave
+
+        let today = Calendar.current.startOfDay(for: Date())
+        let initialKind = challenge?.kind ?? .checkInDays
+        let initialStart = challenge?.startDate ?? today
+        let initialEnd = challenge?.endDate ?? Calendar.current.date(byAdding: .day, value: 29, to: today) ?? today
+        let initialTarget = challenge?.targetValue ?? 30
+        let initialTitle = challenge?.title ?? "First 30 days"
+        let initialBaseline = challenge?.baselineWeight ?? latestWeight
+
+        _kind = State(initialValue: initialKind)
+        _title = State(initialValue: initialTitle)
+        _startDate = State(initialValue: initialStart)
+        _endDate = State(initialValue: initialEnd)
+        _targetValue = State(initialValue: Self.targetText(initialTarget, for: initialKind))
+        _baselineWeight = State(initialValue: String(format: "%.1f", initialBaseline))
+        _isPinned = State(initialValue: challenge?.isPinned ?? false)
+    }
+
+    var body: some View {
+        ZStack {
+            AppTheme.background
+                .ignoresSafeArea()
+
+            SheetScaffold(title: challenge == nil ? "Create challenge" : "Edit challenge", onClose: { dismiss() }) {
+                AppCard(tint: true) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        SetupTextField(title: "Challenge title", text: $title)
+
+                        Text("Challenge type")
+                            .font(AppTypography.cardTitle)
+                            .foregroundStyle(AppTheme.text)
+
+                        Picker("Challenge type", selection: $kind) {
+                            ForEach(ChallengeKind.allCases) { kind in
+                                Text(kind.label).tag(kind)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: kind) { _, newValue in
+                            applyDefaults(for: newValue)
+                        }
+
+                        Toggle(isOn: $isPinned) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Show on Today")
+                                    .font(AppTypography.rowTitle)
+                                    .foregroundStyle(AppTheme.text)
+                                Text("Only one challenge can be pinned.")
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(AppTheme.secondaryText)
+                            }
+                        }
+                    }
+                }
+
+                AppCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Focus window")
+                            .font(AppTypography.cardTitle)
+                            .foregroundStyle(AppTheme.text)
+
+                        DatePicker("Start", selection: $startDate, displayedComponents: .date)
+                            .font(AppTypography.rowTitle)
+                            .onChange(of: startDate) { _, newValue in
+                                if endDate < newValue {
+                                    endDate = newValue
+                                }
+                                if kind == .checkInDays {
+                                    targetValue = "\(inclusiveDayCount)"
+                                }
+                            }
+
+                        DatePicker("End", selection: $endDate, in: startDate..., displayedComponents: .date)
+                            .font(AppTypography.rowTitle)
+                            .onChange(of: endDate) { _, _ in
+                                if kind == .checkInDays {
+                                    targetValue = "\(inclusiveDayCount)"
+                                }
+                            }
+                    }
+                }
+
+                AppCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(kind == .checkInDays ? "Check-in target" : "Weight target")
+                            .font(AppTypography.cardTitle)
+                            .foregroundStyle(AppTheme.text)
+
+                        SetupNumberField(title: targetFieldTitle, text: $targetValue, unit: targetUnit)
+
+                        if kind == .weightLoss {
+                            SetupNumberField(title: "Start weight", text: $baselineWeight, unit: profile.unit)
+                        }
+                    }
+                }
+
+                if !validationMessage.isEmpty {
+                    Text(validationMessage)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } footer: {
+                PrimaryButton(title: challenge == nil ? "Create challenge" : "Save challenge", systemImage: challenge == nil ? "plus.circle" : nil, isEnabled: canSubmit) {
+                    submit()
+                }
+            }
+        }
+    }
+
+    private var canSubmit: Bool {
+        validationMessageForCurrentInput == nil
+    }
+
+    private var inclusiveDayCount: Int {
+        let start = Calendar.current.startOfDay(for: startDate)
+        let end = Calendar.current.startOfDay(for: endDate)
+        let days = Calendar.current.dateComponents([.day], from: start, to: end).day ?? 0
+        return max(days + 1, 1)
+    }
+
+    private var targetFieldTitle: String {
+        switch kind {
+        case .checkInDays:
+            "Check-ins"
+        case .weightLoss:
+            "Amount to lose"
+        }
+    }
+
+    private var targetUnit: String {
+        switch kind {
+        case .checkInDays:
+            "days"
+        case .weightLoss:
+            profile.unit
+        }
+    }
+
+    private var validationMessageForCurrentInput: String? {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else { return "Give this challenge a short title." }
+        guard challenge != nil || activeChallengeCount < 3 else { return "You can keep up to 3 active challenges." }
+        guard endDate >= startDate else { return "Choose an end date after the start date." }
+        guard let target = Double(targetValue), target > 0 else { return "Enter a target greater than zero." }
+
+        if kind == .checkInDays {
+            guard target.rounded() == target else { return "Use a whole number of check-ins." }
+            guard target <= Double(inclusiveDayCount) else { return "Keep the target inside the date range." }
+        }
+
+        if kind == .weightLoss {
+            guard let baseline = Double(baselineWeight), WeightInputRules.realisticRange(for: profile.unit).contains(baseline) else {
+                return "Enter a start weight between \(WeightInputRules.rangeText(for: profile.unit))."
+            }
+        }
+
+        return nil
+    }
+
+    private func submit() {
+        validationMessage = ""
+        guard let message = validationMessageForCurrentInput else {
+            let parsedTarget = Double(targetValue) ?? 0
+            let parsedBaseline = kind == .weightLoss ? Double(baselineWeight) : nil
+            onSave(
+                ChallengeFormValues(
+                    title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+                    kind: kind,
+                    startDate: startDate,
+                    endDate: endDate,
+                    targetValue: parsedTarget,
+                    baselineWeight: parsedBaseline,
+                    unit: profile.unit,
+                    isPinned: isPinned
+                )
+            )
+            dismiss()
+            return
+        }
+
+        validationMessage = message
+    }
+
+    private func applyDefaults(for newKind: ChallengeKind) {
+        let start = Calendar.current.startOfDay(for: startDate)
+        switch newKind {
+        case .checkInDays:
+            title = "First 30 days"
+            endDate = Calendar.current.date(byAdding: .day, value: 29, to: start) ?? start
+            targetValue = "\(inclusiveDayCount)"
+        case .weightLoss:
+            title = "First 5 \(profile.unit)"
+            endDate = Calendar.current.date(byAdding: .day, value: 30, to: start) ?? start
+            targetValue = "5"
+            baselineWeight = String(format: "%.1f", latestWeight)
+        }
+    }
+
+    private static func targetText(_ value: Double, for kind: ChallengeKind) -> String {
+        switch kind {
+        case .checkInDays:
+            "\(Int(value))"
+        case .weightLoss:
+            String(format: "%.1f", value)
         }
     }
 }

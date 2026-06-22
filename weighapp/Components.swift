@@ -188,6 +188,32 @@ struct PrimaryButton: View {
     }
 }
 
+struct FloatingWeightButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: "scalemass")
+                    .font(.system(size: 17, weight: .bold))
+                Text("Log weight")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .lineLimit(1)
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 14)
+            .frame(height: 48)
+            .background(
+                Capsule()
+                    .fill(AppTheme.primary)
+                    .shadow(color: AppTheme.primary.opacity(0.24), radius: 14, y: 7)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Log weight")
+    }
+}
+
 struct StatCard: View {
     let progress: UserProgress
     var showIcons = false
@@ -326,18 +352,44 @@ struct CheckInCard: View {
             if hasCheckIn {
                 completedLayout
             } else {
-                pendingLayout
+                if needsStackedActionLayout {
+                    pendingStackedLayout
+                } else {
+                    pendingLayout
+                }
             }
         }
     }
 
+    private var needsStackedActionLayout: Bool {
+        statusText.count > 44 || title.count > 28
+    }
+
     private var pendingLayout: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             pendingIcon
             pendingText
                 .layoutPriority(1)
             Spacer(minLength: 6)
-            startButton
+            startButton(width: actionTitle == "Check in" ? 112 : 136)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var pendingStackedLayout: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                pendingIcon
+                pendingText
+                    .layoutPriority(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack {
+                Spacer(minLength: 54)
+                startButton(width: 178)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -345,14 +397,7 @@ struct CheckInCard: View {
     private var completedLayout: some View {
         HStack(spacing: 18) {
             IconBubble(symbol: "checkmark.circle.fill", tone: .success)
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title)
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.text)
-                Text(statusText)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppTheme.primary)
-            }
+            completedText
             .layoutPriority(1)
 
             Spacer(minLength: 10)
@@ -375,16 +420,17 @@ struct CheckInCard: View {
     private var pendingText: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(AppTypography.compactCardTitle)
                 .foregroundStyle(AppTheme.text)
                 .lineLimit(1)
-                .minimumScaleFactor(0.78)
+                .minimumScaleFactor(0.7)
 
             Text(statusText)
                 .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(AppTheme.secondaryText)
                 .lineLimit(2)
                 .minimumScaleFactor(0.74)
+                .fixedSize(horizontal: false, vertical: true)
 
             if let helperText {
                 Text(helperText)
@@ -392,11 +438,28 @@ struct CheckInCard: View {
                     .foregroundStyle(AppTheme.lavender)
                     .lineLimit(2)
                     .minimumScaleFactor(0.78)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 
-    private var startButton: some View {
+    private var completedText: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(AppTypography.cardHeaderTitle)
+                .foregroundStyle(AppTheme.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
+            Text(statusText)
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(AppTheme.primary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func startButton(width: CGFloat) -> some View {
         Button(action: onStart) {
             HStack(spacing: 8) {
                 Text(actionTitle)
@@ -408,7 +471,7 @@ struct CheckInCard: View {
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 10)
-            .frame(width: 132, height: 42)
+            .frame(width: width, height: 42)
             .background(
                 RoundedRectangle(cornerRadius: 15, style: .continuous)
                     .fill(AppTheme.primary)
@@ -424,7 +487,7 @@ struct CheckInCard: View {
                 .foregroundStyle(AppTheme.primary)
                 .lineLimit(1)
                 .padding(.horizontal, 18)
-                .frame(height: 42)
+                .frame(minWidth: 88, minHeight: 42)
                 .background(
                     Capsule()
                         .fill(.white)
@@ -432,6 +495,7 @@ struct CheckInCard: View {
                 )
         }
         .buttonStyle(.plain)
+        .fixedSize(horizontal: true, vertical: false)
         .accessibilityLabel("Edit today’s check-in")
     }
 }

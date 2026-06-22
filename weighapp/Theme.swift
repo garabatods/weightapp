@@ -92,13 +92,22 @@ enum AppTypography {
     static let mainSubtitle = Font.system(size: 19, weight: .medium, design: .rounded)
     static let secondaryTitle = Font.system(size: 30, weight: .bold, design: .rounded)
     static let secondarySubtitle = Font.system(size: 16, weight: .medium, design: .rounded)
+    static let featureCardTitle = Font.system(size: 22, weight: .bold, design: .rounded)
+    static let sectionTitle = Font.system(size: 21, weight: .bold, design: .rounded)
+    static let cardHeaderTitle = Font.system(size: 19, weight: .bold, design: .rounded)
+    static let compactCardTitle = Font.system(size: 18, weight: .bold, design: .rounded)
     static let cardTitle = Font.system(size: 18, weight: .bold, design: .rounded)
+    static let rowTitle = Font.system(size: 16, weight: .semibold, design: .rounded)
+    static let rowValue = Font.system(size: 17, weight: .bold, design: .rounded)
     static let body = Font.system(size: 15, weight: .medium, design: .rounded)
+    static let caption = Font.system(size: 13, weight: .medium, design: .rounded)
+    static let label = Font.system(size: 12, weight: .bold, design: .rounded)
     static let primaryAction = Font.system(size: 18, weight: .bold, design: .rounded)
 }
 
 enum AppTab: CaseIterable {
     case today
+    case mealPlan
     case progress
     case goals
     case history
@@ -106,6 +115,7 @@ enum AppTab: CaseIterable {
     var title: String {
         switch self {
         case .today: "Today"
+        case .mealPlan: "Meal Plan"
         case .progress: "Progress"
         case .goals: "Goals"
         case .history: "History"
@@ -115,6 +125,7 @@ enum AppTab: CaseIterable {
     var icon: String {
         switch self {
         case .today: "house.fill"
+        case .mealPlan: "fork.knife"
         case .progress: "chart.bar.fill"
         case .goals: "target"
         case .history: "clock"

@@ -14,6 +14,6 @@ struct WeighApp: App {
             ContentView()
                 .environmentObject(notificationRouter)
         }
-        .modelContainer(for: [UserProfile.self, DailyCheckIn.self, WeightEntry.self, BodyMeasurementEntry.self, Goal.self])
+        .modelContainer(for: [UserProfile.self, DailyCheckIn.self, WeightEntry.self, BodyMeasurementEntry.self, Goal.self, Challenge.self, NutritionistConnection.self, MealPlanCache.self, EarnedAchievement.self])
     }
 }

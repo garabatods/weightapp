@@ -1,6 +1,6 @@
 # WeighApp Feature Spec — Flex Days
 
-Last updated: 2026-06-10
+Last updated: 2026-06-21
 
 ## Purpose
 
@@ -169,19 +169,17 @@ If today is a planned Flex Day and no check-in exists yet, the Today check-in ca
 
 Title:
 
-> Today is a Flex Day
+> Flex Day
 
 Subtitle:
 
-> Planned break. No pressure — keep it intentional.
+> Planned break
 
 Primary action:
 
-> Quick check-in
+> Check in
 
-Small helper text, if space allows:
-
-> Flex Days do not count as missed days.
+Do not show extra helper copy in this compact Today card. Flex Days are already explained during onboarding/Profile and in weekly Flex copy.
 
 ### Saved Flex Day State
 
@@ -193,7 +191,7 @@ Title:
 
 Subtitle:
 
-> Your streak is paused, not broken.
+> Streak paused, not broken.
 
 Action:
 
@@ -273,7 +271,7 @@ eligible days = total days with check-ins excluding flex days
 Or, for month-level consistency:
 
 ```txt
-eligible days = days in the period excluding saved flex days
+eligible days = checked-in days in the period excluding saved flex days
 ```
 
 ### Copy
@@ -341,45 +339,31 @@ Update legend to include:
 
 ## UserProfile
 
-Add fields to `UserProfile`:
+Add migration-safe optional backing fields to `UserProfile`:
 
 ```swift
-var flexDaysEnabled: Bool
-var flexWeekdayIndexes: [Int]
+var flexDaysEnabledValue: Bool?
+var flexWeekdayMaskValue: Int?
 ```
 
-Where weekday indexes should follow the app’s chosen Calendar convention.
-
-Recommended mapping if using Calendar weekday values:
+Expose computed defaults:
 
 ```swift
-1 = Sunday
-2 = Monday
-3 = Tuesday
-4 = Wednesday
-5 = Thursday
-6 = Friday
-7 = Saturday
+var flexDaysEnabled: Bool { flexDaysEnabledValue ?? false }
+var flexWeekdayMask: Int { flexWeekdayMaskValue ?? 0 }
 ```
 
-If SwiftData array storage creates friction, use a transformable array or a small encoded string/int bitmask approach.
-
-Alternative bitmask approach:
+Weekday mask mapping:
 
 ```swift
-var flexWeekdayMask: Int
+Sunday = 1 << 0
+Monday = 1 << 1
+Tuesday = 1 << 2
+Wednesday = 1 << 3
+Thursday = 1 << 4
+Friday = 1 << 5
+Saturday = 1 << 6
 ```
-
-Example:
-- Sunday = 1 << 0
-- Monday = 1 << 1
-- Tuesday = 1 << 2
-- Wednesday = 1 << 3
-- Thursday = 1 << 4
-- Friday = 1 << 5
-- Saturday = 1 << 6
-
-Pick the implementation that best fits the existing project patterns.
 
 ## DailyCheckIn
 
@@ -399,7 +383,7 @@ Saved historical Flex Days should be stored in `DailyCheckIn`.
 Do not rely only on the current profile Flex Day settings to render past days, because the user may change their Flex Day schedule later.
 
 Rule:
-- `UserProfile.flexWeekdayIndexes` defines planned future/current Flex Days.
+- `UserProfile.flexWeekdayMask` defines planned future/current Flex Days.
 - `DailyCheckIn.dietStatus = flex` records that the user actually used a Flex Day on that specific date.
 
 ## WeightEntry
@@ -475,6 +459,8 @@ Recommended behavior:
 - `mostly` should follow the app’s current streak logic.
 - `no` breaks the streak.
 - `flex` pauses the streak and does not break it.
+- A planned Flex weekday with no saved check-in also pauses the streak after the day has passed.
+- Today without a check-in does not break the current streak before the day has passed.
 
 Example:
 
@@ -489,9 +475,9 @@ Example:
 | Sun | Flex | 5 paused |
 | Mon | Yes | 6 |
 
-Today copy can say:
+Saved Flex Today copy can say:
 
-> Your streak is paused for a planned Flex Day. Back on plan keeps it alive.
+> Streak paused, not broken.
 
 ## Consistency Rules
 
@@ -648,7 +634,7 @@ This keeps the decision simple.
 
 ## Today
 
-- On planned Flex Days, Today card shows Flex Day copy.
+- On planned Flex Days, Today card shows compact Flex Day copy: `Flex Day`, `Planned break`, `Check in`.
 - On non-Flex Days, Today behaves as before.
 - If Flex Day is saved, Today shows saved Flex Day state and Edit action.
 - Today remains visually simple.

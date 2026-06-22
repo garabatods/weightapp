@@ -1,6 +1,6 @@
 # WeighApp Current State
 
-Last updated: 2026-06-12
+Last updated: 2026-06-21
 
 ## Product Summary
 
@@ -28,18 +28,25 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
   - The Leafstep name is currently splash-only; the app display name remains Weigh.
   - 4 main tabs using native iOS `TabView`: Today, Progress, Goals, History.
   - Main tab headers include a top-right profile/avatar button.
+  - Today and Progress show a bottom-trailing `Log weight` FAB for standalone weigh-ins.
   - Profile opens as a full-screen flow, not a fifth tab.
   - Weekly target controls use a custom minus/value/plus counter instead of the native right-side `Stepper`.
 
 - Today:
-  - Shows a compact daily check-in card.
-  - If no check-in exists today, the card is time-aware around the selected reminder time:
-    - Before reminder time: `Come back when your day winds down.`
-    - At/after reminder time: `Ready to wrap up today.`
-  - If today is a planned Flex Day, the card uses Flex Day copy and a `Quick check-in` action.
-  - If today is already saved, the card stays visible as a full-width completed card with `Saved for today` and a small `Edit` action.
-  - If today is saved as a Flex Day, the card says the streak is paused, not broken.
-  - Shows weekly diet goal progress, current progress, streaks, and a supportive message.
+  - Shows a compact daily check-in card only when it is useful for the current time of day.
+  - If no check-in exists today, the pending card appears at the check-in window:
+    - Reminder enabled: 2 hours before the selected reminder time.
+    - Reminder off: 12:00 PM.
+  - On a normal day, the pending card says `Today’s check-in` and `Ready when you are` with `Start check-in`.
+  - On a planned Flex Day, the pending card uses minimal Flex Day copy and a compact `Check in` action:
+    - Title: `Flex Day`
+    - Status: `Planned break`
+  - If today is already saved, the card stays visible for 2 hours after save/edit, with `Saved for today` and a small `Edit` action.
+  - If today is saved as a Flex Day, the card says `Flex Day saved` and `Streak paused, not broken.` with the `Edit` action kept in the same row.
+  - When the check-in card is hidden, Today starts with the pinned Challenge if present, otherwise Weekly Goal.
+  - The Today check-in card is adaptive: short states stay compact; longer future copy can stack the action to avoid truncation.
+  - If one active Challenge is pinned, Today shows a compact Challenge card below the check-in card and above Weekly Goal.
+  - Shows compact weekly diet goal progress, current progress, streaks, and a supportive message.
   - Does not show the weight graph.
 
 - Check-in:
@@ -50,18 +57,29 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
   - Captures movement: `Yes` or `No`.
   - Supports optional weight entry.
   - If a weight is saved, it creates or updates today’s `WeightEntry`.
-  - Includes a collapsed optional body measurements section for chest, waist, and hips.
-  - If measurements are expanded and at least one value is saved, it creates or updates today’s `BodyMeasurementEntry`.
 
 - Progress:
   - Shows current weight, total lost, goal weight, true-range weight trend chart, body measurements trend, and monthly consistency.
   - Weight trend supports `6W`, `3M`, and `All` range filters based on real entry dates.
-  - Includes `Add past weight` for manually entering older weigh-ins from notes or prior tracking.
+  - The shared `Log weight` FAB opens a focused sheet for recording today’s or older weigh-ins.
   - Past weight entries update the chart, history dots, and weigh-in goals without creating fake habit check-ins.
-  - Body measurements show latest chest, waist, and hips values, change from first logged value, and a segmented Chest/Waist/Hips trend chart.
+  - Body measurements show the latest chest, waist, and hips values, optional change from the first logged value, and a segmented Chest/Waist/Hips trend chart.
+  - Includes `Add` for logging body measurements in a focused bottom sheet without creating or editing a daily check-in.
+  - Shows an Achievements card with up to three latest earned wins and a `View all` action.
+  - Achievements V1 uses a 10-item gentle ladder: 2 starter wins, then weekly/monthly/3-month/6-month/12-month milestones based on active logged history.
+  - Newly earned achievements show a calm bottom sheet after user-initiated saves; retroactive app-launch unlocks stay silent.
 
 - Goals:
   - Uses a hybrid goals model.
+  - Includes a `Challenges` section above core goals for user-created, time-boxed focus periods.
+  - Challenges are local-only and support two V1 types:
+    - Check-in days.
+    - Weight loss.
+  - Users can have up to 3 active Challenges.
+  - One active Challenge can be pinned to Today; pinning a new one unpins the previous one.
+  - Challenge cards use a left-side circular progress ring instead of the core-goal progress bar.
+  - Check-in Challenges hide the numeric `X of Y check-ins` metric line; weight-loss Challenges keep `X of Y kg/lb lost`.
+  - Completed or ended Challenges move into a compact `Finished challenges` area with gentle finished/completed states.
   - Four core goals are always present and derived from the profile:
     - Follow diet X days per week.
     - Move your body X days per week.
@@ -74,15 +92,17 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 
 - History:
   - Shows a monthly calendar.
-  - Green days are on-plan, yellow days are mostly, gray days are missed, lavender days are saved Flex Days or planned Flex weekdays.
+  - Green days are on-plan, yellow days are mostly, gray days are missed, lavender days are saved Flex Days.
   - Blue dots indicate weigh-ins from `WeightEntry`, including standalone past weigh-ins.
   - Shows monthly summary stats.
 
 - Profile & settings:
   - Opened from the top-right avatar/leaf in the main tab headers.
-  - Shows profile identity, optional profile photo, baseline weights, targets, preferences, and data/privacy.
-  - Allows editing name, photo, starting/current/goal weight, weekly targets, unit, check-in reminder, and Flex Days.
-  - Unit changes convert saved profile weights, daily check-in weights, weight entries, and weight goals.
+  - Shows profile identity, optional profile photo, achievements count, baseline weights, targets, preferences, and data/privacy.
+  - Allows editing name, photo, starting/current/goal weight, weekly targets, Units, check-in reminder, and Flex Days.
+  - The `Units` preference manages both weight units (`kg` / `lb`) and body measurement units (`cm` / `in`), with a combined value such as `kg · cm`.
+  - Weight unit changes convert saved profile weights, daily check-in weights, weight entries, weight goals, and weight-loss challenges.
+  - Body measurement unit changes convert baseline chest/waist/hips values and all saved body measurement entries.
   - Check-in reminder shows `Off` or the selected time in Preferences.
   - Flex Days show `Off`, selected weekday abbreviations, or `No days selected` in Preferences.
   - Includes reset local data with confirmation.
@@ -104,6 +124,12 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 - Blue is used for weigh-ins and informational accents.
 - Yellow and gray remain calendar status colors for `Mostly` and `Missed`.
 - Bottom sheets use compact centered titles with a top-right close button and the primary CTA anchored at the bottom of the sheet.
+- Card typography uses semantic `AppTypography` roles for repeated patterns:
+  - `featureCardTitle` for larger Progress-style feature cards.
+  - `cardHeaderTitle` for Today card headers.
+  - `compactCardTitle` for dense cards and compact summaries.
+  - `sectionTitle`, `rowTitle`, `rowValue`, `body`, `caption`, and `label` for supporting hierarchy.
+- Do not force every card title to the same size. Progress, Today, Goals, and History intentionally use different density, but similar roles should use shared typography tokens instead of new one-off sizes.
 
 ## Technical Architecture
 
@@ -148,14 +174,49 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
     - `weigh_ins`
   - Has title, target/current values, period, status, and `core` marker.
 
+- `Challenge`
+  - Stores local, user-created focus periods with title, type, start/end dates, target value, optional weight baseline, unit, pin state, and completed/archived timestamps.
+  - V1 supports `check_in_days` and `weight_loss`.
+  - Active Challenges can be pinned to Today, but only one pinned active Challenge appears there.
+
+- `EarnedAchievement`
+  - Stores local achievement unlocks by unique key plus earned/created timestamps.
+  - Achievement definitions and copy live in code; only earned state is persisted.
+
+## Achievements V1 Catalog
+
+Achievements V1 currently has exactly 10 local-only achievements:
+
+- `first_check_in` — First check-in — `You showed up once. That counts.`
+- `first_weight_log` — First weight log — `Your trend has a starting point.`
+- `steady_week` — Steady week — `A week with real check-ins.`
+- `on_plan_week` — On-plan week — `You hit your weekly diet target.`
+- `movement_month` — Movement rhythm — `Movement showed up across the month.`
+- `trend_builder` — Trend builder — `Enough weigh-ins to see a pattern.`
+- `measurement_trend` — Beyond the scale — `Measurements are becoming a trend.`
+- `three_month_rhythm` — 3-month rhythm — `Your habits have history now.`
+- `six_month_rhythm` — 6-month rhythm — `Half a year of showing up.`
+- `year_of_showing_up` — Year of small steps — `A full year of consistency work.`
+
+Achievement rules use active history, not account age:
+
+- Active check-in week: at least 3 saved check-ins in one calendar week.
+- Active check-in month: at least 8 saved check-ins in one calendar month.
+- `on_plan_week`: yes check-ins in a calendar week reach the current weekly diet target.
+- `movement_month`: movement logged in at least 4 distinct calendar weeks.
+- `trend_builder`: at least 8 weight logs across at least 4 distinct calendar weeks.
+- `measurement_trend`: at least 3 body measurement logs across at least 2 distinct calendar months.
+- 3/6/12-month rhythm achievements require at least 3/6/12 active check-in months.
+
 ## Data And Metrics Rules
 
 - App data is local-only through SwiftData.
 - No network or account system exists.
 - Today’s check-in updates existing check-in for the day instead of creating duplicates.
 - Saving a check-in weight upserts today’s `WeightEntry`.
-- Saving check-in body measurements upserts today’s `BodyMeasurementEntry`.
 - Adding a past weight upserts a `WeightEntry` for that date only.
+- Logging weight from the Today/Progress FAB upserts a standalone `WeightEntry`; it does not create or edit a `DailyCheckIn`.
+- Adding body measurements from Progress upserts today’s `BodyMeasurementEntry`.
 - Existing baseline measurement values backfill one `BodyMeasurementEntry` when measurement history is empty.
 - Habit streaks and consistency are based on real `DailyCheckIn` records, not standalone weight entries.
 - Flex Days pause streaks and do not increment or break them.
@@ -164,7 +225,15 @@ Phase 1 scope is intentionally narrow. Do not add auth, backend sync, social fea
 - Diet goal progress counts only `yes`; saved Flex Days are not counted as completed or missed diet days.
 - Monthly consistency is `yes / checked-in non-flex days`; saved Flex Days are excluded from the denominator.
 - Weight trend and weigh-in counts are based on `WeightEntry`.
-- Body measurement trends are based on `BodyMeasurementEntry`.
+- Body measurement summaries and trends are based on `BodyMeasurementEntry`.
+- Challenges are separate from recurring goals and achievements.
+- Check-in day Challenge progress counts saved `DailyCheckIn` records inside the inclusive date range, including Flex Day check-ins.
+- Weight-loss Challenge progress uses weight lost from the Challenge baseline to the latest `WeightEntry` inside the Challenge range.
+- Ended but incomplete Challenges are shown as `Finished`, not failed.
+- Challenge weight targets and baselines convert when the app weight unit changes.
+- Achievements are local-only, persist once earned, and are retroactively unlocked from existing local data.
+- Achievement unlock feedback appears only after user-initiated saves such as check-ins, past weights, and body measurements.
+- Deprecated achievement keys are removed during evaluation so old quick-win records do not inflate current `N of 10 earned` counts.
 - Core goals are recreated/normalized on app launch if missing or duplicated.
 - Runtime backfill creates `WeightEntry` records from older `DailyCheckIn.weight` values when needed.
 - Reminder scheduling refreshes on app launch, foreground activation, reminder settings changes, and daily check-in saves.
@@ -205,6 +274,9 @@ Known device identifiers used recently:
 
 ## Useful Guardrails For Future Agents
 
+- Treat this file as the canonical handoff for the native iOS app’s current behavior.
+- `AGENTS.md` carries broad product guardrails; this file carries the more detailed current implementation state.
+- Website docs under `docs/website/` and `website/` describe the separate public informational site, not the native app runtime.
 - Preserve Phase 1 scope unless explicitly changed by the user.
 - Do not add calorie, meal, macro, social, auth, backend, AI, or wearable features.
 - Keep copy supportive and non-shaming.
