@@ -37,7 +37,7 @@
 
   const viewMeta = {
     overview: {
-      title: "Meal plan publishing console",
+      title: "Workspace",
       kicker: "Practice workspace",
       search: false,
       actions: ["plan", "slot"],
@@ -59,7 +59,7 @@
       actions: ["slot"],
     },
     "pairing-codes": {
-      title: "Pairing links",
+      title: "Pairing access",
       kicker: "Access history",
       search: true,
       searchLabel: "Search pairing links",

@@ -8,8 +8,8 @@
       content="Leafstep Pro nutritionist workspace for privacy-preserving meal plan publishing and QR pairing."
     >
     <title>Leafstep Pro | Nutritionist Workspace</title>
-    <link rel="stylesheet" href="nutritionist.css?v=20260621-cms">
-    <script src="nutritionist.js?v=20260621-cms" defer></script>
+    <link rel="stylesheet" href="nutritionist.css?v=20260621-pro-cms-polish">
+    <script src="nutritionist.js?v=20260621-pro-cms-polish" defer></script>
   </head>
   <body>
     <main>
@@ -27,8 +27,8 @@
 
         <div class="access-layout">
           <section class="access-copy">
-            <p class="access-kicker">Nutritionist meal plan workspace</p>
-            <h1 id="access-title">Publish meal plans without collecting extra patient data.</h1>
+            <p class="access-kicker">Leafstep Pro</p>
+            <h1 id="access-title">A private meal plan workspace for nutritionists.</h1>
             <p class="access-lede">
               Leafstep Pro is a supervised-care workspace for reusable meal plans, pseudonymous
               patient slots, and short-lived QR pairing. The app stays private by default.
@@ -107,15 +107,15 @@
           <header class="cms-topbar">
             <div>
               <p id="view-kicker" class="topline">Practice workspace</p>
-              <h1 id="view-title">Meal plan publishing console</h1>
+              <h1 id="view-title">Workspace</h1>
             </div>
             <div class="topbar-actions">
               <label id="search-wrapper" class="search-field">
                 <span id="search-label">Search</span>
                 <input id="workspace-search" type="search" placeholder="Search plans, slots, or codes">
               </label>
-              <button id="quick-plan-action" class="button subtle" type="button" data-open-plan>Create plan</button>
-              <button id="quick-slot-action" class="button primary" type="button" data-focus-slot>Create access slot</button>
+              <button id="quick-plan-action" class="button subtle" type="button" data-open-plan>New plan</button>
+              <button id="quick-slot-action" class="button primary" type="button" data-focus-slot>New slot</button>
             </div>
           </header>
 
@@ -123,7 +123,7 @@
             <div class="section-heading">
               <div>
                 <p class="topline">Overview</p>
-                <h2 id="overview-title">Workspace status</h2>
+                <h2 id="overview-title">Status</h2>
               </div>
               <p class="section-note">Plans you publish appear read-only in the Leafstep app.</p>
             </div>
@@ -162,11 +162,11 @@
             <div class="section-heading full-row">
               <div>
                 <p class="topline">Reusable guidance</p>
-                <h2 id="plans-title">Library and plan preview</h2>
+                <h2 id="plans-title">Plan library</h2>
               </div>
               <div class="heading-actions">
                 <button id="seed-plan" class="button subtle" type="button">Add template</button>
-                <button class="button primary" type="button" data-open-plan>Create plan</button>
+                <button class="button primary" type="button" data-open-plan>New plan</button>
               </div>
             </div>
 
@@ -185,13 +185,13 @@
             <div class="section-heading">
               <div>
                 <p class="topline">Pseudonymous access</p>
-                <h2 id="patients-title">Assign plans and generate access</h2>
+                <h2 id="patients-title">Plan assignments</h2>
               </div>
             </div>
 
             <div class="split-grid">
               <form id="patient-form" class="panel slot-form">
-                <h3>Create access slot</h3>
+                <h3>New access slot</h3>
                 <p>Use an internal code only. Do not enter names, initials, email, diagnosis, weight, goals, measurements, or app history.</p>
                 <label>
                   Internal reference
@@ -201,7 +201,7 @@
                   Active plan
                   <select id="patient-plan" required></select>
                 </label>
-                <button class="button primary wide" type="submit">Create access slot</button>
+                <button class="button primary wide" type="submit">Save access slot</button>
               </form>
 
               <section class="panel table-panel" aria-label="Patient slot table">
