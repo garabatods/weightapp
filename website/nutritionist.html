@@ -9,8 +9,8 @@
     >
     <title>Leafstep Pro | Nutritionist Workspace</title>
     <link rel="icon" href="assets/brand/app-icon.png">
-    <link rel="stylesheet" href="nutritionist.css?v=20260622-leafstep-aligned">
-    <script src="nutritionist.js?v=20260622-leafstep-aligned" defer></script>
+    <link rel="stylesheet" href="nutritionist.css?v=20260622-patient-dish-cms">
+    <script src="nutritionist.js?v=20260622-patient-dish-cms" defer></script>
   </head>
   <body>
     <main>
@@ -87,17 +87,16 @@
 
           <nav class="cms-nav" aria-label="Workspace sections">
             <button class="nav-item active" type="button" data-view="overview" aria-pressed="true">Overview</button>
-            <button class="nav-item" type="button" data-view="meal-plans" aria-pressed="false">Plans</button>
-            <button class="nav-item" type="button" data-view="patient-slots" aria-pressed="false">Client Access</button>
-            <button class="nav-item" type="button" data-view="pairing-codes" aria-pressed="false">Pairing Links</button>
+            <button class="nav-item" type="button" data-view="patients" aria-pressed="false">Patients</button>
+            <button class="nav-item" type="button" data-view="meal-plans" aria-pressed="false">Meal Plans</button>
+            <button class="nav-item" type="button" data-view="dish-library" aria-pressed="false">Dish Library</button>
             <button class="nav-item" type="button" data-view="privacy" aria-pressed="false">Privacy</button>
           </nav>
 
           <section class="sidebar-card">
-            <h2>Privacy first</h2>
+            <h2>Planner flow</h2>
             <p>
-              Use internal codes only. Do not enter names, initials, email, diagnosis, weight,
-              goals, measurements, check-ins, or app history.
+              Start with a patient label, assign a plan, add dishes to the week, then share access.
             </p>
           </section>
 
@@ -113,10 +112,11 @@
             <div class="topbar-actions">
               <label id="search-wrapper" class="search-field">
                 <span id="search-label">Search</span>
-                <input id="workspace-search" type="search" placeholder="Search plans, slots, or codes">
+                <input id="workspace-search" type="search" placeholder="Search patients, plans, or dishes">
               </label>
+              <button id="quick-dish-action" class="button subtle" type="button" data-open-dish>New dish</button>
               <button id="quick-plan-action" class="button subtle" type="button" data-open-plan>New plan</button>
-              <button id="quick-slot-action" class="button primary" type="button" data-focus-slot>New slot</button>
+              <button id="quick-patient-action" class="button primary" type="button" data-focus-patient>New patient</button>
             </div>
           </header>
 
@@ -124,7 +124,7 @@
             <div class="section-heading">
               <div>
                 <p class="topline">Overview</p>
-                <h2 id="overview-title">Status</h2>
+                <h2 id="overview-title">Planning status</h2>
               </div>
               <p class="section-note">Plans you publish appear read-only in the Leafstep app.</p>
             </div>
@@ -135,103 +135,102 @@
                   <h3 id="next-steps-title">Next steps</h3>
                 </div>
                 <ol class="next-steps">
-                  <li>Create or review a reusable meal plan.</li>
-                  <li>Create a private access slot with an internal code.</li>
-                  <li>Generate a one-time pairing link when the patient is ready.</li>
+                  <li>Create a patient label without personal identifiers.</li>
+                  <li>Build or assign a weekly meal plan.</li>
+                  <li>Add saved dishes or create new dishes while planning.</li>
+                  <li>Generate a pairing link when the patient is ready.</li>
                 </ol>
               </section>
 
-              <section class="panel table-panel" aria-labelledby="recent-plans-title">
+              <section class="panel table-panel" aria-labelledby="recent-patients-title">
                 <div class="panel-head">
-                  <h3 id="recent-plans-title">Recently updated plans</h3>
-                  <button class="button subtle" type="button" data-view-shortcut="meal-plans">View plans</button>
+                  <h3 id="recent-patients-title">Patients</h3>
+                  <button class="button subtle" type="button" data-view-shortcut="patients">View patients</button>
                 </div>
-                <div id="overview-plan-list" class="record-list compact"></div>
+                <div id="overview-patient-list" class="record-list compact"></div>
               </section>
 
               <section class="panel table-panel" aria-labelledby="recent-activity-title">
                 <div class="panel-head">
                   <h3 id="recent-activity-title">Pairing activity</h3>
-                  <button class="button subtle" type="button" data-view-shortcut="pairing-codes">View links</button>
+                  <button class="button subtle" type="button" data-view-shortcut="patients">Manage access</button>
                 </div>
                 <div id="overview-activity-list" class="record-list compact"></div>
               </section>
             </div>
           </section>
 
-          <section id="meal-plans" class="workspace-grid dashboard-section view-panel" data-view-panel="meal-plans" aria-labelledby="plans-title">
+          <section id="patients" class="workspace-grid dashboard-section view-panel" data-view-panel="patients" aria-labelledby="patients-title">
             <div class="section-heading full-row">
               <div>
-                <p class="topline">Reusable guidance</p>
-                <h2 id="plans-title">Plan library</h2>
-              </div>
-              <div class="heading-actions">
-                <button id="seed-plan" class="button subtle" type="button">Add template</button>
-                <button class="button primary" type="button" data-open-plan>New plan</button>
+                <p class="topline">Patient planning</p>
+                <h2 id="patients-title">Patients</h2>
               </div>
             </div>
 
-            <section class="panel table-panel" aria-label="Meal plan library">
-              <div class="panel-head">
-                <h3>Plan library</h3>
-                <span id="plan-count" class="count-label"></span>
-              </div>
-              <div id="plan-list" class="record-list" aria-live="polite"></div>
-            </section>
-
-            <aside id="plan-detail" class="panel detail-panel" aria-live="polite"></aside>
-          </section>
-
-          <section id="patient-slots" class="dashboard-section split-section view-panel" data-view-panel="patient-slots" aria-labelledby="patients-title">
-            <div class="section-heading">
-              <div>
-                <p class="topline">Pseudonymous access</p>
-                <h2 id="patients-title">Plan assignments</h2>
-              </div>
-            </div>
-
-            <div class="split-grid">
-              <form id="patient-form" class="panel slot-form">
-                <h3>New access slot</h3>
-                <p>Use an internal code only. Do not enter names, initials, email, diagnosis, weight, goals, measurements, or app history.</p>
+            <section class="panel table-panel" aria-label="Patient list">
+              <form id="patient-form" class="inline-create-form">
                 <label>
-                  Internal reference
-                  <input id="patient-label" placeholder="Client 014" required>
+                  Patient label
+                  <input id="patient-label" placeholder="Patient 014" required>
                 </label>
                 <label>
                   Active plan
-                  <select id="patient-plan" required></select>
+                  <select id="patient-plan"></select>
                 </label>
-                <button class="button primary wide" type="submit">Save access slot</button>
+                <button class="button primary" type="submit">Save patient</button>
               </form>
+              <div class="panel-head">
+                <h3>Patient list</h3>
+                <span id="patient-count" class="count-label"></span>
+              </div>
+              <div id="patient-list" class="record-list" aria-live="polite"></div>
+            </section>
 
-              <section class="panel table-panel" aria-label="Patient slot table">
+            <aside id="patient-detail" class="panel detail-panel" aria-live="polite"></aside>
+          </section>
+
+          <section id="meal-plans" class="dashboard-section view-panel" data-view-panel="meal-plans" aria-labelledby="plans-title">
+            <div class="section-heading">
+              <div>
+                <p class="topline">Weekly board</p>
+                <h2 id="plans-title">Meal plans</h2>
+              </div>
+              <div class="heading-actions">
+                <button id="seed-plan" class="button subtle" type="button">Add template</button>
+              </div>
+            </div>
+
+            <div class="planner-layout">
+              <section class="panel table-panel" aria-label="Meal plan library">
                 <div class="panel-head">
-                  <h3>Assigned slots</h3>
-                  <span id="patient-count" class="count-label"></span>
+                  <h3>Plan library</h3>
+                  <span id="plan-count" class="count-label"></span>
                 </div>
-                <div id="patient-list" class="record-list compact" aria-live="polite"></div>
+                <div id="plan-list" class="record-list" aria-live="polite"></div>
               </section>
+              <section id="plan-board-panel" class="panel board-panel" aria-live="polite"></section>
             </div>
           </section>
 
-          <section id="pairing-codes" class="dashboard-section split-section view-panel" data-view-panel="pairing-codes" aria-labelledby="codes-title">
+          <section id="dish-library" class="dashboard-section view-panel" data-view-panel="dish-library" aria-labelledby="dishes-title">
             <div class="section-heading">
               <div>
-                <p class="topline">Pairing access</p>
-                <h2 id="codes-title">Access history</h2>
+                <p class="topline">Reusable dishes</p>
+                <h2 id="dishes-title">Dish library</h2>
               </div>
-              <p class="section-note">
-                Pairing links are short-lived, one-time access credentials.
-              </p>
             </div>
-            <section class="panel table-panel">
-              <div class="panel-head">
-                <h3>Recent access</h3>
-                <span id="code-count" class="count-label"></span>
-              </div>
-              <div id="code-list" class="record-list compact" aria-live="polite"></div>
-            </section>
+            <div class="dish-layout">
+              <section class="panel table-panel" aria-label="Dish library">
+                <div class="panel-head">
+                  <h3>Dishes</h3>
+                  <span id="dish-count" class="count-label"></span>
+                </div>
+                <div id="dish-filter-bar" class="filter-bar" aria-label="Dish tag filters"></div>
+                <div id="dish-list" class="dish-grid" aria-live="polite"></div>
+              </section>
+              <aside id="dish-detail" class="panel detail-panel" aria-live="polite"></aside>
+            </div>
           </section>
 
           <section id="privacy" class="dashboard-section privacy-panel view-panel" data-view-panel="privacy" aria-labelledby="privacy-title">
@@ -239,15 +238,15 @@
               <p class="topline">Privacy boundary</p>
               <h2 id="privacy-title">What Leafstep Pro intentionally avoids</h2>
               <p>
-                Leafstep Pro only publishes meal guidance and pairing access. It does not
-                become an EHR, food database, messaging system, or remote progress dashboard.
+                Leafstep Pro publishes nutritionist-written meal guidance and pairing access.
+                It stays out of check-ins, weight history, measurements, diagnoses, and messaging.
               </p>
             </div>
             <ul class="privacy-checks">
-              <li>No patient email, full name, diagnosis, or weight history</li>
-              <li>No check-ins, goals, measurements, achievements, or app history uploaded</li>
-              <li>No calories, macros, barcode scanning, meal logging, or food database</li>
-              <li>Patient can disconnect and delete the local cached meal plan</li>
+              <li>Use patient labels like Patient 014 instead of names or emails</li>
+              <li>Meal plans are guidance-only and read-only in the app</li>
+              <li>Dishes do not include calories, macros, barcode scanning, or nutrition database data</li>
+              <li>Pairing links can be revoked and recreated from the patient workspace</li>
             </ul>
           </section>
         </div>
@@ -258,39 +257,166 @@
       <form id="plan-form" method="dialog" class="plan-form">
         <div class="modal-head">
           <div>
-            <p class="topline">Meal plan editor</p>
+            <p class="topline">Meal plan</p>
             <h2 id="plan-dialog-title">Create plan</h2>
           </div>
-          <button class="icon-button" type="button" data-close-dialog aria-label="Close plan editor"></button>
+          <button class="icon-button" type="button" data-close-plan aria-label="Close plan editor"></button>
         </div>
 
         <input id="plan-id" type="hidden">
         <div class="form-grid">
           <label>
             Plan title
-            <input id="plan-title" placeholder="Steady Week Meal Plan" required>
+            <input id="plan-title" placeholder="Steady Week Support Plan" required>
           </label>
           <label>
             Effective dates
             <input id="plan-effective" placeholder="June 24 - June 30" required>
           </label>
           <label class="full">
-            Nutritionist note
-            <textarea id="plan-note" rows="3" placeholder="Portions, timing, swaps, and supportive context. No calorie or macro database."></textarea>
+            Plan note
+            <textarea id="plan-note" rows="3" placeholder="Read-only guidance, timing, portions, swaps, and notes."></textarea>
           </label>
         </div>
 
-        <div class="meal-editor">
-          <div class="meal-editor-head">
-            <h3>Structured meals</h3>
-            <button id="add-meal-row" class="button subtle" type="button">Add meal row</button>
+        <div class="modal-actions">
+          <button class="button subtle" type="button" data-close-plan>Cancel</button>
+          <button class="button primary" type="submit">Save plan</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="slot-dialog" class="modal-card" aria-labelledby="slot-dialog-title">
+      <form id="slot-form" method="dialog" class="plan-form">
+        <div class="modal-head">
+          <div>
+            <p class="topline">Weekly board</p>
+            <h2 id="slot-dialog-title">Add meal slot</h2>
           </div>
-          <div id="meal-rows" class="meal-rows"></div>
+          <button class="icon-button" type="button" data-close-slot aria-label="Close meal slot editor"></button>
+        </div>
+
+        <input id="slot-plan-id" type="hidden">
+        <input id="slot-id" type="hidden">
+        <div class="form-grid">
+          <label>
+            Day
+            <select id="slot-day" required></select>
+          </label>
+          <label>
+            Meal
+            <input id="slot-meal" placeholder="Lunch" required>
+          </label>
+          <label>
+            Time
+            <input id="slot-time" placeholder="12:30 PM">
+          </label>
+          <label>
+            Dish
+            <select id="slot-dish" required></select>
+          </label>
+          <label class="full">
+            Slot note
+            <textarea id="slot-note" rows="2" placeholder="Optional patient-facing note for this meal."></textarea>
+          </label>
+        </div>
+
+        <section id="inline-dish-fields" class="inline-dish-fields hidden" aria-label="Create dish inline">
+          <div class="panel-head">
+            <h3>Create a reusable dish</h3>
+            <span class="count-label">Saved to Dish Library</span>
+          </div>
+          <div class="form-grid">
+            <label>
+              Dish title
+              <input id="inline-dish-title" placeholder="Chicken Salad Bowl">
+            </label>
+            <label>
+              Photo
+              <select id="inline-dish-photo"></select>
+            </label>
+            <label class="full">
+              Tags
+              <input id="inline-dish-tags" placeholder="high protein, lunch, low carb">
+            </label>
+            <label class="full">
+              Ingredients
+              <textarea id="inline-dish-ingredients" rows="3" placeholder="1 cup | greens |&#10;120 g | chicken | grilled"></textarea>
+            </label>
+            <label class="full">
+              Preparation
+              <textarea id="inline-dish-preparation" rows="3" placeholder="Assemble greens, chicken, vegetables, and dressing."></textarea>
+            </label>
+          </div>
+        </section>
+
+        <div class="modal-actions">
+          <button class="button subtle" type="button" data-close-slot>Cancel</button>
+          <button class="button primary" type="submit">Save meal slot</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="dish-dialog" class="modal-card dish-modal" aria-labelledby="dish-dialog-title">
+      <form id="dish-form" method="dialog" class="plan-form">
+        <div class="modal-head">
+          <div>
+            <p class="topline">Dish library</p>
+            <h2 id="dish-dialog-title">Create dish</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dish aria-label="Close dish editor"></button>
+        </div>
+
+        <input id="dish-id" type="hidden">
+        <div class="dish-editor-grid">
+          <section class="dish-editor-main">
+            <div class="form-grid">
+              <label>
+                Dish title
+                <input id="dish-title" placeholder="Chicken Salad Bowl" required>
+              </label>
+              <label>
+                Photo
+                <select id="dish-photo" required></select>
+              </label>
+              <label class="full">
+                Preset tags
+                <div id="dish-tag-options" class="tag-check-grid"></div>
+              </label>
+              <label class="full">
+                Custom tags
+                <input id="dish-custom-tags" placeholder="anti-inflammatory, family dinner">
+              </label>
+              <label class="full">
+                Portion guidance
+                <textarea id="dish-portion" rows="2" placeholder="Use the portion guide discussed with the patient."></textarea>
+              </label>
+              <label class="full">
+                Preparation method
+                <textarea id="dish-preparation" rows="4" placeholder="Step-by-step preparation guidance."></textarea>
+              </label>
+              <label class="full">
+                Swaps
+                <textarea id="dish-swaps" rows="2" placeholder="Swap chicken for tofu or tuna."></textarea>
+              </label>
+              <label class="full">
+                Notes
+                <textarea id="dish-notes" rows="2" placeholder="Optional nutritionist note."></textarea>
+              </label>
+            </div>
+          </section>
+          <section class="dish-editor-side">
+            <div class="panel-head">
+              <h3>Ingredients</h3>
+              <button id="add-ingredient-row" class="button subtle" type="button">Add ingredient</button>
+            </div>
+            <div id="ingredient-rows" class="ingredient-rows"></div>
+          </section>
         </div>
 
         <div class="modal-actions">
-          <button class="button subtle" type="button" data-close-dialog>Cancel</button>
-          <button class="button primary" type="submit">Save plan</button>
+          <button class="button subtle" type="button" data-close-dish>Cancel</button>
+          <button class="button primary" type="submit">Save dish</button>
         </div>
       </form>
     </dialog>
@@ -298,7 +424,7 @@
     <dialog id="pairing-dialog" class="modal-card pairing-modal" aria-labelledby="pairing-dialog-title">
       <div class="modal-head">
         <div>
-          <p class="topline">Pairing access</p>
+          <p class="topline">Patient access</p>
           <h2 id="pairing-dialog-title">Pairing link</h2>
         </div>
         <button class="icon-button" type="button" data-close-pairing aria-label="Close pairing code"></button>
