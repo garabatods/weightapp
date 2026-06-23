@@ -501,8 +501,6 @@ a:focus-visible {
 .sidebar-topline {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
   min-width: 0;
 }
 
@@ -511,45 +509,48 @@ a:focus-visible {
   min-width: 0;
 }
 
+.sidebar-footer {
+  display: grid;
+  gap: 10px;
+  margin-top: auto;
+}
+
 .sidebar-toggle {
-  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
   flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 13px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: rgba(255, 253, 246, 0.78);
   color: var(--green-dark);
+  font-size: 0.84rem;
+  font-weight: 850;
   box-shadow: 0 10px 24px rgba(21, 42, 35, 0.045);
 }
 
-.sidebar-toggle::before,
-.sidebar-toggle::after,
-.sidebar-toggle span::before {
-  position: absolute;
-  left: 10px;
-  width: 16px;
-  height: 2px;
-  border-radius: 999px;
-  background: currentColor;
-  content: "";
-}
-
-.sidebar-toggle::before {
-  top: 12px;
-}
-
-.sidebar-toggle span::before {
-  top: 18px;
-}
-
-.sidebar-toggle::after {
-  top: 24px;
+.toggle-icon {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(135deg);
 }
 
 .sidebar-toggle:hover {
   border-color: rgba(0, 127, 69, 0.28);
   background: rgba(229, 243, 223, 0.76);
+}
+
+.sidebar-toggle:focus-visible,
+.nav-item:focus-visible {
+  outline: 3px solid rgba(0, 127, 69, 0.35);
+  outline-offset: 3px;
 }
 
 .cms-nav {
@@ -613,7 +614,8 @@ a:focus-visible {
 .cms-shell.sidebar-collapsed .cms-brand span,
 .cms-shell.sidebar-collapsed .nav-item span,
 .cms-shell.sidebar-collapsed .sidebar-card,
-.cms-shell.sidebar-collapsed #reset-demo {
+.cms-shell.sidebar-collapsed #reset-demo,
+.cms-shell.sidebar-collapsed .toggle-label {
   display: none;
 }
 
@@ -629,6 +631,14 @@ a:focus-visible {
   border-radius: 16px;
 }
 
+.cms-shell.sidebar-collapsed .nav-item.active {
+  border-color: rgba(0, 127, 69, 0.34);
+  background: rgba(229, 243, 223, 0.92);
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 127, 69, 0.16),
+    0 14px 28px rgba(0, 127, 69, 0.12);
+}
+
 .cms-shell.sidebar-collapsed .nav-icon {
   width: 36px;
   height: 36px;
@@ -638,11 +648,18 @@ a:focus-visible {
 .cms-shell.sidebar-collapsed .sidebar-toggle {
   width: 42px;
   height: 42px;
+  min-height: 42px;
+  padding: 0;
+  border-color: rgba(0, 127, 69, 0.24);
+  background: rgba(255, 253, 246, 0.88);
+}
+
+.cms-shell.sidebar-collapsed .toggle-icon {
+  transform: rotate(-45deg);
 }
 
 .sidebar-card {
   min-width: 0;
-  margin-top: auto;
   padding: 15px;
   border: 1px solid var(--line-soft);
   border-radius: 18px;
@@ -665,7 +682,8 @@ a:focus-visible {
   display: grid;
   align-content: start;
   gap: 20px;
-  width: min(1240px, 100%);
+  width: 100%;
+  min-width: 0;
   padding: 28px clamp(20px, 3vw, 34px) 46px;
 }
 
@@ -680,12 +698,17 @@ a:focus-visible {
 
 .cms-topbar h1 {
   margin-bottom: 0;
-  font-size: clamp(1.75rem, 2.7vw, 2.5rem);
+  font-size: clamp(1.5rem, 2vw, 2.05rem);
   line-height: 1.02;
 }
 
+.cms-topbar .topline {
+  display: none;
+}
+
 .topbar-actions,
-.heading-actions {
+.heading-actions,
+.panel-head-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
@@ -695,6 +718,7 @@ a:focus-visible {
 
 .topbar-actions .button,
 .heading-actions .button,
+.panel-head-actions .button,
 .panel-head .button,
 .record-actions .button,
 .pairing-actions .button,
@@ -722,6 +746,17 @@ a:focus-visible {
 
 .dashboard-section {
   scroll-margin-top: 24px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .view-panel {
@@ -1292,7 +1327,7 @@ a:focus-visible {
 
 .inline-create-form {
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   align-items: end;
   padding: 0 0 14px;
@@ -1301,6 +1336,7 @@ a:focus-visible {
 }
 
 .inline-create-form .button {
+  justify-self: start;
   min-height: 44px;
 }
 

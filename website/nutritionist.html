@@ -9,8 +9,8 @@
     >
     <title>Leafstep Pro | Nutritionist Workspace</title>
     <link rel="icon" href="assets/brand/app-icon.png">
-    <link rel="stylesheet" href="nutritionist.css?v=20260622-collapsible-sidebar">
-    <script src="nutritionist.js?v=20260622-collapsible-sidebar" defer></script>
+    <link rel="stylesheet" href="nutritionist.css?v=20260622-sidebar-polish">
+    <script src="nutritionist.js?v=20260622-sidebar-polish" defer></script>
   </head>
   <body>
     <main>
@@ -85,9 +85,6 @@
               <img src="assets/brand/app-icon.png" alt="" width="38" height="38">
               <span>Leafstep <strong>Pro</strong></span>
             </a>
-            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Collapse sidebar" aria-pressed="false">
-              <span aria-hidden="true"></span>
-            </button>
           </div>
 
           <nav class="cms-nav" aria-label="Workspace sections">
@@ -120,7 +117,13 @@
             </p>
           </section>
 
-          <button id="reset-demo" class="button subtle wide" type="button">Restore sample workspace</button>
+          <div class="sidebar-footer">
+            <button id="reset-demo" class="button subtle wide" type="button">Restore sample workspace</button>
+            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Collapse sidebar" aria-pressed="false">
+              <span class="toggle-icon" aria-hidden="true"></span>
+              <span class="toggle-label">Collapse sidebar</span>
+            </button>
+          </div>
         </aside>
 
         <div class="cms-main">
@@ -141,13 +144,7 @@
           </header>
 
           <section id="overview" class="dashboard-section view-panel active-view" data-view-panel="overview" aria-labelledby="overview-title">
-            <div class="section-heading">
-              <div>
-                <p class="topline">Overview</p>
-                <h2 id="overview-title">Planning status</h2>
-              </div>
-              <p class="section-note">Plans you publish appear read-only in the Leafstep app.</p>
-            </div>
+            <h2 id="overview-title" class="sr-only">Planning status</h2>
             <div id="metric-grid" class="metric-grid" aria-live="polite"></div>
             <div class="overview-grid">
               <section class="panel next-steps-panel" aria-labelledby="next-steps-title">
@@ -181,12 +178,7 @@
           </section>
 
           <section id="patients" class="workspace-grid dashboard-section view-panel" data-view-panel="patients" aria-labelledby="patients-title">
-            <div class="section-heading full-row">
-              <div>
-                <p class="topline">Patient planning</p>
-                <h2 id="patients-title">Patients</h2>
-              </div>
-            </div>
+            <h2 id="patients-title" class="sr-only">Patients</h2>
 
             <section class="panel table-panel" aria-label="Patient list">
               <form id="patient-form" class="inline-create-form">
@@ -211,21 +203,16 @@
           </section>
 
           <section id="meal-plans" class="dashboard-section view-panel" data-view-panel="meal-plans" aria-labelledby="plans-title">
-            <div class="section-heading">
-              <div>
-                <p class="topline">Weekly board</p>
-                <h2 id="plans-title">Meal plans</h2>
-              </div>
-              <div class="heading-actions">
-                <button id="seed-plan" class="button subtle" type="button">Add template</button>
-              </div>
-            </div>
+            <h2 id="plans-title" class="sr-only">Meal plans</h2>
 
             <div class="planner-layout">
               <section class="panel table-panel" aria-label="Meal plan library">
                 <div class="panel-head">
                   <h3>Plan library</h3>
-                  <span id="plan-count" class="count-label"></span>
+                  <div class="panel-head-actions">
+                    <span id="plan-count" class="count-label"></span>
+                    <button id="seed-plan" class="button subtle" type="button">Add template</button>
+                  </div>
                 </div>
                 <div id="plan-list" class="record-list" aria-live="polite"></div>
               </section>
@@ -234,12 +221,7 @@
           </section>
 
           <section id="dish-library" class="dashboard-section view-panel" data-view-panel="dish-library" aria-labelledby="dishes-title">
-            <div class="section-heading">
-              <div>
-                <p class="topline">Reusable dishes</p>
-                <h2 id="dishes-title">Dish library</h2>
-              </div>
-            </div>
+            <h2 id="dishes-title" class="sr-only">Dish library</h2>
             <div class="dish-layout">
               <section class="panel table-panel" aria-label="Dish library">
                 <div class="panel-head">

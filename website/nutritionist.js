@@ -33,6 +33,7 @@
   const viewTitle = document.querySelector("#view-title");
   const viewKicker = document.querySelector("#view-kicker");
   const sidebarToggle = document.querySelector("#sidebar-toggle");
+  const sidebarToggleLabel = document.querySelector(".toggle-label");
   const planDialog = document.querySelector("#plan-dialog");
   const planForm = document.querySelector("#plan-form");
   const slotDialog = document.querySelector("#slot-dialog");
@@ -56,7 +57,7 @@
 
   const viewMeta = {
     overview: {
-      title: "Workspace",
+      title: "Overview",
       kicker: "Practice workspace",
       search: false,
       actions: ["patient", "plan", "dish"],
@@ -86,7 +87,7 @@
       actions: ["dish"],
     },
     privacy: {
-      title: "Privacy boundary",
+      title: "Privacy",
       kicker: "Supervised-care limits",
       search: false,
       actions: [],
@@ -463,6 +464,9 @@
     sidebarToggle.setAttribute("aria-pressed", String(sidebarCollapsed));
     sidebarToggle.setAttribute("aria-label", sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar");
     sidebarToggle.title = sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar";
+    if (sidebarToggleLabel) {
+      sidebarToggleLabel.textContent = sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar";
+    }
   }
 
   function renderMetrics() {
