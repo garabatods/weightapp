@@ -476,6 +476,11 @@ a:focus-visible {
   grid-template-columns: 264px minmax(0, 1fr);
   min-height: 100vh;
   background: transparent;
+  transition: grid-template-columns 200ms ease;
+}
+
+.cms-shell.sidebar-collapsed {
+  grid-template-columns: 82px minmax(0, 1fr);
 }
 
 .cms-sidebar {
@@ -493,18 +498,71 @@ a:focus-visible {
   backdrop-filter: blur(18px);
 }
 
+.sidebar-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
 .cms-brand {
   padding: 0 6px;
+  min-width: 0;
+}
+
+.sidebar-toggle {
+  position: relative;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 253, 246, 0.78);
+  color: var(--green-dark);
+  box-shadow: 0 10px 24px rgba(21, 42, 35, 0.045);
+}
+
+.sidebar-toggle::before,
+.sidebar-toggle::after,
+.sidebar-toggle span::before {
+  position: absolute;
+  left: 10px;
+  width: 16px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+}
+
+.sidebar-toggle::before {
+  top: 12px;
+}
+
+.sidebar-toggle span::before {
+  top: 18px;
+}
+
+.sidebar-toggle::after {
+  top: 24px;
+}
+
+.sidebar-toggle:hover {
+  border-color: rgba(0, 127, 69, 0.28);
+  background: rgba(229, 243, 223, 0.76);
 }
 
 .cms-nav {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   min-height: 42px;
-  padding: 0 13px;
+  padding: 0 11px;
   border: 1px solid transparent;
   border-radius: 12px;
   background: transparent;
@@ -519,12 +577,67 @@ a:focus-visible {
     box-shadow 160ms ease;
 }
 
+.nav-icon {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 6px 16px rgba(21, 42, 35, 0.06);
+}
+
 .nav-item:hover,
 .nav-item.active {
   border-color: rgba(0, 127, 69, 0.16);
   background: rgba(229, 243, 223, 0.72);
   color: var(--green-dark);
   box-shadow: 0 10px 24px rgba(21, 42, 35, 0.045);
+}
+
+.cms-shell.sidebar-collapsed .cms-sidebar {
+  align-items: center;
+  gap: 18px;
+  padding: 22px 13px;
+}
+
+.cms-shell.sidebar-collapsed .sidebar-topline {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.cms-shell.sidebar-collapsed .cms-brand {
+  padding: 0;
+}
+
+.cms-shell.sidebar-collapsed .cms-brand span,
+.cms-shell.sidebar-collapsed .nav-item span,
+.cms-shell.sidebar-collapsed .sidebar-card,
+.cms-shell.sidebar-collapsed #reset-demo {
+  display: none;
+}
+
+.cms-shell.sidebar-collapsed .cms-nav {
+  width: 100%;
+}
+
+.cms-shell.sidebar-collapsed .nav-item {
+  justify-content: center;
+  width: 54px;
+  min-height: 54px;
+  padding: 0;
+  border-radius: 16px;
+}
+
+.cms-shell.sidebar-collapsed .nav-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.cms-shell.sidebar-collapsed .sidebar-toggle {
+  width: 42px;
+  height: 42px;
 }
 
 .sidebar-card {
@@ -1536,6 +1649,10 @@ a:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .cms-shell.sidebar-collapsed {
+    grid-template-columns: 1fr;
+  }
+
   .cms-sidebar {
     position: static;
     height: auto;
@@ -1543,6 +1660,25 @@ a:focus-visible {
     padding: 16px 14px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .sidebar-topline {
+    justify-content: space-between;
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .cms-shell.sidebar-collapsed .cms-sidebar {
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px 14px;
+  }
+
+  .cms-shell.sidebar-collapsed .cms-brand span,
+  .cms-shell.sidebar-collapsed .nav-item span {
+    display: inline;
   }
 
   .cms-brand {
@@ -1569,6 +1705,21 @@ a:focus-visible {
     padding: 0 10px;
     font-size: 0.78rem;
     text-align: center;
+  }
+
+  .cms-shell.sidebar-collapsed .nav-item {
+    justify-content: center;
+    width: auto;
+    min-height: 36px;
+    padding: 0 10px;
+    border-radius: 12px;
+  }
+
+  .nav-icon,
+  .cms-shell.sidebar-collapsed .nav-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 9px;
   }
 
   .sidebar-card,

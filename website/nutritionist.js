@@ -32,6 +32,7 @@
   const searchLabel = document.querySelector("#search-label");
   const viewTitle = document.querySelector("#view-title");
   const viewKicker = document.querySelector("#view-kicker");
+  const sidebarToggle = document.querySelector("#sidebar-toggle");
   const planDialog = document.querySelector("#plan-dialog");
   const planForm = document.querySelector("#plan-form");
   const slotDialog = document.querySelector("#slot-dialog");
@@ -50,6 +51,7 @@
   let selectedPlanId = state.selectedPlanId || state.plans[0]?.id || null;
   let selectedDishId = state.selectedDishId || state.dishes[0]?.id || null;
   let activeTagFilter = state.activeTagFilter || "all";
+  let sidebarCollapsed = Boolean(state.sidebarCollapsed);
   let searchTerm = "";
 
   const viewMeta = {
@@ -123,6 +125,12 @@
 
     document.querySelectorAll("[data-view-shortcut]").forEach((button) => {
       button.addEventListener("click", () => setActiveView(button.dataset.viewShortcut));
+    });
+
+    sidebarToggle.addEventListener("click", () => {
+      sidebarCollapsed = !sidebarCollapsed;
+      applySidebarState();
+      persist();
     });
 
     document.querySelectorAll("[data-open-plan]").forEach((button) => {
@@ -401,6 +409,8 @@
     state.selectedPlanId = selectedPlanId;
     state.selectedDishId = selectedDishId;
     state.activeTagFilter = activeTagFilter;
+    state.sidebarCollapsed = sidebarCollapsed;
+    applySidebarState();
     renderMetrics();
     renderOverview();
     renderPlanOptions();
@@ -446,6 +456,13 @@
     persist();
     render();
     window.scrollTo({ top: 0, left: 0 });
+  }
+
+  function applySidebarState() {
+    appPanel.classList.toggle("sidebar-collapsed", sidebarCollapsed);
+    sidebarToggle.setAttribute("aria-pressed", String(sidebarCollapsed));
+    sidebarToggle.setAttribute("aria-label", sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar");
+    sidebarToggle.title = sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar";
   }
 
   function renderMetrics() {
@@ -1106,6 +1123,7 @@
     next.selectedPatientId = next.selectedPatientId || next.patients[0]?.id || null;
     next.selectedPlanId = next.selectedPlanId || next.plans[0]?.id || null;
     next.selectedDishId = next.selectedDishId || next.dishes[0]?.id || null;
+    next.sidebarCollapsed = Boolean(next.sidebarCollapsed);
     return next;
   }
 
@@ -1519,6 +1537,7 @@
     state.selectedPlanId = selectedPlanId;
     state.selectedDishId = selectedDishId;
     state.activeTagFilter = activeTagFilter;
+    state.sidebarCollapsed = sidebarCollapsed;
     localStorage.setItem(storageKey, JSON.stringify(state));
   }
 

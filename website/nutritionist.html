@@ -9,8 +9,8 @@
     >
     <title>Leafstep Pro | Nutritionist Workspace</title>
     <link rel="icon" href="assets/brand/app-icon.png">
-    <link rel="stylesheet" href="nutritionist.css?v=20260622-patient-dish-cms">
-    <script src="nutritionist.js?v=20260622-patient-dish-cms" defer></script>
+    <link rel="stylesheet" href="nutritionist.css?v=20260622-collapsible-sidebar">
+    <script src="nutritionist.js?v=20260622-collapsible-sidebar" defer></script>
   </head>
   <body>
     <main>
@@ -80,17 +80,37 @@
 
       <section id="app-panel" class="cms-shell hidden" aria-label="Leafstep Pro CMS workspace">
         <aside class="cms-sidebar" aria-label="Workspace navigation">
-          <a class="brand cms-brand" href="index.html" aria-label="Leafstep home">
-            <img src="assets/brand/app-icon.png" alt="" width="38" height="38">
-            <span>Leafstep <strong>Pro</strong></span>
-          </a>
+          <div class="sidebar-topline">
+            <a class="brand cms-brand" href="index.html" aria-label="Leafstep home">
+              <img src="assets/brand/app-icon.png" alt="" width="38" height="38">
+              <span>Leafstep <strong>Pro</strong></span>
+            </a>
+            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Collapse sidebar" aria-pressed="false">
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
 
           <nav class="cms-nav" aria-label="Workspace sections">
-            <button class="nav-item active" type="button" data-view="overview" aria-pressed="true">Overview</button>
-            <button class="nav-item" type="button" data-view="patients" aria-pressed="false">Patients</button>
-            <button class="nav-item" type="button" data-view="meal-plans" aria-pressed="false">Meal Plans</button>
-            <button class="nav-item" type="button" data-view="dish-library" aria-pressed="false">Dish Library</button>
-            <button class="nav-item" type="button" data-view="privacy" aria-pressed="false">Privacy</button>
+            <button class="nav-item active" type="button" data-view="overview" aria-pressed="true" title="Overview">
+              <img class="nav-icon" src="assets/pro/nav-icons/overview.png" alt="">
+              <span>Overview</span>
+            </button>
+            <button class="nav-item" type="button" data-view="patients" aria-pressed="false" title="Patients">
+              <img class="nav-icon" src="assets/pro/nav-icons/patients.png" alt="">
+              <span>Patients</span>
+            </button>
+            <button class="nav-item" type="button" data-view="meal-plans" aria-pressed="false" title="Meal Plans">
+              <img class="nav-icon" src="assets/pro/nav-icons/meal-plans.png" alt="">
+              <span>Meal Plans</span>
+            </button>
+            <button class="nav-item" type="button" data-view="dish-library" aria-pressed="false" title="Dish Library">
+              <img class="nav-icon" src="assets/pro/nav-icons/dish-library.png" alt="">
+              <span>Dish Library</span>
+            </button>
+            <button class="nav-item" type="button" data-view="privacy" aria-pressed="false" title="Privacy">
+              <img class="nav-icon" src="assets/pro/nav-icons/privacy.png" alt="">
+              <span>Privacy</span>
+            </button>
           </nav>
 
           <section class="sidebar-card">
