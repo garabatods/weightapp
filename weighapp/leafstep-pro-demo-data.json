@@ -1,0 +1,3460 @@
+{
+  "dishes": [
+    {
+      "id": "chicken-salad-bowl",
+      "title": "Chicken Salad Bowl",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "quick",
+        "meal prep",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "mixed greens",
+          "note": "washed"
+        },
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "grilled chicken",
+          "note": "sliced"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cucumber",
+          "note": "chopped"
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "cherry tomatoes",
+          "note": "halved"
+        }
+      ],
+      "preparation": "Add greens to a bowl. Top with sliced chicken, cucumber, and tomatoes. Serve dressing on the side and toss before eating.",
+      "portionGuidance": "Use chicken as the main anchor and keep dressing measured or served on the side.",
+      "swaps": [
+        "Swap chicken for turkey breast.",
+        "Swap mixed greens for romaine or spinach."
+      ],
+      "notes": "Useful as a simple lunch template for busy clinic clients.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "greek-yogurt-berry-bowl",
+      "title": "Greek Yogurt Berry Bowl",
+      "photo": "assets/pro/dishes/greek-yogurt-berry-bowl.png",
+      "tags": [
+        "high protein",
+        "breakfast",
+        "quick",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "plain Greek yogurt",
+          "note": "unsweetened"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "berries",
+          "note": "fresh or thawed"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "chia seeds",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "small handful",
+          "item": "granola",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Spoon yogurt into a bowl. Add berries and chia seeds. Add a small amount of granola if included in the plan.",
+      "portionGuidance": "Keep yogurt as the base and use toppings as accents rather than filling the whole bowl.",
+      "swaps": [
+        "Swap berries for sliced apple.",
+        "Swap granola for chopped nuts."
+      ],
+      "notes": "Easy breakfast or structured snack option.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "salmon-vegetable-plate",
+      "title": "Salmon Vegetable Plate",
+      "photo": "assets/pro/dishes/salmon-vegetable-plate.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "Mediterranean",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "salmon fillet",
+          "note": "skin removed if preferred"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "broccoli",
+          "note": "steamed or roasted"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "zucchini",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "tsp",
+          "item": "olive oil",
+          "note": "for cooking"
+        }
+      ],
+      "preparation": "Season salmon with lemon, pepper, and herbs. Bake or pan-sear until cooked through. Serve with warm vegetables.",
+      "portionGuidance": "Use the salmon as the main protein and fill the rest of the plate mostly with vegetables.",
+      "swaps": [
+        "Swap salmon for white fish.",
+        "Swap broccoli for green beans."
+      ],
+      "notes": "Good dinner option when the patient prefers a simple plate format.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "tofu-grain-bowl",
+      "title": "Tofu Grain Bowl",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "vegetarian",
+        "lunch",
+        "plant forward",
+        "fiber focused",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "firm tofu",
+          "note": "pressed and cubed"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cooked brown rice",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "mixed vegetables",
+          "note": "roasted or sauteed"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "light sesame dressing",
+          "note": "served on the side"
+        }
+      ],
+      "preparation": "Cook tofu in a nonstick pan until lightly browned. Add rice and vegetables to a bowl. Top with tofu and dressing on the side.",
+      "portionGuidance": "Keep the grain portion moderate and make vegetables the largest visual part of the bowl.",
+      "swaps": [
+        "Swap tofu for tempeh.",
+        "Swap brown rice for quinoa."
+      ],
+      "notes": "Good vegetarian template for meal prep.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "egg-spinach-breakfast-plate",
+      "title": "Egg and Spinach Breakfast Plate",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "breakfast",
+        "quick",
+        "low carb",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "2",
+          "unit": "pieces",
+          "item": "eggs",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "spinach",
+          "note": "fresh"
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "pico de gallo",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "tsp",
+          "item": "olive oil",
+          "note": "or cooking spray"
+        }
+      ],
+      "preparation": "Warm oil in a pan. Saute spinach briefly, then add eggs and cook to preference. Serve with pico de gallo.",
+      "portionGuidance": "Keep the plate simple and use vegetables to add volume without making breakfast heavy.",
+      "swaps": [
+        "Swap spinach for mushrooms.",
+        "Swap pico de gallo for sliced tomato."
+      ],
+      "notes": "Low-prep weekday breakfast.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "overnight-oats-with-berries",
+      "title": "Overnight Oats with Berries",
+      "photo": "assets/pro/dishes/greek-yogurt-berry-bowl.png",
+      "tags": [
+        "breakfast",
+        "meal prep",
+        "fiber focused",
+        "vegetarian",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "rolled oats",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "plain yogurt",
+          "note": "unsweetened"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "milk",
+          "note": "patient's preferred option"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "berries",
+          "note": ""
+        }
+      ],
+      "preparation": "Combine oats, yogurt, and milk in a container. Refrigerate overnight. Add berries before serving.",
+      "portionGuidance": "Prepare in a single-serving container to keep the portion consistent through the week.",
+      "swaps": [
+        "Swap berries for cinnamon apple.",
+        "Swap yogurt for a dairy-free option if needed."
+      ],
+      "notes": "Good for patients with rushed mornings.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "turkey-lettuce-wraps",
+      "title": "Turkey Lettuce Wraps",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "quick",
+        "low carb",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "4",
+          "unit": "leaves",
+          "item": "romaine lettuce",
+          "note": "washed and dried"
+        },
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "turkey slices",
+          "note": "lean"
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "shredded carrots",
+          "note": ""
+        },
+        {
+          "amount": "2",
+          "unit": "tbsp",
+          "item": "hummus",
+          "note": "spread lightly"
+        }
+      ],
+      "preparation": "Lay lettuce leaves flat. Spread a thin layer of hummus, add turkey and carrots, then roll into wraps.",
+      "portionGuidance": "Serve with a side of vegetables or fruit depending on the meal plan structure.",
+      "swaps": [
+        "Swap turkey for chicken breast.",
+        "Swap hummus for avocado spread."
+      ],
+      "notes": "Best assembled shortly before eating.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "chicken-fajita-bowl",
+      "title": "Chicken Fajita Bowl",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "dinner",
+        "family friendly",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "grilled chicken",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "bell peppers and onions",
+          "note": "sauteed"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "black beans",
+          "note": "rinsed if canned"
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "salsa",
+          "note": ""
+        }
+      ],
+      "preparation": "Cook peppers and onions until tender. Add chicken and beans to a bowl. Top with vegetables and salsa.",
+      "portionGuidance": "Use beans as the planned starch component and keep toppings simple.",
+      "swaps": [
+        "Swap chicken for shrimp.",
+        "Swap black beans for pinto beans."
+      ],
+      "notes": "Homemade alternative to a restaurant bowl.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "bean-and-vegetable-soup",
+      "title": "Bean and Vegetable Soup",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "vegetarian",
+        "lunch",
+        "dinner",
+        "fiber focused",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "3/4",
+          "unit": "cup",
+          "item": "cooked beans",
+          "note": "black, pinto, or white"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "mixed vegetables",
+          "note": "chopped"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "vegetable broth",
+          "note": "lower sodium if preferred"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "cilantro",
+          "note": "chopped"
+        }
+      ],
+      "preparation": "Simmer beans, vegetables, and broth until vegetables are tender. Finish with cilantro and adjust seasoning.",
+      "portionGuidance": "Serve as a complete bowl or pair with a simple side salad if more volume is needed.",
+      "swaps": [
+        "Swap beans for lentils.",
+        "Add shredded chicken if a non-vegetarian version is needed."
+      ],
+      "notes": "Good batch-cook dish for cooler weeks.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "cottage-cheese-fruit-plate",
+      "title": "Cottage Cheese Fruit Plate",
+      "photo": "assets/pro/dishes/greek-yogurt-berry-bowl.png",
+      "tags": [
+        "high protein",
+        "snack",
+        "quick",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cottage cheese",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "piece",
+          "item": "fruit",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "nuts",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Add cottage cheese to a small plate or bowl. Serve with sliced fruit and optional nuts.",
+      "portionGuidance": "Use as a structured snack rather than grazing from the container.",
+      "swaps": [
+        "Swap cottage cheese for Greek yogurt.",
+        "Swap nuts for seeds."
+      ],
+      "notes": "Simple option for afternoon hunger.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "tuna-cucumber-boats",
+      "title": "Tuna Cucumber Boats",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "snack",
+        "low carb",
+        "quick"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "can",
+          "item": "tuna",
+          "note": "drained"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "plain yogurt",
+          "note": "for mixing"
+        },
+        {
+          "amount": "1",
+          "unit": "piece",
+          "item": "cucumber",
+          "note": "halved lengthwise"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "celery",
+          "note": "finely chopped"
+        }
+      ],
+      "preparation": "Mix tuna with yogurt and celery. Spoon into cucumber halves and season lightly.",
+      "portionGuidance": "Serve as a snack or light meal component based on the plan.",
+      "swaps": [
+        "Swap tuna for shredded chicken.",
+        "Swap cucumber for bell pepper halves."
+      ],
+      "notes": "Keep seasoning simple for patient tolerance.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "lentil-quinoa-bowl",
+      "title": "Lentil Quinoa Bowl",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "vegetarian",
+        "lunch",
+        "fiber focused",
+        "meal prep",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cooked lentils",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cooked quinoa",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "roasted vegetables",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "lemon dressing",
+          "note": "served on the side"
+        }
+      ],
+      "preparation": "Layer quinoa, lentils, and vegetables in a bowl. Add lemon dressing just before serving.",
+      "portionGuidance": "Use lentils and quinoa as the structured base and keep vegetables generous.",
+      "swaps": [
+        "Swap quinoa for brown rice.",
+        "Swap lentils for chickpeas."
+      ],
+      "notes": "Works well for vegetarian meal prep.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "shrimp-zucchini-skillet",
+      "title": "Shrimp Zucchini Skillet",
+      "photo": "assets/pro/dishes/salmon-vegetable-plate.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "quick",
+        "low carb"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "shrimp",
+          "note": "peeled"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "zucchini",
+          "note": "sliced"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "bell pepper",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "tsp",
+          "item": "olive oil",
+          "note": ""
+        }
+      ],
+      "preparation": "Cook shrimp in a warm pan until opaque. Add zucchini and peppers and cook until tender-crisp.",
+      "portionGuidance": "Make vegetables the bulk of the skillet and keep oil measured.",
+      "swaps": [
+        "Swap shrimp for chicken strips.",
+        "Swap zucchini for green beans."
+      ],
+      "notes": "Good quick dinner template.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "chicken-rice-vegetable-plate",
+      "title": "Chicken Rice Vegetable Plate",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "family friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "grilled chicken",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cooked rice",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "steamed vegetables",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "salsa or herbs",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Arrange chicken, rice, and vegetables on a plate. Add salsa or herbs for flavor.",
+      "portionGuidance": "Use the rice as the planned side and keep vegetables visible on at least half the plate.",
+      "swaps": [
+        "Swap rice for quinoa.",
+        "Swap chicken for fish."
+      ],
+      "notes": "Simple balanced dinner plate.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "avocado-egg-toast",
+      "title": "Avocado Egg Toast",
+      "photo": "assets/pro/dishes/greek-yogurt-berry-bowl.png",
+      "tags": [
+        "breakfast",
+        "quick",
+        "vegetarian"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "slice",
+          "item": "whole grain toast",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "piece",
+          "item": "egg",
+          "note": "cooked to preference"
+        },
+        {
+          "amount": "1/4",
+          "unit": "piece",
+          "item": "avocado",
+          "note": "mashed"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "tomato",
+          "note": "diced"
+        }
+      ],
+      "preparation": "Toast bread. Spread mashed avocado, top with egg and diced tomato.",
+      "portionGuidance": "Keep avocado measured and pair with fruit or vegetables if the plan calls for more volume.",
+      "swaps": [
+        "Swap toast for corn tortillas.",
+        "Swap egg for tofu scramble."
+      ],
+      "notes": "Good weekend or light weekday breakfast.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "vegetable-omelet",
+      "title": "Vegetable Omelet",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "breakfast",
+        "vegetarian",
+        "low carb",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "2",
+          "unit": "pieces",
+          "item": "eggs",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "mushrooms",
+          "note": "sliced"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "bell pepper",
+          "note": "diced"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "cheese",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Cook vegetables in a nonstick pan. Add beaten eggs and cook until set. Fold and serve warm.",
+      "portionGuidance": "Use vegetables generously and keep cheese optional or measured.",
+      "swaps": [
+        "Swap mushrooms for spinach.",
+        "Swap cheese for avocado on the side."
+      ],
+      "notes": "Good higher-satiety breakfast.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "chickpea-mediterranean-salad",
+      "title": "Chickpea Mediterranean Salad",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "vegetarian",
+        "lunch",
+        "Mediterranean",
+        "fiber focused",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "3/4",
+          "unit": "cup",
+          "item": "chickpeas",
+          "note": "rinsed if canned"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cucumber",
+          "note": "chopped"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "tomato",
+          "note": "chopped"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "feta",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Combine chickpeas, cucumber, tomato, and optional feta. Toss with lemon and herbs.",
+      "portionGuidance": "Serve as a main lunch salad or pair with extra greens for more volume.",
+      "swaps": [
+        "Swap chickpeas for white beans.",
+        "Swap feta for avocado."
+      ],
+      "notes": "No-cook lunch option.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "turkey-meatball-plate",
+      "title": "Turkey Meatball Plate",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "meal prep",
+        "family friendly",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "turkey meatballs",
+          "note": "baked"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "zucchini noodles",
+          "note": "or vegetables"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "tomato sauce",
+          "note": "simple"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "parmesan",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Bake turkey meatballs until cooked through. Warm sauce and serve over zucchini noodles or vegetables.",
+      "portionGuidance": "Use meatballs as the protein portion and keep sauce and cheese moderate.",
+      "swaps": [
+        "Swap turkey for lean beef.",
+        "Swap zucchini noodles for whole grain pasta if assigned."
+      ],
+      "notes": "Good batch-prep dinner.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "fish-taco-plate",
+      "title": "Fish Taco Plate",
+      "photo": "assets/pro/dishes/salmon-vegetable-plate.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "family friendly",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "white fish",
+          "note": "grilled or baked"
+        },
+        {
+          "amount": "2",
+          "unit": "pieces",
+          "item": "corn tortillas",
+          "note": "warmed"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cabbage slaw",
+          "note": "light dressing"
+        },
+        {
+          "amount": "2",
+          "unit": "tbsp",
+          "item": "salsa",
+          "note": ""
+        }
+      ],
+      "preparation": "Season fish and cook until flaky. Warm tortillas and fill with fish, slaw, and salsa.",
+      "portionGuidance": "Keep tortillas to the planned amount and use slaw for crunch and volume.",
+      "swaps": [
+        "Swap fish for shrimp.",
+        "Swap tortillas for lettuce cups."
+      ],
+      "notes": "Good restaurant-style homemade meal.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "protein-smoothie-cup",
+      "title": "Protein Smoothie Cup",
+      "photo": "assets/pro/dishes/greek-yogurt-berry-bowl.png",
+      "tags": [
+        "high protein",
+        "breakfast",
+        "snack",
+        "quick",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "milk",
+          "note": "patient's preferred option"
+        },
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "protein powder or yogurt",
+          "note": "as assigned"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "berries",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "ground flaxseed",
+          "note": ""
+        }
+      ],
+      "preparation": "Blend milk, protein option, berries, and flaxseed until smooth. Serve immediately.",
+      "portionGuidance": "Use as a structured breakfast or snack, not as an add-on to a full meal unless assigned.",
+      "swaps": [
+        "Swap berries for banana.",
+        "Swap flaxseed for chia seeds."
+      ],
+      "notes": "Keep recipe simple to avoid oversized smoothies.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "roasted-chicken-vegetables",
+      "title": "Roasted Chicken and Vegetables",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "meal prep",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "chicken breast or thigh",
+          "note": "trimmed"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "carrots",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "green beans",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "tsp",
+          "item": "olive oil",
+          "note": ""
+        }
+      ],
+      "preparation": "Season chicken and vegetables. Roast on a sheet pan until chicken is cooked and vegetables are tender.",
+      "portionGuidance": "Use the sheet pan to pre-portion meals before storing leftovers.",
+      "swaps": [
+        "Swap green beans for broccoli.",
+        "Swap chicken for turkey cutlets."
+      ],
+      "notes": "Good for meal prep nights.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "caprese-chicken-plate",
+      "title": "Caprese Chicken Plate",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "dinner",
+        "Mediterranean"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "grilled chicken",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "tomato",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "oz",
+          "item": "mozzarella",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "basil",
+          "note": "fresh if available"
+        }
+      ],
+      "preparation": "Plate grilled chicken with tomato, mozzarella, and basil. Add balsamic vinegar if desired.",
+      "portionGuidance": "Keep cheese as an accent and add extra greens if more volume is needed.",
+      "swaps": [
+        "Swap mozzarella for avocado.",
+        "Swap chicken for tofu."
+      ],
+      "notes": "Simple plate with minimal cooking.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "cauliflower-turkey-skillet",
+      "title": "Cauliflower Turkey Skillet",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "low carb",
+        "meal prep"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "ground turkey",
+          "note": "cooked"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "cauliflower rice",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "bell pepper",
+          "note": "diced"
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "salsa",
+          "note": ""
+        }
+      ],
+      "preparation": "Cook turkey in a skillet. Add cauliflower rice, bell pepper, and salsa. Cook until heated through.",
+      "portionGuidance": "Use cauliflower rice for volume and keep added sauces simple.",
+      "swaps": [
+        "Swap turkey for chicken.",
+        "Swap cauliflower rice for brown rice if assigned."
+      ],
+      "notes": "Good low-carb dinner template.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "hummus-veggie-snack-box",
+      "title": "Hummus Veggie Snack Box",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "snack",
+        "vegetarian",
+        "quick",
+        "fiber focused",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "hummus",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "raw vegetables",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "small portion",
+          "item": "whole grain crackers",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Place hummus in a small container. Pack sliced vegetables and optional crackers separately.",
+      "portionGuidance": "Use the hummus as the measured dip and vegetables as the main volume.",
+      "swaps": [
+        "Swap hummus for Greek yogurt dip.",
+        "Swap crackers for cucumber slices."
+      ],
+      "notes": "Good portable snack.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "black-bean-breakfast-tacos",
+      "title": "Black Bean Breakfast Tacos",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "breakfast",
+        "vegetarian",
+        "fiber focused",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "2",
+          "unit": "pieces",
+          "item": "corn tortillas",
+          "note": "warmed"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "black beans",
+          "note": "warmed"
+        },
+        {
+          "amount": "1",
+          "unit": "piece",
+          "item": "egg",
+          "note": "optional"
+        },
+        {
+          "amount": "2",
+          "unit": "tbsp",
+          "item": "salsa",
+          "note": ""
+        }
+      ],
+      "preparation": "Warm tortillas and beans. Add egg if included. Top with salsa and serve.",
+      "portionGuidance": "Keep tortillas to the planned amount and use beans as the main filling.",
+      "swaps": [
+        "Swap egg for tofu scramble.",
+        "Swap black beans for pinto beans."
+      ],
+      "notes": "Works well for Mexican-inspired breakfast plans.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "chicken-tortilla-soup",
+      "title": "Chicken Tortilla Soup",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "dinner",
+        "family friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "shredded chicken",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "tomato broth",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "zucchini",
+          "note": "diced"
+        },
+        {
+          "amount": "1",
+          "unit": "small handful",
+          "item": "baked tortilla strips",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Simmer chicken, broth, and zucchini until warm and tender. Top with baked tortilla strips if included.",
+      "portionGuidance": "Use tortilla strips as a topping rather than the base of the meal.",
+      "swaps": [
+        "Swap chicken for beans.",
+        "Swap zucchini for squash."
+      ],
+      "notes": "Comforting but structured soup option.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "oatmeal-apple-cinnamon",
+      "title": "Oatmeal with Apple and Cinnamon",
+      "photo": "assets/pro/dishes/greek-yogurt-berry-bowl.png",
+      "tags": [
+        "breakfast",
+        "vegetarian",
+        "fiber focused",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "rolled oats",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "water or milk",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "piece",
+          "item": "apple",
+          "note": "diced"
+        },
+        {
+          "amount": "1",
+          "unit": "pinch",
+          "item": "cinnamon",
+          "note": ""
+        }
+      ],
+      "preparation": "Cook oats with water or milk. Stir in apple and cinnamon near the end of cooking.",
+      "portionGuidance": "Serve in one bowl and add protein on the side if assigned by the nutritionist.",
+      "swaps": [
+        "Swap apple for berries.",
+        "Swap cinnamon for vanilla extract."
+      ],
+      "notes": "Good warm breakfast option.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "egg-salad-cucumber-cups",
+      "title": "Egg Salad Cucumber Cups",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "snack",
+        "low carb",
+        "quick",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "2",
+          "unit": "pieces",
+          "item": "boiled eggs",
+          "note": "chopped"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "plain yogurt",
+          "note": "for mixing"
+        },
+        {
+          "amount": "1",
+          "unit": "piece",
+          "item": "cucumber",
+          "note": "sliced thick"
+        },
+        {
+          "amount": "1",
+          "unit": "tsp",
+          "item": "mustard",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Mix chopped eggs with yogurt and mustard. Spoon onto thick cucumber slices.",
+      "portionGuidance": "Use as a planned snack or light meal component.",
+      "swaps": [
+        "Swap cucumber for lettuce cups.",
+        "Swap yogurt for avocado mash."
+      ],
+      "notes": "Best prepared same day.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "simple-chicken-quesadilla",
+      "title": "Simple Chicken Quesadilla",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "family friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "piece",
+          "item": "tortilla",
+          "note": "as assigned"
+        },
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "shredded chicken",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "small portion",
+          "item": "cheese",
+          "note": "measured"
+        },
+        {
+          "amount": "2",
+          "unit": "tbsp",
+          "item": "salsa",
+          "note": "for serving"
+        }
+      ],
+      "preparation": "Fill tortilla with chicken and measured cheese. Heat in a pan until crisp and warmed through. Serve with salsa.",
+      "portionGuidance": "Keep cheese measured and pair with salad or vegetables when possible.",
+      "swaps": [
+        "Swap chicken for beans.",
+        "Swap tortilla for a corn tortilla option."
+      ],
+      "notes": "Familiar option for adherence-focused plans.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "vegetarian-stuffed-peppers",
+      "title": "Vegetarian Stuffed Peppers",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "vegetarian",
+        "dinner",
+        "meal prep",
+        "fiber focused"
+      ],
+      "ingredients": [
+        {
+          "amount": "2",
+          "unit": "halves",
+          "item": "bell pepper",
+          "note": "seeded"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "beans",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cooked quinoa",
+          "note": ""
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "tomato sauce",
+          "note": ""
+        }
+      ],
+      "preparation": "Fill pepper halves with beans, quinoa, and tomato sauce. Bake until peppers are tender.",
+      "portionGuidance": "Use each pepper half as a natural portion guide.",
+      "swaps": [
+        "Swap quinoa for rice.",
+        "Add chicken if a non-vegetarian version is needed."
+      ],
+      "notes": "Good make-ahead dinner.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "salmon-salad-lettuce-cups",
+      "title": "Salmon Salad Lettuce Cups",
+      "photo": "assets/pro/dishes/salmon-vegetable-plate.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "low carb",
+        "quick"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "cooked salmon",
+          "note": "flaked"
+        },
+        {
+          "amount": "4",
+          "unit": "leaves",
+          "item": "butter lettuce",
+          "note": "washed"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "plain yogurt",
+          "note": "for mixing"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "celery",
+          "note": "chopped"
+        }
+      ],
+      "preparation": "Mix flaked salmon with yogurt and celery. Spoon into lettuce leaves and serve chilled.",
+      "portionGuidance": "Use lettuce cups to keep the meal light and structured.",
+      "swaps": [
+        "Swap salmon for tuna.",
+        "Swap lettuce cups for cucumber slices."
+      ],
+      "notes": "Good leftover salmon use.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "turkey-burger-salad-plate",
+      "title": "Turkey Burger Salad Plate",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "low carb",
+        "family friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "patty",
+          "item": "turkey burger",
+          "note": "grilled or pan-cooked"
+        },
+        {
+          "amount": "2",
+          "unit": "cups",
+          "item": "salad greens",
+          "note": ""
+        },
+        {
+          "amount": "1/4",
+          "unit": "piece",
+          "item": "avocado",
+          "note": "optional"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "vinaigrette",
+          "note": "served on the side"
+        }
+      ],
+      "preparation": "Cook turkey patty until done. Serve over salad greens with avocado and dressing on the side.",
+      "portionGuidance": "Use the salad as the base and keep avocado and dressing measured.",
+      "swaps": [
+        "Swap turkey patty for chicken patty.",
+        "Swap avocado for cheese if assigned."
+      ],
+      "notes": "Burger-style meal without making the bun central.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "banana-yogurt-snack-cup",
+      "title": "Banana Yogurt Snack Cup",
+      "photo": "assets/pro/dishes/greek-yogurt-berry-bowl.png",
+      "tags": [
+        "snack",
+        "quick",
+        "vegetarian",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1/2",
+          "unit": "piece",
+          "item": "banana",
+          "note": "sliced"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "plain yogurt",
+          "note": "unsweetened"
+        },
+        {
+          "amount": "1",
+          "unit": "tsp",
+          "item": "nut butter",
+          "note": "optional"
+        },
+        {
+          "amount": "1",
+          "unit": "pinch",
+          "item": "cinnamon",
+          "note": ""
+        }
+      ],
+      "preparation": "Layer yogurt and banana in a small cup. Add cinnamon and optional nut butter.",
+      "portionGuidance": "Keep this as a snack-sized serving and avoid adding multiple extra toppings.",
+      "swaps": [
+        "Swap banana for berries.",
+        "Swap nut butter for chopped nuts."
+      ],
+      "notes": "Good evening snack when planned.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "grilled-chicken-tacos",
+      "title": "Grilled Chicken Tacos",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "dinner",
+        "family friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "2",
+          "unit": "pieces",
+          "item": "corn tortillas",
+          "note": "warmed"
+        },
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "grilled chicken",
+          "note": "chopped"
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "pico de gallo",
+          "note": ""
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "cabbage",
+          "note": "shredded"
+        }
+      ],
+      "preparation": "Warm tortillas. Fill with grilled chicken, pico de gallo, and cabbage. Serve salsa on the side.",
+      "portionGuidance": "Keep tortillas to the planned amount and use cabbage or vegetables for extra volume.",
+      "swaps": [
+        "Swap chicken for fish.",
+        "Swap cabbage for lettuce."
+      ],
+      "notes": "Good Mexican-inspired lunch or dinner.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "veggie-scramble-bowl",
+      "title": "Veggie Scramble Bowl",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "breakfast",
+        "vegetarian",
+        "quick"
+      ],
+      "ingredients": [
+        {
+          "amount": "2",
+          "unit": "pieces",
+          "item": "eggs or tofu",
+          "note": "as assigned"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "mixed vegetables",
+          "note": "chopped"
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "beans",
+          "note": "optional"
+        },
+        {
+          "amount": "2",
+          "unit": "tbsp",
+          "item": "salsa",
+          "note": ""
+        }
+      ],
+      "preparation": "Cook vegetables in a nonstick pan. Add eggs or tofu and scramble until cooked. Top with salsa.",
+      "portionGuidance": "Use beans only when included in the plan and keep vegetables as the base.",
+      "swaps": [
+        "Swap eggs for tofu.",
+        "Swap beans for avocado."
+      ],
+      "notes": "Flexible breakfast template.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "chicken-vegetable-stir-fry",
+      "title": "Chicken Vegetable Stir-Fry",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "dinner",
+        "quick",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "chicken strips",
+          "note": ""
+        },
+        {
+          "amount": "2",
+          "unit": "cups",
+          "item": "stir-fry vegetables",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "light sauce",
+          "note": "served measured"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "rice",
+          "note": "optional if assigned"
+        }
+      ],
+      "preparation": "Cook chicken in a hot pan. Add vegetables and cook until tender-crisp. Finish with measured sauce.",
+      "portionGuidance": "Make vegetables the largest part of the meal and include rice only when planned.",
+      "swaps": [
+        "Swap chicken for tofu.",
+        "Swap rice for cauliflower rice."
+      ],
+      "notes": "Reliable quick dinner.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "ricotta-berry-toast",
+      "title": "Ricotta Berry Toast",
+      "photo": "assets/pro/dishes/greek-yogurt-berry-bowl.png",
+      "tags": [
+        "breakfast",
+        "snack",
+        "vegetarian",
+        "quick"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "slice",
+          "item": "whole grain toast",
+          "note": ""
+        },
+        {
+          "amount": "2",
+          "unit": "tbsp",
+          "item": "ricotta",
+          "note": "spread thinly"
+        },
+        {
+          "amount": "1/4",
+          "unit": "cup",
+          "item": "berries",
+          "note": ""
+        },
+        {
+          "amount": "1",
+          "unit": "pinch",
+          "item": "cinnamon",
+          "note": "optional"
+        }
+      ],
+      "preparation": "Toast bread. Spread ricotta and top with berries and cinnamon.",
+      "portionGuidance": "Use as a light breakfast or snack depending on the plan.",
+      "swaps": [
+        "Swap ricotta for Greek yogurt.",
+        "Swap berries for sliced peach."
+      ],
+      "notes": "Simple sweet option without heavy preparation.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "chicken-nopal-salad",
+      "title": "Chicken Nopal Salad",
+      "photo": "assets/pro/dishes/chicken-salad-bowl.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "fiber focused",
+        "Mexican-inspired",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "grilled chicken",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "nopales",
+          "note": "cooked and drained"
+        },
+        {
+          "amount": "1/2",
+          "unit": "cup",
+          "item": "tomato",
+          "note": "chopped"
+        },
+        {
+          "amount": "2",
+          "unit": "tbsp",
+          "item": "onion and cilantro",
+          "note": "chopped"
+        }
+      ],
+      "preparation": "Combine nopales, tomato, onion, and cilantro. Top with grilled chicken and season with lime.",
+      "portionGuidance": "Use nopales as a filling vegetable base and keep added fats measured.",
+      "swaps": [
+        "Swap chicken for panela cheese.",
+        "Swap nopales for green beans if needed."
+      ],
+      "notes": "Good Mexico-market demo dish.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "panela-vegetable-plate",
+      "title": "Panela Vegetable Plate",
+      "photo": "assets/pro/dishes/tofu-grain-bowl.png",
+      "tags": [
+        "vegetarian",
+        "lunch",
+        "quick",
+        "Mexican-inspired"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "portion",
+          "item": "queso panela",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "cup",
+          "item": "grilled vegetables",
+          "note": ""
+        },
+        {
+          "amount": "2",
+          "unit": "pieces",
+          "item": "corn tortillas",
+          "note": "optional if assigned"
+        },
+        {
+          "amount": "2",
+          "unit": "tbsp",
+          "item": "salsa",
+          "note": ""
+        }
+      ],
+      "preparation": "Warm panela lightly in a pan or serve cold. Plate with grilled vegetables, salsa, and tortillas if included.",
+      "portionGuidance": "Use panela as the protein-style anchor and keep tortillas to the planned amount.",
+      "swaps": [
+        "Swap panela for tofu.",
+        "Swap tortillas for salad greens."
+      ],
+      "notes": "Useful vegetarian Mexican-inspired option.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "sardine-avocado-salad",
+      "title": "Sardine Avocado Salad",
+      "photo": "assets/pro/dishes/salmon-vegetable-plate.png",
+      "tags": [
+        "high protein",
+        "lunch",
+        "quick",
+        "Mediterranean",
+        "diabetes-friendly"
+      ],
+      "ingredients": [
+        {
+          "amount": "1",
+          "unit": "can",
+          "item": "sardines",
+          "note": "drained"
+        },
+        {
+          "amount": "2",
+          "unit": "cups",
+          "item": "salad greens",
+          "note": ""
+        },
+        {
+          "amount": "1/4",
+          "unit": "piece",
+          "item": "avocado",
+          "note": "sliced"
+        },
+        {
+          "amount": "1",
+          "unit": "tbsp",
+          "item": "lemon juice",
+          "note": ""
+        }
+      ],
+      "preparation": "Place greens in a bowl. Top with sardines and avocado. Finish with lemon juice.",
+      "portionGuidance": "Use avocado as a measured fat source and keep the salad base generous.",
+      "swaps": [
+        "Swap sardines for tuna.",
+        "Swap avocado for olives."
+      ],
+      "notes": "Good pantry-based lunch.",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    }
+  ],
+  "plans": [
+    {
+      "id": "steady-week-support-plan",
+      "title": "Steady Week Support Plan",
+      "effective": "This week",
+      "note": "Balanced reusable template with familiar meals and a few structured snacks.",
+      "days": [
+        {
+          "title": "Monday",
+          "slots": [
+            {
+              "id": "monday-breakfast-greek-yogurt-berry-bowl",
+              "day": "Monday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "greek-yogurt-berry-bowl",
+              "note": ""
+            },
+            {
+              "id": "monday-lunch-chicken-salad-bowl",
+              "day": "Monday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-salad-bowl",
+              "note": ""
+            },
+            {
+              "id": "monday-snack-banana-yogurt-snack-cup",
+              "day": "Monday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "monday-dinner-salmon-vegetable-plate",
+              "day": "Monday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "salmon-vegetable-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Tuesday",
+          "slots": [
+            {
+              "id": "tuesday-breakfast-egg-spinach-breakfast-plate",
+              "day": "Tuesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "egg-spinach-breakfast-plate",
+              "note": ""
+            },
+            {
+              "id": "tuesday-lunch-chicken-fajita-bowl",
+              "day": "Tuesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-fajita-bowl",
+              "note": ""
+            },
+            {
+              "id": "tuesday-snack-cottage-cheese-fruit-plate",
+              "day": "Tuesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "cottage-cheese-fruit-plate",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "tuesday-dinner-turkey-meatball-plate",
+              "day": "Tuesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "turkey-meatball-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Wednesday",
+          "slots": [
+            {
+              "id": "wednesday-breakfast-overnight-oats-with-berries",
+              "day": "Wednesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "overnight-oats-with-berries",
+              "note": ""
+            },
+            {
+              "id": "wednesday-lunch-bean-and-vegetable-soup",
+              "day": "Wednesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "bean-and-vegetable-soup",
+              "note": ""
+            },
+            {
+              "id": "wednesday-snack-hummus-veggie-snack-box",
+              "day": "Wednesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "hummus-veggie-snack-box",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "wednesday-dinner-chicken-rice-vegetable-plate",
+              "day": "Wednesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "chicken-rice-vegetable-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Thursday",
+          "slots": [
+            {
+              "id": "thursday-breakfast-avocado-egg-toast",
+              "day": "Thursday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "avocado-egg-toast",
+              "note": ""
+            },
+            {
+              "id": "thursday-lunch-turkey-lettuce-wraps",
+              "day": "Thursday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "turkey-lettuce-wraps",
+              "note": ""
+            },
+            {
+              "id": "thursday-snack-banana-yogurt-snack-cup",
+              "day": "Thursday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "thursday-dinner-fish-taco-plate",
+              "day": "Thursday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "fish-taco-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Friday",
+          "slots": [
+            {
+              "id": "friday-breakfast-vegetable-omelet",
+              "day": "Friday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "vegetable-omelet",
+              "note": ""
+            },
+            {
+              "id": "friday-lunch-chicken-nopal-salad",
+              "day": "Friday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-nopal-salad",
+              "note": ""
+            },
+            {
+              "id": "friday-snack-tuna-cucumber-boats",
+              "day": "Friday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "tuna-cucumber-boats",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "friday-dinner-roasted-chicken-vegetables",
+              "day": "Friday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "roasted-chicken-vegetables",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Saturday",
+          "slots": [
+            {
+              "id": "saturday-breakfast-black-bean-breakfast-tacos",
+              "day": "Saturday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "black-bean-breakfast-tacos",
+              "note": ""
+            },
+            {
+              "id": "saturday-lunch-simple-chicken-quesadilla",
+              "day": "Saturday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "simple-chicken-quesadilla",
+              "note": ""
+            },
+            {
+              "id": "saturday-snack-panela-vegetable-plate",
+              "day": "Saturday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "panela-vegetable-plate",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "saturday-dinner-sardine-avocado-salad",
+              "day": "Saturday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "sardine-avocado-salad",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Sunday",
+          "slots": [
+            {
+              "id": "sunday-breakfast-oatmeal-apple-cinnamon",
+              "day": "Sunday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "oatmeal-apple-cinnamon",
+              "note": ""
+            },
+            {
+              "id": "sunday-lunch-chickpea-mediterranean-salad",
+              "day": "Sunday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chickpea-mediterranean-salad",
+              "note": ""
+            },
+            {
+              "id": "sunday-snack-salmon-salad-lettuce-cups",
+              "day": "Sunday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "salmon-salad-lettuce-cups",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "sunday-dinner-grilled-chicken-tacos",
+              "day": "Sunday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "grilled-chicken-tacos",
+              "note": ""
+            }
+          ]
+        }
+      ],
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "high-protein-basics",
+      "title": "High Protein Basics",
+      "effective": "This week",
+      "note": "Simple high-protein structure using easy repeatable dishes.",
+      "days": [
+        {
+          "title": "Monday",
+          "slots": [
+            {
+              "id": "monday-breakfast-egg-spinach-breakfast-plate",
+              "day": "Monday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "egg-spinach-breakfast-plate",
+              "note": ""
+            },
+            {
+              "id": "monday-lunch-chicken-salad-bowl",
+              "day": "Monday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-salad-bowl",
+              "note": ""
+            },
+            {
+              "id": "monday-snack-tuna-cucumber-boats",
+              "day": "Monday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "tuna-cucumber-boats",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "monday-dinner-salmon-vegetable-plate",
+              "day": "Monday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "salmon-vegetable-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Tuesday",
+          "slots": [
+            {
+              "id": "tuesday-breakfast-greek-yogurt-berry-bowl",
+              "day": "Tuesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "greek-yogurt-berry-bowl",
+              "note": ""
+            },
+            {
+              "id": "tuesday-lunch-turkey-lettuce-wraps",
+              "day": "Tuesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "turkey-lettuce-wraps",
+              "note": ""
+            },
+            {
+              "id": "tuesday-snack-chicken-nopal-salad",
+              "day": "Tuesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "chicken-nopal-salad",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "tuesday-dinner-chicken-vegetable-stir-fry",
+              "day": "Tuesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "chicken-vegetable-stir-fry",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Wednesday",
+          "slots": [
+            {
+              "id": "wednesday-breakfast-vegetable-omelet",
+              "day": "Wednesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "vegetable-omelet",
+              "note": ""
+            },
+            {
+              "id": "wednesday-lunch-chicken-fajita-bowl",
+              "day": "Wednesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-fajita-bowl",
+              "note": ""
+            },
+            {
+              "id": "wednesday-snack-cottage-cheese-fruit-plate",
+              "day": "Wednesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "cottage-cheese-fruit-plate",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "wednesday-dinner-turkey-burger-salad-plate",
+              "day": "Wednesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "turkey-burger-salad-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Thursday",
+          "slots": [
+            {
+              "id": "thursday-breakfast-protein-smoothie-cup",
+              "day": "Thursday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "protein-smoothie-cup",
+              "note": ""
+            },
+            {
+              "id": "thursday-lunch-caprese-chicken-plate",
+              "day": "Thursday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "caprese-chicken-plate",
+              "note": ""
+            },
+            {
+              "id": "thursday-snack-egg-salad-cucumber-cups",
+              "day": "Thursday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "egg-salad-cucumber-cups",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "thursday-dinner-shrimp-zucchini-skillet",
+              "day": "Thursday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "shrimp-zucchini-skillet",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Friday",
+          "slots": [
+            {
+              "id": "friday-breakfast-black-bean-breakfast-tacos",
+              "day": "Friday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "black-bean-breakfast-tacos",
+              "note": ""
+            },
+            {
+              "id": "friday-lunch-panela-vegetable-plate",
+              "day": "Friday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "panela-vegetable-plate",
+              "note": ""
+            },
+            {
+              "id": "friday-snack-tuna-cucumber-boats",
+              "day": "Friday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "tuna-cucumber-boats",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "friday-dinner-sardine-avocado-salad",
+              "day": "Friday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "sardine-avocado-salad",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Saturday",
+          "slots": [
+            {
+              "id": "saturday-breakfast-avocado-egg-toast",
+              "day": "Saturday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "avocado-egg-toast",
+              "note": ""
+            },
+            {
+              "id": "saturday-lunch-salmon-salad-lettuce-cups",
+              "day": "Saturday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "salmon-salad-lettuce-cups",
+              "note": ""
+            },
+            {
+              "id": "saturday-snack-cottage-cheese-fruit-plate",
+              "day": "Saturday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "cottage-cheese-fruit-plate",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "saturday-dinner-roasted-chicken-vegetables",
+              "day": "Saturday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "roasted-chicken-vegetables",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Sunday",
+          "slots": [
+            {
+              "id": "sunday-breakfast-veggie-scramble-bowl",
+              "day": "Sunday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "veggie-scramble-bowl",
+              "note": ""
+            },
+            {
+              "id": "sunday-lunch-grilled-chicken-tacos",
+              "day": "Sunday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "grilled-chicken-tacos",
+              "note": ""
+            },
+            {
+              "id": "sunday-snack-banana-yogurt-snack-cup",
+              "day": "Sunday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "sunday-dinner-chicken-rice-vegetable-plate",
+              "day": "Sunday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "chicken-rice-vegetable-plate",
+              "note": ""
+            }
+          ]
+        }
+      ],
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "quick-workweek-plan",
+      "title": "Quick Workweek Plan",
+      "effective": "This week",
+      "note": "Designed for patients who need fast meals with minimal cooking during workdays.",
+      "days": [
+        {
+          "title": "Monday",
+          "slots": [
+            {
+              "id": "monday-breakfast-greek-yogurt-berry-bowl",
+              "day": "Monday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "greek-yogurt-berry-bowl",
+              "note": ""
+            },
+            {
+              "id": "monday-lunch-turkey-lettuce-wraps",
+              "day": "Monday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "turkey-lettuce-wraps",
+              "note": "Prep components ahead when possible."
+            },
+            {
+              "id": "monday-snack-banana-yogurt-snack-cup",
+              "day": "Monday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "monday-dinner-chicken-vegetable-stir-fry",
+              "day": "Monday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "chicken-vegetable-stir-fry",
+              "note": "Prep components ahead when possible."
+            }
+          ]
+        },
+        {
+          "title": "Tuesday",
+          "slots": [
+            {
+              "id": "tuesday-breakfast-protein-smoothie-cup",
+              "day": "Tuesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "protein-smoothie-cup",
+              "note": ""
+            },
+            {
+              "id": "tuesday-lunch-chicken-salad-bowl",
+              "day": "Tuesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-salad-bowl",
+              "note": "Prep components ahead when possible."
+            },
+            {
+              "id": "tuesday-snack-hummus-veggie-snack-box",
+              "day": "Tuesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "hummus-veggie-snack-box",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "tuesday-dinner-shrimp-zucchini-skillet",
+              "day": "Tuesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "shrimp-zucchini-skillet",
+              "note": "Prep components ahead when possible."
+            }
+          ]
+        },
+        {
+          "title": "Wednesday",
+          "slots": [
+            {
+              "id": "wednesday-breakfast-overnight-oats-with-berries",
+              "day": "Wednesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "overnight-oats-with-berries",
+              "note": ""
+            },
+            {
+              "id": "wednesday-lunch-simple-chicken-quesadilla",
+              "day": "Wednesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "simple-chicken-quesadilla",
+              "note": "Prep components ahead when possible."
+            },
+            {
+              "id": "wednesday-snack-cottage-cheese-fruit-plate",
+              "day": "Wednesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "cottage-cheese-fruit-plate",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "wednesday-dinner-cauliflower-turkey-skillet",
+              "day": "Wednesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "cauliflower-turkey-skillet",
+              "note": "Prep components ahead when possible."
+            }
+          ]
+        },
+        {
+          "title": "Thursday",
+          "slots": [
+            {
+              "id": "thursday-breakfast-ricotta-berry-toast",
+              "day": "Thursday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "ricotta-berry-toast",
+              "note": ""
+            },
+            {
+              "id": "thursday-lunch-sardine-avocado-salad",
+              "day": "Thursday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "sardine-avocado-salad",
+              "note": "Prep components ahead when possible."
+            },
+            {
+              "id": "thursday-snack-chicken-nopal-salad",
+              "day": "Thursday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "chicken-nopal-salad",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "thursday-dinner-turkey-burger-salad-plate",
+              "day": "Thursday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "turkey-burger-salad-plate",
+              "note": "Prep components ahead when possible."
+            }
+          ]
+        },
+        {
+          "title": "Friday",
+          "slots": [
+            {
+              "id": "friday-breakfast-egg-spinach-breakfast-plate",
+              "day": "Friday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "egg-spinach-breakfast-plate",
+              "note": ""
+            },
+            {
+              "id": "friday-lunch-panela-vegetable-plate",
+              "day": "Friday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "panela-vegetable-plate",
+              "note": "Prep components ahead when possible."
+            },
+            {
+              "id": "friday-snack-banana-yogurt-snack-cup",
+              "day": "Friday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "friday-dinner-protein-smoothie-cup",
+              "day": "Friday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "protein-smoothie-cup",
+              "note": "Prep components ahead when possible."
+            }
+          ]
+        },
+        {
+          "title": "Saturday",
+          "slots": [
+            {
+              "id": "saturday-breakfast-avocado-egg-toast",
+              "day": "Saturday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "avocado-egg-toast",
+              "note": ""
+            },
+            {
+              "id": "saturday-lunch-chickpea-mediterranean-salad",
+              "day": "Saturday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chickpea-mediterranean-salad",
+              "note": "Prep components ahead when possible."
+            },
+            {
+              "id": "saturday-snack-salmon-salad-lettuce-cups",
+              "day": "Saturday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "salmon-salad-lettuce-cups",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "saturday-dinner-grilled-chicken-tacos",
+              "day": "Saturday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "grilled-chicken-tacos",
+              "note": "Prep components ahead when possible."
+            }
+          ]
+        },
+        {
+          "title": "Sunday",
+          "slots": [
+            {
+              "id": "sunday-breakfast-oatmeal-apple-cinnamon",
+              "day": "Sunday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "oatmeal-apple-cinnamon",
+              "note": ""
+            },
+            {
+              "id": "sunday-lunch-bean-and-vegetable-soup",
+              "day": "Sunday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "bean-and-vegetable-soup",
+              "note": "Prep components ahead when possible."
+            },
+            {
+              "id": "sunday-snack-egg-salad-cucumber-cups",
+              "day": "Sunday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "egg-salad-cucumber-cups",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "sunday-dinner-salmon-vegetable-plate",
+              "day": "Sunday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "salmon-vegetable-plate",
+              "note": "Prep components ahead when possible."
+            }
+          ]
+        }
+      ],
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "vegetarian-balanced-week",
+      "title": "Vegetarian Balanced Week",
+      "effective": "This week",
+      "note": "Vegetarian weekly template with bowls, legumes, dairy options, and simple snacks.",
+      "days": [
+        {
+          "title": "Monday",
+          "slots": [
+            {
+              "id": "monday-breakfast-overnight-oats-with-berries",
+              "day": "Monday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "overnight-oats-with-berries",
+              "note": ""
+            },
+            {
+              "id": "monday-lunch-tofu-grain-bowl",
+              "day": "Monday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "tofu-grain-bowl",
+              "note": ""
+            },
+            {
+              "id": "monday-snack-hummus-veggie-snack-box",
+              "day": "Monday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "hummus-veggie-snack-box",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "monday-dinner-vegetarian-stuffed-peppers",
+              "day": "Monday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "vegetarian-stuffed-peppers",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Tuesday",
+          "slots": [
+            {
+              "id": "tuesday-breakfast-greek-yogurt-berry-bowl",
+              "day": "Tuesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "greek-yogurt-berry-bowl",
+              "note": ""
+            },
+            {
+              "id": "tuesday-lunch-chickpea-mediterranean-salad",
+              "day": "Tuesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chickpea-mediterranean-salad",
+              "note": ""
+            },
+            {
+              "id": "tuesday-snack-banana-yogurt-snack-cup",
+              "day": "Tuesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "tuesday-dinner-panela-vegetable-plate",
+              "day": "Tuesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "panela-vegetable-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Wednesday",
+          "slots": [
+            {
+              "id": "wednesday-breakfast-vegetable-omelet",
+              "day": "Wednesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "vegetable-omelet",
+              "note": ""
+            },
+            {
+              "id": "wednesday-lunch-lentil-quinoa-bowl",
+              "day": "Wednesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "lentil-quinoa-bowl",
+              "note": ""
+            },
+            {
+              "id": "wednesday-snack-banana-yogurt-snack-cup",
+              "day": "Wednesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "wednesday-dinner-bean-and-vegetable-soup",
+              "day": "Wednesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "bean-and-vegetable-soup",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Thursday",
+          "slots": [
+            {
+              "id": "thursday-breakfast-black-bean-breakfast-tacos",
+              "day": "Thursday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "black-bean-breakfast-tacos",
+              "note": ""
+            },
+            {
+              "id": "thursday-lunch-panela-vegetable-plate",
+              "day": "Thursday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "panela-vegetable-plate",
+              "note": ""
+            },
+            {
+              "id": "thursday-snack-salmon-salad-lettuce-cups",
+              "day": "Thursday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "salmon-salad-lettuce-cups",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "thursday-dinner-tofu-grain-bowl",
+              "day": "Thursday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "tofu-grain-bowl",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Friday",
+          "slots": [
+            {
+              "id": "friday-breakfast-oatmeal-apple-cinnamon",
+              "day": "Friday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "oatmeal-apple-cinnamon",
+              "note": ""
+            },
+            {
+              "id": "friday-lunch-chickpea-mediterranean-salad",
+              "day": "Friday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chickpea-mediterranean-salad",
+              "note": ""
+            },
+            {
+              "id": "friday-snack-cottage-cheese-fruit-plate",
+              "day": "Friday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "cottage-cheese-fruit-plate",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "friday-dinner-vegetarian-stuffed-peppers",
+              "day": "Friday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "vegetarian-stuffed-peppers",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Saturday",
+          "slots": [
+            {
+              "id": "saturday-breakfast-ricotta-berry-toast",
+              "day": "Saturday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "ricotta-berry-toast",
+              "note": ""
+            },
+            {
+              "id": "saturday-lunch-bean-and-vegetable-soup",
+              "day": "Saturday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "bean-and-vegetable-soup",
+              "note": ""
+            },
+            {
+              "id": "saturday-snack-hummus-veggie-snack-box",
+              "day": "Saturday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "hummus-veggie-snack-box",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "saturday-dinner-lentil-quinoa-bowl",
+              "day": "Saturday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "lentil-quinoa-bowl",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Sunday",
+          "slots": [
+            {
+              "id": "sunday-breakfast-veggie-scramble-bowl",
+              "day": "Sunday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "veggie-scramble-bowl",
+              "note": ""
+            },
+            {
+              "id": "sunday-lunch-lentil-quinoa-bowl",
+              "day": "Sunday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "lentil-quinoa-bowl",
+              "note": ""
+            },
+            {
+              "id": "sunday-snack-greek-yogurt-berry-bowl",
+              "day": "Sunday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "greek-yogurt-berry-bowl",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "sunday-dinner-panela-vegetable-plate",
+              "day": "Sunday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "panela-vegetable-plate",
+              "note": ""
+            }
+          ]
+        }
+      ],
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "low-carb-gentle-plan",
+      "title": "Low Carb Gentle Plan",
+      "effective": "This week",
+      "note": "Gentle lower-carb structure with simple plates and vegetable-forward meals.",
+      "days": [
+        {
+          "title": "Monday",
+          "slots": [
+            {
+              "id": "monday-breakfast-egg-spinach-breakfast-plate",
+              "day": "Monday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "egg-spinach-breakfast-plate",
+              "note": ""
+            },
+            {
+              "id": "monday-lunch-turkey-lettuce-wraps",
+              "day": "Monday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "turkey-lettuce-wraps",
+              "note": ""
+            },
+            {
+              "id": "monday-snack-tuna-cucumber-boats",
+              "day": "Monday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "tuna-cucumber-boats",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "monday-dinner-salmon-vegetable-plate",
+              "day": "Monday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "salmon-vegetable-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Tuesday",
+          "slots": [
+            {
+              "id": "tuesday-breakfast-vegetable-omelet",
+              "day": "Tuesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "vegetable-omelet",
+              "note": ""
+            },
+            {
+              "id": "tuesday-lunch-salmon-salad-lettuce-cups",
+              "day": "Tuesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "salmon-salad-lettuce-cups",
+              "note": ""
+            },
+            {
+              "id": "tuesday-snack-chicken-nopal-salad",
+              "day": "Tuesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "chicken-nopal-salad",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "tuesday-dinner-sardine-avocado-salad",
+              "day": "Tuesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "sardine-avocado-salad",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Wednesday",
+          "slots": [
+            {
+              "id": "wednesday-breakfast-greek-yogurt-berry-bowl",
+              "day": "Wednesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "greek-yogurt-berry-bowl",
+              "note": ""
+            },
+            {
+              "id": "wednesday-lunch-chicken-salad-bowl",
+              "day": "Wednesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-salad-bowl",
+              "note": ""
+            },
+            {
+              "id": "wednesday-snack-egg-salad-cucumber-cups",
+              "day": "Wednesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "egg-salad-cucumber-cups",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "wednesday-dinner-chicken-rice-vegetable-plate",
+              "day": "Wednesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "chicken-rice-vegetable-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Thursday",
+          "slots": [
+            {
+              "id": "thursday-breakfast-veggie-scramble-bowl",
+              "day": "Thursday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "veggie-scramble-bowl",
+              "note": ""
+            },
+            {
+              "id": "thursday-lunch-turkey-burger-salad-plate",
+              "day": "Thursday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "turkey-burger-salad-plate",
+              "note": ""
+            },
+            {
+              "id": "thursday-snack-hummus-veggie-snack-box",
+              "day": "Thursday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "hummus-veggie-snack-box",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "thursday-dinner-shrimp-zucchini-skillet",
+              "day": "Thursday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "shrimp-zucchini-skillet",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Friday",
+          "slots": [
+            {
+              "id": "friday-breakfast-protein-smoothie-cup",
+              "day": "Friday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "protein-smoothie-cup",
+              "note": ""
+            },
+            {
+              "id": "friday-lunch-chicken-nopal-salad",
+              "day": "Friday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-nopal-salad",
+              "note": ""
+            },
+            {
+              "id": "friday-snack-cottage-cheese-fruit-plate",
+              "day": "Friday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "cottage-cheese-fruit-plate",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "friday-dinner-cauliflower-turkey-skillet",
+              "day": "Friday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "cauliflower-turkey-skillet",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Saturday",
+          "slots": [
+            {
+              "id": "saturday-breakfast-avocado-egg-toast",
+              "day": "Saturday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "avocado-egg-toast",
+              "note": ""
+            },
+            {
+              "id": "saturday-lunch-panela-vegetable-plate",
+              "day": "Saturday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "panela-vegetable-plate",
+              "note": ""
+            },
+            {
+              "id": "saturday-snack-tuna-cucumber-boats",
+              "day": "Saturday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "tuna-cucumber-boats",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "saturday-dinner-tofu-grain-bowl",
+              "day": "Saturday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "tofu-grain-bowl",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Sunday",
+          "slots": [
+            {
+              "id": "sunday-breakfast-egg-spinach-breakfast-plate",
+              "day": "Sunday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "egg-spinach-breakfast-plate",
+              "note": ""
+            },
+            {
+              "id": "sunday-lunch-sardine-avocado-salad",
+              "day": "Sunday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "sardine-avocado-salad",
+              "note": ""
+            },
+            {
+              "id": "sunday-snack-banana-yogurt-snack-cup",
+              "day": "Sunday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Use this as a planned snack if needed."
+            },
+            {
+              "id": "sunday-dinner-roasted-chicken-vegetables",
+              "day": "Sunday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "roasted-chicken-vegetables",
+              "note": ""
+            }
+          ]
+        }
+      ],
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "diabetes-friendly-structure-plan",
+      "title": "Diabetes-Friendly Structure Plan",
+      "effective": "This week",
+      "note": "Structured meal timing template with consistent meal and snack rhythm; tags are nutritionist-authored guidance only.",
+      "days": [
+        {
+          "title": "Monday",
+          "slots": [
+            {
+              "id": "monday-breakfast-greek-yogurt-berry-bowl",
+              "day": "Monday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "greek-yogurt-berry-bowl",
+              "note": ""
+            },
+            {
+              "id": "monday-lunch-chicken-salad-bowl",
+              "day": "Monday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-salad-bowl",
+              "note": ""
+            },
+            {
+              "id": "monday-snack-hummus-veggie-snack-box",
+              "day": "Monday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "hummus-veggie-snack-box",
+              "note": "Keep snack timing consistent with the plan."
+            },
+            {
+              "id": "monday-dinner-salmon-vegetable-plate",
+              "day": "Monday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "salmon-vegetable-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Tuesday",
+          "slots": [
+            {
+              "id": "tuesday-breakfast-vegetable-omelet",
+              "day": "Tuesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "vegetable-omelet",
+              "note": ""
+            },
+            {
+              "id": "tuesday-lunch-lentil-quinoa-bowl",
+              "day": "Tuesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "lentil-quinoa-bowl",
+              "note": ""
+            },
+            {
+              "id": "tuesday-snack-cottage-cheese-fruit-plate",
+              "day": "Tuesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "cottage-cheese-fruit-plate",
+              "note": "Keep snack timing consistent with the plan."
+            },
+            {
+              "id": "tuesday-dinner-chicken-vegetable-stir-fry",
+              "day": "Tuesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "chicken-vegetable-stir-fry",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Wednesday",
+          "slots": [
+            {
+              "id": "wednesday-breakfast-overnight-oats-with-berries",
+              "day": "Wednesday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "overnight-oats-with-berries",
+              "note": ""
+            },
+            {
+              "id": "wednesday-lunch-chicken-fajita-bowl",
+              "day": "Wednesday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-fajita-bowl",
+              "note": ""
+            },
+            {
+              "id": "wednesday-snack-banana-yogurt-snack-cup",
+              "day": "Wednesday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "banana-yogurt-snack-cup",
+              "note": "Keep snack timing consistent with the plan."
+            },
+            {
+              "id": "wednesday-dinner-sardine-avocado-salad",
+              "day": "Wednesday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "sardine-avocado-salad",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Thursday",
+          "slots": [
+            {
+              "id": "thursday-breakfast-black-bean-breakfast-tacos",
+              "day": "Thursday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "black-bean-breakfast-tacos",
+              "note": ""
+            },
+            {
+              "id": "thursday-lunch-turkey-lettuce-wraps",
+              "day": "Thursday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "turkey-lettuce-wraps",
+              "note": ""
+            },
+            {
+              "id": "thursday-snack-egg-salad-cucumber-cups",
+              "day": "Thursday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "egg-salad-cucumber-cups",
+              "note": "Keep snack timing consistent with the plan."
+            },
+            {
+              "id": "thursday-dinner-roasted-chicken-vegetables",
+              "day": "Thursday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "roasted-chicken-vegetables",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Friday",
+          "slots": [
+            {
+              "id": "friday-breakfast-oatmeal-apple-cinnamon",
+              "day": "Friday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "oatmeal-apple-cinnamon",
+              "note": ""
+            },
+            {
+              "id": "friday-lunch-chickpea-mediterranean-salad",
+              "day": "Friday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chickpea-mediterranean-salad",
+              "note": ""
+            },
+            {
+              "id": "friday-snack-chicken-nopal-salad",
+              "day": "Friday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "chicken-nopal-salad",
+              "note": "Keep snack timing consistent with the plan."
+            },
+            {
+              "id": "friday-dinner-turkey-meatball-plate",
+              "day": "Friday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "turkey-meatball-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Saturday",
+          "slots": [
+            {
+              "id": "saturday-breakfast-egg-spinach-breakfast-plate",
+              "day": "Saturday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "egg-spinach-breakfast-plate",
+              "note": ""
+            },
+            {
+              "id": "saturday-lunch-bean-and-vegetable-soup",
+              "day": "Saturday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "bean-and-vegetable-soup",
+              "note": ""
+            },
+            {
+              "id": "saturday-snack-greek-yogurt-berry-bowl",
+              "day": "Saturday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "greek-yogurt-berry-bowl",
+              "note": "Keep snack timing consistent with the plan."
+            },
+            {
+              "id": "saturday-dinner-fish-taco-plate",
+              "day": "Saturday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "fish-taco-plate",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "title": "Sunday",
+          "slots": [
+            {
+              "id": "sunday-breakfast-protein-smoothie-cup",
+              "day": "Sunday",
+              "meal": "Breakfast",
+              "time": "8:00 AM",
+              "dishId": "protein-smoothie-cup",
+              "note": ""
+            },
+            {
+              "id": "sunday-lunch-chicken-nopal-salad",
+              "day": "Sunday",
+              "meal": "Lunch",
+              "time": "12:30 PM",
+              "dishId": "chicken-nopal-salad",
+              "note": ""
+            },
+            {
+              "id": "sunday-snack-hummus-veggie-snack-box",
+              "day": "Sunday",
+              "meal": "Snack",
+              "time": "4:00 PM",
+              "dishId": "hummus-veggie-snack-box",
+              "note": "Keep snack timing consistent with the plan."
+            },
+            {
+              "id": "sunday-dinner-tofu-grain-bowl",
+              "day": "Sunday",
+              "meal": "Dinner",
+              "time": "7:00 PM",
+              "dishId": "tofu-grain-bowl",
+              "note": ""
+            }
+          ]
+        }
+      ],
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    }
+  ]
+}

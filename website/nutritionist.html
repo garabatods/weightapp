@@ -9,8 +9,9 @@
     >
     <title>Leafstep Pro | Nutritionist Workspace</title>
     <link rel="icon" href="assets/brand/app-icon.png">
-    <link rel="stylesheet" href="nutritionist.css?v=20260622-sidebar-polish">
-    <script src="nutritionist.js?v=20260622-sidebar-polish" defer></script>
+    <link rel="stylesheet" href="nutritionist.css?v=20260623-global-placeholder-polish">
+    <script src="assets/pro/leafstep-pro-demo-data.js?v=20260623-rich-demo-data" defer></script>
+    <script src="nutritionist.js?v=20260623-search-placeholder-polish" defer></script>
   </head>
   <body>
     <main>
@@ -130,16 +131,18 @@
           <header class="cms-topbar">
             <div>
               <p id="view-kicker" class="topline">Practice workspace</p>
+              <nav id="breadcrumbs" class="breadcrumbs" aria-label="Breadcrumb"></nav>
               <h1 id="view-title">Workspace</h1>
             </div>
             <div class="topbar-actions">
+              <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
               <label id="search-wrapper" class="search-field">
                 <span id="search-label">Search</span>
                 <input id="workspace-search" type="search" placeholder="Search patients, plans, or dishes">
               </label>
-              <button id="quick-dish-action" class="button subtle" type="button" data-open-dish>New dish</button>
-              <button id="quick-plan-action" class="button subtle" type="button" data-open-plan>New plan</button>
-              <button id="quick-patient-action" class="button primary" type="button" data-focus-patient>New patient</button>
+            <button id="quick-dish-action" class="button subtle" type="button" data-open-dish>New dish</button>
+            <button id="quick-plan-action" class="button subtle" type="button" data-open-plan>New plan</button>
+              <button id="quick-patient-action" class="button primary" type="button" data-open-patient>New patient</button>
             </div>
           </header>
 
@@ -181,22 +184,13 @@
             <h2 id="patients-title" class="sr-only">Patients</h2>
 
             <section class="panel table-panel" aria-label="Patient list">
-              <form id="patient-form" class="inline-create-form">
-                <label>
-                  Patient label
-                  <input id="patient-label" placeholder="Patient 014" required>
-                </label>
-                <label>
-                  Active plan
-                  <select id="patient-plan"></select>
-                </label>
-                <button class="button primary" type="submit">Save patient</button>
-              </form>
               <div class="panel-head">
                 <h3>Patient list</h3>
                 <span id="patient-count" class="count-label"></span>
               </div>
+              <div id="patient-tools" class="list-tools" aria-label="Patient list controls"></div>
               <div id="patient-list" class="record-list" aria-live="polite"></div>
+              <div id="patient-pagination" class="pagination-bar" aria-label="Patient pagination"></div>
             </section>
 
             <aside id="patient-detail" class="panel detail-panel" aria-live="polite"></aside>
@@ -211,10 +205,11 @@
                   <h3>Plan library</h3>
                   <div class="panel-head-actions">
                     <span id="plan-count" class="count-label"></span>
-                    <button id="seed-plan" class="button subtle" type="button">Add template</button>
                   </div>
                 </div>
+                <div id="plan-tools" class="list-tools" aria-label="Meal plan list controls"></div>
                 <div id="plan-list" class="record-list" aria-live="polite"></div>
+                <div id="plan-pagination" class="pagination-bar" aria-label="Meal plan pagination"></div>
               </section>
               <section id="plan-board-panel" class="panel board-panel" aria-live="polite"></section>
             </div>
@@ -228,8 +223,9 @@
                   <h3>Dishes</h3>
                   <span id="dish-count" class="count-label"></span>
                 </div>
-                <div id="dish-filter-bar" class="filter-bar" aria-label="Dish tag filters"></div>
-                <div id="dish-list" class="dish-grid" aria-live="polite"></div>
+                <div id="dish-tools" class="list-tools" aria-label="Dish list controls"></div>
+                <div id="dish-list" class="record-list" aria-live="polite"></div>
+                <div id="dish-pagination" class="pagination-bar" aria-label="Dish pagination"></div>
               </section>
               <aside id="dish-detail" class="panel detail-panel" aria-live="polite"></aside>
             </div>
@@ -254,6 +250,34 @@
         </div>
       </section>
     </main>
+
+    <dialog id="patient-dialog" class="modal-card" aria-labelledby="patient-dialog-title">
+      <form id="patient-form" method="dialog" class="plan-form">
+        <div class="modal-head">
+          <div>
+            <p class="topline">Patient workspace</p>
+            <h2 id="patient-dialog-title">New patient</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-patient aria-label="Close patient editor"></button>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            Patient label
+            <input id="patient-label" placeholder="Patient 014" required>
+          </label>
+          <label>
+            Optional active plan
+            <select id="patient-plan"></select>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button class="button tertiary" type="button" data-close-patient>Cancel</button>
+          <button class="button primary" type="submit">Create patient</button>
+        </div>
+      </form>
+    </dialog>
 
     <dialog id="plan-dialog" class="modal-card" aria-labelledby="plan-dialog-title">
       <form id="plan-form" method="dialog" class="plan-form">
@@ -282,7 +306,7 @@
         </div>
 
         <div class="modal-actions">
-          <button class="button subtle" type="button" data-close-plan>Cancel</button>
+          <button class="button tertiary" type="button" data-close-plan>Cancel</button>
           <button class="button primary" type="submit">Save plan</button>
         </div>
       </form>
@@ -315,110 +339,22 @@
           </label>
           <label>
             Dish
-            <select id="slot-dish" required></select>
+            <input id="slot-dish-search" list="slot-dish-options" placeholder="Search dishes" required>
+            <input id="slot-dish" type="hidden">
+            <datalist id="slot-dish-options"></datalist>
           </label>
           <label class="full">
             Slot note
             <textarea id="slot-note" rows="2" placeholder="Optional patient-facing note for this meal."></textarea>
           </label>
         </div>
-
-        <section id="inline-dish-fields" class="inline-dish-fields hidden" aria-label="Create dish inline">
-          <div class="panel-head">
-            <h3>Create a reusable dish</h3>
-            <span class="count-label">Saved to Dish Library</span>
-          </div>
-          <div class="form-grid">
-            <label>
-              Dish title
-              <input id="inline-dish-title" placeholder="Chicken Salad Bowl">
-            </label>
-            <label>
-              Photo
-              <select id="inline-dish-photo"></select>
-            </label>
-            <label class="full">
-              Tags
-              <input id="inline-dish-tags" placeholder="high protein, lunch, low carb">
-            </label>
-            <label class="full">
-              Ingredients
-              <textarea id="inline-dish-ingredients" rows="3" placeholder="1 cup | greens |&#10;120 g | chicken | grilled"></textarea>
-            </label>
-            <label class="full">
-              Preparation
-              <textarea id="inline-dish-preparation" rows="3" placeholder="Assemble greens, chicken, vegetables, and dressing."></textarea>
-            </label>
-          </div>
-        </section>
+        <p class="form-helper">
+          Need a new reusable dish? Save this meal with an existing dish, then create the dish from Dish Library.
+        </p>
 
         <div class="modal-actions">
-          <button class="button subtle" type="button" data-close-slot>Cancel</button>
+          <button class="button tertiary" type="button" data-close-slot>Cancel</button>
           <button class="button primary" type="submit">Save meal slot</button>
-        </div>
-      </form>
-    </dialog>
-
-    <dialog id="dish-dialog" class="modal-card dish-modal" aria-labelledby="dish-dialog-title">
-      <form id="dish-form" method="dialog" class="plan-form">
-        <div class="modal-head">
-          <div>
-            <p class="topline">Dish library</p>
-            <h2 id="dish-dialog-title">Create dish</h2>
-          </div>
-          <button class="icon-button" type="button" data-close-dish aria-label="Close dish editor"></button>
-        </div>
-
-        <input id="dish-id" type="hidden">
-        <div class="dish-editor-grid">
-          <section class="dish-editor-main">
-            <div class="form-grid">
-              <label>
-                Dish title
-                <input id="dish-title" placeholder="Chicken Salad Bowl" required>
-              </label>
-              <label>
-                Photo
-                <select id="dish-photo" required></select>
-              </label>
-              <label class="full">
-                Preset tags
-                <div id="dish-tag-options" class="tag-check-grid"></div>
-              </label>
-              <label class="full">
-                Custom tags
-                <input id="dish-custom-tags" placeholder="anti-inflammatory, family dinner">
-              </label>
-              <label class="full">
-                Portion guidance
-                <textarea id="dish-portion" rows="2" placeholder="Use the portion guide discussed with the patient."></textarea>
-              </label>
-              <label class="full">
-                Preparation method
-                <textarea id="dish-preparation" rows="4" placeholder="Step-by-step preparation guidance."></textarea>
-              </label>
-              <label class="full">
-                Swaps
-                <textarea id="dish-swaps" rows="2" placeholder="Swap chicken for tofu or tuna."></textarea>
-              </label>
-              <label class="full">
-                Notes
-                <textarea id="dish-notes" rows="2" placeholder="Optional nutritionist note."></textarea>
-              </label>
-            </div>
-          </section>
-          <section class="dish-editor-side">
-            <div class="panel-head">
-              <h3>Ingredients</h3>
-              <button id="add-ingredient-row" class="button subtle" type="button">Add ingredient</button>
-            </div>
-            <div id="ingredient-rows" class="ingredient-rows"></div>
-          </section>
-        </div>
-
-        <div class="modal-actions">
-          <button class="button subtle" type="button" data-close-dish>Cancel</button>
-          <button class="button primary" type="submit">Save dish</button>
         </div>
       </form>
     </dialog>
